@@ -17,7 +17,9 @@ def _client_with_repository(repository: InMemoryPlayerRepository) -> TestClient:
 
 def test_get_player_returns_its_data_and_statistics():
     repository = InMemoryPlayerRepository()
-    repository.add(Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 5))
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 5)
+    )
     client = _client_with_repository(repository)
 
     response = client.get("/players/1")
@@ -39,8 +41,12 @@ def test_get_player_returns_404_when_player_is_missing():
 
 def test_compare_players_returns_the_similarity_percentage():
     repository = InMemoryPlayerRepository()
-    repository.add(Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 15))
-    repository.add(Player(2, "Player Two", "Forward", date(1996, 1, 1)), Statistics(15, 10))
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 15)
+    )
+    repository.add(
+        Player(2, "Player Two", "Forward", date(1996, 1, 1)), Statistics(15, 10)
+    )
     client = _client_with_repository(repository)
 
     response = client.get("/players/1/compare/2")
