@@ -5,6 +5,7 @@ from datetime import date
 import httpx
 
 DEFAULT_ENDPOINT = "https://query.wikidata.org/sparql"
+USER_AGENT = "player-scouting/0.1 (https://github.com/albertoqv/player-scouting)"
 
 
 def _escape_sparql_string(value: str) -> str:
@@ -42,7 +43,10 @@ class WikidataBirthDateProvider:
         response = self._http_client.get(
             self._endpoint,
             params={"query": _build_query(name), "format": "json"},
-            headers={"Accept": "application/sparql-results+json"},
+            headers={
+                "Accept": "application/sparql-results+json",
+                "User-Agent": USER_AGENT,
+            },
         )
         response.raise_for_status()
         bindings = response.json()["results"]["bindings"]
