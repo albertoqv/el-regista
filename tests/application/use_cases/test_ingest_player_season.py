@@ -39,6 +39,29 @@ def test_ingests_a_player_found_by_the_provider():
     assert statistics.goals == 36
 
 
+def test_persists_the_player_photo():
+    provider = FakePlayerSeasonStatisticsProvider(
+        PlayerSeasonResult(
+            player_id=1,
+            name="E. Haaland",
+            position="Attacker",
+            date_of_birth=date(2000, 7, 21),
+            season=PREMIER_LEAGUE_2023,
+            statistics=Statistics(36, 8),
+            photo_url="https://media.api-sports.io/football/players/1.png",
+        )
+    )
+    repository = InMemoryPlayerRepository()
+    use_case = IngestPlayerSeasonUseCase(provider, repository)
+
+    use_case.execute("Haaland", league_id=39, season_year=2023)
+
+    assert (
+        repository.get_player(1).photo_url
+        == "https://media.api-sports.io/football/players/1.png"
+    )
+
+
 def test_defaults_to_unknown_position_when_missing():
     provider = FakePlayerSeasonStatisticsProvider(
         PlayerSeasonResult(

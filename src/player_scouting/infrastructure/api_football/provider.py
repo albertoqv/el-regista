@@ -94,4 +94,5 @@ class ApiFootballPlayerSeasonProvider:
             date_of_birth=date.fromisoformat(player_info["birth"]["date"]),
             season=season,
             statistics=statistics,
+            photo_url=player_info.get("photo"),
         )

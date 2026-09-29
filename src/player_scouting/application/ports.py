@@ -81,6 +81,7 @@ class PlayerSeasonResult:
     date_of_birth: date
     season: Season
     statistics: Statistics
+    photo_url: str | None = None
 
 
 class PlayerSeasonStatisticsProvider(Protocol):
