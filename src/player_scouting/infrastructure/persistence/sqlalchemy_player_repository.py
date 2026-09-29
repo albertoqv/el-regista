@@ -6,6 +6,25 @@ from player_scouting.domain.entities import Player
 from player_scouting.domain.statistics import Statistics
 from player_scouting.infrastructure.persistence.models import PlayerModel
 
+_STATISTICS_FIELDS = (
+    "goals",
+    "assists",
+    "shots",
+    "shots_on_target",
+    "expected_goals",
+    "passes_completed",
+    "passes_attempted",
+    "key_passes",
+    "dribbles_completed",
+    "dribbles_attempted",
+    "tackles_won",
+    "interceptions",
+    "fouls_committed",
+    "fouls_won",
+    "yellow_cards",
+    "red_cards",
+)
+
 
 class SqlAlchemyPlayerRepository:
     def __init__(self, session: Session) -> None:
@@ -29,8 +48,8 @@ class SqlAlchemyPlayerRepository:
         model.name = player.name
         model.position = player.position
         model.date_of_birth = player.date_of_birth
-        model.goals = statistics.goals
-        model.assists = statistics.assists
+        for field_name in _STATISTICS_FIELDS:
+            setattr(model, field_name, getattr(statistics, field_name))
         self._session.flush()
 
     @staticmethod
@@ -38,5 +57,10 @@ class SqlAlchemyPlayerRepository:
         player = Player(
             model.player_id, model.name, model.position, model.date_of_birth
         )
-        statistics = Statistics(model.goals, model.assists)
+        statistics = Statistics(
+            **{
+                field_name: getattr(model, field_name)
+                for field_name in _STATISTICS_FIELDS
+            }
+        )
         return player, statistics
