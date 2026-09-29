@@ -16,6 +16,7 @@ BELLINGHAM_RESPONSE = {
                 "id": 129718,
                 "name": "J. Bellingham",
                 "birth": {"date": "2003-06-29"},
+                "photo": "https://media.api-sports.io/football/players/129718.png",
             },
             "statistics": [
                 {
@@ -57,6 +58,10 @@ def test_maps_a_real_shaped_response_to_a_player_season_result():
     assert result.position == "Midfielder"
     assert result.date_of_birth == date(2003, 6, 29)
     assert result.season == Season("La Liga", "2023")
+    assert (
+        result.photo_url
+        == "https://media.api-sports.io/football/players/129718.png"
+    )
 
 
 def test_maps_the_statistics_block_including_derived_passes_completed():
