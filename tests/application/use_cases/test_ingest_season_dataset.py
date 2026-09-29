@@ -73,3 +73,16 @@ def test_keeps_the_existing_photo_and_foot_of_an_already_enriched_player():
     player = repository.get_player(1)
     assert player.photo_url == "https://example.com/jude.png"
     assert player.preferred_foot == "right"
+
+
+def test_stores_the_team_of_each_player_season():
+    result = _result(1, "Jude Bellingham", 3)
+    result.team = "Real Madrid"
+    repository = InMemoryPlayerRepository()
+
+    IngestSeasonDatasetUseCase(
+        FakeSeasonDatasetProvider({2026: [result]}), repository
+    ).execute(2026)
+
+    [entry] = repository.list_season_entries(LA_LIGA_2026)
+    assert entry.team == "Real Madrid"

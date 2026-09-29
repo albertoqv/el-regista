@@ -5,6 +5,7 @@ from datetime import date
 
 from player_scouting.application.league_ingestion_job import LeagueIngestionJob
 from player_scouting.application.ports import (
+    AdvancedSeasonRow,
     CompetitionStatisticsResult,
     LeaguePlayersPage,
     LeagueSummary,
@@ -12,11 +13,12 @@ from player_scouting.application.ports import (
     PlayerSeasonResult,
     PlayerSort,
     PlayerSummary,
+    SeasonEntry,
 )
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
-from player_scouting.domain.statistics import Statistics
+from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 
 
 class InMemoryPlayerRepository:
@@ -24,6 +26,10 @@ class InMemoryPlayerRepository:
         self._players: dict[int, Player] = {}
         self._season_statistics: dict[tuple[int, Season], Statistics] = {}
         self._market_value_history: dict[int, list[MarketValuePoint]] = {}
+        self._teams: dict[tuple[int, Season], str | None] = {}
+        self._advanced: dict[tuple[int, Season], AdvancedStatistics] = {}
+        self._understat_ids: dict[int, int] = {}
+        self._enrichment_checked: set[int] = set()
 
     def add(self, player: Player, season: Season, statistics: Statistics) -> None:
         self.save_player(player)
@@ -74,22 +80,71 @@ class InMemoryPlayerRepository:
         self._players[player.player_id] = player
 
     def save_season_statistics(
-        self, player_id: int, season: Season, statistics: Statistics
+        self,
+        player_id: int,
+        season: Season,
+        statistics: Statistics,
+        team: str | None = None,
     ) -> None:
         self._season_statistics[(player_id, season)] = statistics
+        self._teams[(player_id, season)] = team
+
+    def save_season_advanced(
+        self, player_id: int, season: Season, advanced: AdvancedStatistics
+    ) -> None:
+        self._advanced[(player_id, season)] = advanced
+
+    def _merged(self, player_id: int, season: Season) -> Statistics:
+        statistics = self._season_statistics[(player_id, season)]
+        advanced = self._advanced.get((player_id, season))
+        return statistics.with_advanced(advanced) if advanced else statistics
 
     def get_season_statistics(
         self, player_id: int, season: Season
     ) -> Statistics | None:
-        return self._season_statistics.get((player_id, season))
+        if (player_id, season) not in self._season_statistics:
+            return None
+        return self._merged(player_id, season)
+
+    def list_season_entries(self, season: Season) -> list[SeasonEntry]:
+        return [
+            SeasonEntry(
+                self._players[player_id],
+                self._teams.get((player_id, entry_season)),
+                self._merged(player_id, entry_season),
+            )
+            for (player_id, entry_season) in self._season_statistics
+            if entry_season == season and player_id in self._players
+        ]
+
+    def set_understat_id(self, player_id: int, understat_id: int) -> None:
+        self._understat_ids[player_id] = understat_id
+
+    def understat_id_of(self, player_id: int) -> int | None:
+        return self._understat_ids.get(player_id)
+
+    def list_players_pending_enrichment(self, limit: int) -> list[Player]:
+        ranked = self.search_player_summaries(None, "recent", len(self._players))
+        pending = [
+            s.player
+            for s in ranked
+            if s.player.player_id not in self._enrichment_checked
+        ]
+        return pending[:limit]
+
+    def mark_enrichment_checked(self, player_id: int) -> None:
+        self._enrichment_checked.add(player_id)
+
+    def is_enrichment_checked(self, player_id: int) -> bool:
+        return player_id in self._enrichment_checked
 
     def list_seasons_for_player(self, player_id: int) -> list[Season]:
         return [season for (pid, season) in self._season_statistics if pid == player_id]
 
     def get_career_statistics(self, player_id: int) -> Statistics:
         stats = [
-            statistics
-            for (pid, _), statistics in self._season_statistics.items()
+            self._merged(pid, season)
+            for (pid, season) in self._season_statistics
             if pid == player_id
         ]
         return sum(stats, Statistics(0, 0))
@@ -98,10 +153,10 @@ class InMemoryPlayerRepository:
         self,
     ) -> list[tuple[Player, Season, Statistics]]:
         entries = []
-        for (player_id, season), statistics in self._season_statistics.items():
+        for player_id, season in self._season_statistics:
             player = self._players.get(player_id)
             if player is not None:
-                entries.append((player, season, statistics))
+                entries.append((player, season, self._merged(player_id, season)))
         return entries
 
     def save_market_value_history(
@@ -202,3 +257,11 @@ class InMemoryLeagueIngestionJobRepository:
             if not job.is_completed:
                 return job
         return None
+
+
+class FakeAdvancedSeasonProvider:
+    def __init__(self, seasons: dict[int, list[AdvancedSeasonRow]]) -> None:
+        self._seasons = seasons
+
+    def get_season(self, start_year: int) -> list[AdvancedSeasonRow]:
+        return self._seasons[start_year]

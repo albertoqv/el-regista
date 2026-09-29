@@ -101,3 +101,19 @@ def test_maps_advanced_metrics_when_the_season_has_them():
     assert (stats.passes_completed, stats.passes_attempted) == (1333, 1548)
     assert stats.key_passes == 42
     assert (stats.dribbles_completed, stats.dribbles_attempted) == (41, 75)
+
+
+def test_maps_team_and_minutes_played():
+    results = rows_to_results(_rows(BASIC_SEASON_CSV), start_year=2026)
+
+    jude = next(r for r in results if r.name == "Jude Bellingham")
+    assert jude.team == "Real Madrid"
+    assert jude.statistics.minutes_played == 610
+
+
+def test_intra_league_transfer_lists_both_teams_and_sums_minutes():
+    results = rows_to_results(_rows(BASIC_SEASON_CSV), start_year=2026)
+
+    winger = next(r for r in results if r.name == "Some Winger")
+    assert winger.team == "Club A, Club B"
+    assert winger.statistics.minutes_played == 520
