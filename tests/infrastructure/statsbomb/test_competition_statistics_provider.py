@@ -81,3 +81,37 @@ def test_returns_no_nationality_when_lineup_does_not_include_the_player():
     stats = provider.get_statistics(competition_id=43, season_id=3)
 
     assert stats[0].nationality is None
+
+
+def test_includes_players_who_did_not_score_or_assist():
+    bench_defender = {"id": 201, "name": "Bench Defender"}
+    lineups = [
+        {
+            "team_id": 1,
+            "lineup": [
+                {
+                    "player_id": SCORER["id"],
+                    "player_name": SCORER["name"],
+                    "country": {"name": "Argentina"},
+                },
+                {
+                    "player_id": bench_defender["id"],
+                    "player_name": bench_defender["name"],
+                    "country": {"name": "Brazil"},
+                },
+            ],
+        }
+    ]
+    client = FakeStatsBombClient(
+        matches=[{"match_id": 1}],
+        events_by_match={1: [_shot_event(SCORER)]},
+        lineups_by_match={1: lineups},
+    )
+    provider = StatsBombCompetitionStatisticsProvider(client)
+
+    stats = provider.get_statistics(competition_id=43, season_id=3)
+
+    stats_by_id = {s.player_id: s for s in stats}
+    assert stats_by_id[201].goals == 0
+    assert stats_by_id[201].assists == 0
+    assert stats_by_id[201].nationality == "Brazil"
