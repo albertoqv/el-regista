@@ -36,6 +36,18 @@ def extract_player_statistics(events: list[dict]) -> dict[int, PlayerMatchStats]
     return stats
 
 
+def extract_lineup_players(lineups: list[dict]) -> dict[int, PlayerMatchStats]:
+    players: dict[int, PlayerMatchStats] = {}
+    for team_lineup in lineups:
+        for player in team_lineup.get("lineup", []):
+            positions = player.get("positions") or []
+            position = positions[0].get("position") if positions else None
+            players[player["player_id"]] = PlayerMatchStats(
+                player["player_id"], player["player_name"], position
+            )
+    return players
+
+
 def merge_statistics(
     accumulated: dict[int, PlayerMatchStats],
     match_stats: dict[int, PlayerMatchStats],

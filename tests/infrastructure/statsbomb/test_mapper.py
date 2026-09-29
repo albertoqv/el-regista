@@ -120,9 +120,7 @@ def test_extract_lineup_players_creates_a_zero_stats_entry_per_player():
         {
             "team_id": 1,
             "lineup": [
-                _lineup_player(
-                    201, "Bench Defender", [{"position": "Center Back"}]
-                )
+                _lineup_player(201, "Bench Defender", [{"position": "Center Back"}])
             ],
         }
     ]
@@ -151,7 +149,9 @@ def test_extract_lineup_players_includes_players_from_both_teams():
         },
         {
             "team_id": 2,
-            "lineup": [_lineup_player(301, "Away Player", [{"position": "Right Back"}])],
+            "lineup": [
+                _lineup_player(301, "Away Player", [{"position": "Right Back"}])
+            ],
         },
     ]
 
