@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from player_scouting.application.ports import PlayerCompetitionStats
+from player_scouting.application.ports import (
+    CompetitionStatisticsResult,
+    PlayerCompetitionStats,
+)
+from player_scouting.domain.season import Season
 from player_scouting.infrastructure.statsbomb.client import StatsBombClient
 from player_scouting.infrastructure.statsbomb.mapper import (
     PlayerMatchStats,
@@ -16,7 +20,7 @@ class StatsBombCompetitionStatisticsProvider:
 
     def get_statistics(
         self, competition_id: int, season_id: int
-    ) -> list[PlayerCompetitionStats]:
+    ) -> CompetitionStatisticsResult:
         matches = self._client.get_matches(competition_id, season_id)
 
         aggregated: dict[int, PlayerMatchStats] = {}
@@ -30,7 +34,7 @@ class StatsBombCompetitionStatisticsProvider:
             )
             nationalities.update(self._extract_nationalities(lineups))
 
-        return [
+        players = [
             PlayerCompetitionStats(
                 player_id=stats.player_id,
                 name=stats.name,
@@ -55,6 +59,21 @@ class StatsBombCompetitionStatisticsProvider:
             )
             for stats in aggregated.values()
         ]
+        return CompetitionStatisticsResult(
+            season=self._season_from(matches, competition_id, season_id),
+            players=players,
+        )
+
+    @staticmethod
+    def _season_from(
+        matches: list[dict], competition_id: int, season_id: int
+    ) -> Season:
+        if not matches:
+            return Season(str(competition_id), str(season_id))
+        first_match = matches[0]
+        competition_name = first_match["competition"]["competition_name"]
+        season_name = first_match["season"]["season_name"]
+        return Season(competition_name, season_name)
 
     def _extract_nationalities(self, lineups: list[dict]) -> dict[int, str]:
         nationalities: dict[int, str] = {}
