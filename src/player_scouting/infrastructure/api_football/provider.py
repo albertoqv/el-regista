@@ -11,6 +11,10 @@ from player_scouting.domain.statistics import Statistics
 DEFAULT_BASE_URL = "https://v3.football.api-sports.io"
 
 
+class ApiFootballError(Exception):
+    pass
+
+
 class ApiFootballPlayerSeasonProvider:
     def __init__(
         self,
@@ -35,7 +39,12 @@ class ApiFootballPlayerSeasonProvider:
             headers={"x-apisports-key": self._api_key},
         )
         response.raise_for_status()
-        results = response.json().get("response", [])
+        data = response.json()
+        errors = data.get("errors")
+        if errors:
+            raise ApiFootballError(f"API-Football returned an error: {errors}")
+
+        results = data.get("response", [])
         if not results:
             return None
 
