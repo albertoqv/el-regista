@@ -2,8 +2,11 @@ from datetime import date
 
 from fastapi.testclient import TestClient
 
+from player_scouting.application.league_ingestion_job import LeagueIngestionJob
 from player_scouting.application.ports import (
     CompetitionStatisticsResult,
+    LeaguePlayersPage,
+    LeagueSummary,
     MarketValueHistoryResult,
     PlayerCompetitionStats,
     PlayerSeasonResult,
@@ -14,6 +17,9 @@ from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
 from player_scouting.presentation.api.dependencies import (
     get_birth_date_provider,
+    get_league_ingestion_job_repository,
+    get_league_players_provider,
+    get_league_search_provider,
     get_market_value_provider,
     get_player_repository,
     get_player_season_statistics_provider,
@@ -23,8 +29,11 @@ from player_scouting.presentation.api.main import create_app
 from tests.application.doubles import (
     FakeBirthDateProvider,
     FakeCompetitionStatisticsProvider,
+    FakeLeaguePlayersProvider,
+    FakeLeagueSearchProvider,
     FakeMarketValueProvider,
     FakePlayerSeasonStatisticsProvider,
+    InMemoryLeagueIngestionJobRepository,
     InMemoryPlayerRepository,
 )
 
@@ -147,3 +156,102 @@ def test_ingest_transfermarkt_player_reports_when_the_player_is_not_found():
     body = response.json()
     assert body["ingested"] == 0
     assert len(body["skipped"]) == 1
+
+
+def test_search_leagues_returns_real_shaped_results():
+    provider = FakeLeagueSearchProvider(
+        [LeagueSummary(id=135, name="Serie A", country="Italy")]
+    )
+    app = create_app()
+    app.dependency_overrides[get_league_search_provider] = lambda: provider
+    client = TestClient(app)
+
+    response = client.get("/ingestion/leagues/search?q=Serie A")
+
+    assert response.status_code == 200
+    assert response.json() == [{"id": 135, "name": "Serie A", "country": "Italy"}]
+
+
+def test_enqueue_league_ingestion_creates_a_job():
+    job_repository = InMemoryLeagueIngestionJobRepository()
+    app = create_app()
+    app.dependency_overrides[get_league_ingestion_job_repository] = lambda: (
+        job_repository
+    )
+    client = TestClient(app)
+
+    response = client.post(
+        "/ingestion/leagues?league_id=140&league_name=La Liga&season_year=2023"
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["league_id"] == 140
+    assert body["is_completed"] is False
+    assert len(job_repository.list_jobs()) == 1
+
+
+def test_list_league_ingestion_jobs_returns_their_progress():
+    job_repository = InMemoryLeagueIngestionJobRepository()
+    job_repository.save_job(
+        LeagueIngestionJob(
+            id=None, league_id=140, league_name="La Liga", season_year=2023
+        )
+    )
+    app = create_app()
+    app.dependency_overrides[get_league_ingestion_job_repository] = lambda: (
+        job_repository
+    )
+    client = TestClient(app)
+
+    response = client.get("/ingestion/leagues")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body) == 1
+    assert body[0]["league_name"] == "La Liga"
+
+
+def test_process_league_ingestion_batch_ingests_players_and_advances_jobs():
+    job_repository = InMemoryLeagueIngestionJobRepository()
+    job_repository.save_job(
+        LeagueIngestionJob(
+            id=None, league_id=140, league_name="La Liga", season_year=2023
+        )
+    )
+    players_provider = FakeLeaguePlayersProvider(
+        {
+            (140, 2023): [
+                LeaguePlayersPage(
+                    players=[
+                        PlayerSeasonResult(
+                            player_id=1,
+                            name="Player One",
+                            position="Forward",
+                            date_of_birth=date(1995, 1, 1),
+                            season=PREMIER_LEAGUE_2023,
+                            statistics=Statistics(1, 1),
+                        )
+                    ],
+                    current_page=1,
+                    total_pages=1,
+                )
+            ]
+        }
+    )
+    player_repository = InMemoryPlayerRepository()
+    app = create_app()
+    app.dependency_overrides[get_league_ingestion_job_repository] = lambda: (
+        job_repository
+    )
+    app.dependency_overrides[get_league_players_provider] = lambda: players_provider
+    app.dependency_overrides[get_player_repository] = lambda: player_repository
+    client = TestClient(app)
+
+    response = client.post("/ingestion/leagues/process?budget=5")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["pages_processed"] == 1
+    assert body["players_ingested"] == 1
+    assert player_repository.get_player(1) is not None
