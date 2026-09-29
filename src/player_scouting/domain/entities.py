@@ -13,6 +13,7 @@ class Player:
     position: str
     date_of_birth: date
     photo_url: str | None = None
+    preferred_foot: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.player_id, int) or isinstance(self.player_id, bool):
