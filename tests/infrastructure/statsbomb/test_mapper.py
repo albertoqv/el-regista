@@ -40,12 +40,13 @@ def test_counts_a_goal_from_a_shot_event():
     assert stats[101].position == "Center Forward"
 
 
-def test_does_not_count_a_shot_that_is_not_a_goal():
+def test_a_missed_shot_counts_as_a_shot_but_not_a_goal():
     events = [_shot_event(SCORER, "Off T")]
 
     stats = extract_player_statistics(events)
 
-    assert stats == {}
+    assert stats[101].goals == 0
+    assert stats[101].shots == 1
 
 
 def test_counts_an_assist_from_a_pass_event():
@@ -57,12 +58,13 @@ def test_counts_an_assist_from_a_pass_event():
     assert stats[102].goals == 0
 
 
-def test_does_not_count_a_pass_without_goal_assist():
+def test_a_pass_without_goal_assist_counts_as_attempted_but_not_as_assist():
     events = [_pass_event(ASSISTER, goal_assist=False)]
 
     stats = extract_player_statistics(events)
 
-    assert stats == {}
+    assert stats[102].assists == 0
+    assert stats[102].passes_attempted == 1
 
 
 def test_counts_shots_shots_on_target_and_expected_goals():
@@ -179,7 +181,7 @@ def test_does_not_count_a_lost_tackle_duel_or_a_non_tackle_duel():
 
     stats = extract_player_statistics(events)
 
-    assert stats[101].tackles_won == 0
+    assert stats == {}
 
 
 def test_counts_interceptions():
