@@ -4,9 +4,11 @@ from datetime import date
 
 from player_scouting.application.ports import (
     CompetitionStatisticsResult,
+    MarketValueHistoryResult,
     PlayerSeasonResult,
 )
 from player_scouting.domain.entities import Player
+from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
 
@@ -15,6 +17,7 @@ class InMemoryPlayerRepository:
     def __init__(self) -> None:
         self._players: dict[int, Player] = {}
         self._season_statistics: dict[tuple[int, Season], Statistics] = {}
+        self._market_value_history: dict[int, list[MarketValuePoint]] = {}
 
     def add(self, player: Player, season: Season, statistics: Statistics) -> None:
         self.save_player(player)
@@ -60,6 +63,14 @@ class InMemoryPlayerRepository:
                 entries.append((player, season, statistics))
         return entries
 
+    def save_market_value_history(
+        self, player_id: int, points: list[MarketValuePoint]
+    ) -> None:
+        self._market_value_history[player_id] = list(points)
+
+    def list_market_value_history(self, player_id: int) -> list[MarketValuePoint]:
+        return self._market_value_history.get(player_id, [])
+
 
 class FakeCompetitionStatisticsProvider:
     def __init__(self, result: CompetitionStatisticsResult) -> None:
@@ -86,4 +97,14 @@ class FakePlayerSeasonStatisticsProvider:
     def get_player_statistics(
         self, player_name: str, league_id: int, season_year: int
     ) -> PlayerSeasonResult | None:
+        return self._result
+
+
+class FakeMarketValueProvider:
+    def __init__(self, result: MarketValueHistoryResult | None) -> None:
+        self._result = result
+
+    def get_market_value_history(
+        self, player_name: str
+    ) -> MarketValueHistoryResult | None:
         return self._result
