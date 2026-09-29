@@ -57,6 +57,23 @@ def test_get_player_returns_its_data_and_statistics():
     assert body["assists"] == 5
 
 
+def test_get_player_returns_its_extended_metrics():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)),
+        Statistics(10, 5, shots=20, expected_goals=6.7, yellow_cards=2),
+    )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["shots"] == 20
+    assert body["expected_goals"] == 6.7
+    assert body["yellow_cards"] == 2
+
+
 def test_get_player_returns_404_when_player_is_missing():
     client = _client_with_repository(InMemoryPlayerRepository())
 
