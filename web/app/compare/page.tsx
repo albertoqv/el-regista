@@ -1,15 +1,18 @@
-import Link from "next/link";
-import { Avatar } from "@/app/components/Avatar";
 import { ComparePicker } from "@/app/components/ComparePicker";
+import { MarketValueChart } from "@/app/components/MarketValueChart";
 import { PlayerCompareChart } from "@/app/components/PlayerCompareChart";
+import { PlayerHeroCard } from "@/app/components/PlayerHeroCard";
 import { SimilarityMeter } from "@/app/components/SimilarityMeter";
 import {
   ApiError,
   comparePlayers,
+  getMarketValue,
   getPlayer,
   getPlayerSeason,
   listPlayers,
+  sortByRecency,
   type Comparison,
+  type MarketValuePoint,
   type Player,
   type Season,
 } from "@/lib/api";
@@ -23,6 +26,10 @@ function seasonFromParams(
   label: string | undefined,
 ): Season | null {
   return competition && label ? { competition, label } : null;
+}
+
+function seasonLabel(season: Season | null): string {
+  return season ? `${season.competition} ${season.label}` : "Carrera";
 }
 
 export default async function ComparePage(props: PageProps<"/compare">) {
@@ -42,7 +49,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
 
   let players: Player[] = [];
   try {
-    players = await listPlayers();
+    players = sortByRecency(await listPlayers());
   } catch {
     players = [];
   }
@@ -50,15 +57,32 @@ export default async function ComparePage(props: PageProps<"/compare">) {
   let result: Comparison | null = null;
   let playerA: Player | null = null;
   let playerB: Player | null = null;
+  let marketValueA: MarketValuePoint | null = null;
+  let marketValueB: MarketValuePoint | null = null;
+  let historyA: MarketValuePoint[] = [];
+  let historyB: MarketValuePoint[] = [];
   let error: string | null = null;
 
   if (idA && idB) {
     try {
-      [result, playerA, playerB] = await Promise.all([
-        comparePlayers(idA, idB, { seasonA: seasonA ?? undefined, seasonB: seasonB ?? undefined }),
-        seasonA ? getPlayerSeason(idA, seasonA) : getPlayer(idA),
-        seasonB ? getPlayerSeason(idB, seasonB) : getPlayer(idB),
-      ]);
+      const [comparison, playerAResult, playerBResult, marketA, marketB] =
+        await Promise.all([
+          comparePlayers(idA, idB, {
+            seasonA: seasonA ?? undefined,
+            seasonB: seasonB ?? undefined,
+          }),
+          seasonA ? getPlayerSeason(idA, seasonA) : getPlayer(idA),
+          seasonB ? getPlayerSeason(idB, seasonB) : getPlayer(idB),
+          getMarketValue(idA).catch(() => ({ current: null, history: [] })),
+          getMarketValue(idB).catch(() => ({ current: null, history: [] })),
+        ]);
+      result = comparison;
+      playerA = playerAResult;
+      playerB = playerBResult;
+      marketValueA = marketA.current;
+      marketValueB = marketB.current;
+      historyA = marketA.history;
+      historyB = marketB.history;
     } catch (thrown) {
       error =
         thrown instanceof ApiError && thrown.status === 404
@@ -90,31 +114,34 @@ export default async function ComparePage(props: PageProps<"/compare">) {
 
       {result && playerA && playerB && (
         <>
-          <section className="flex items-center justify-center gap-8 rounded-md border border-zinc-200 p-6 dark:border-zinc-800">
-            <Link
-              href={`/players/${playerA.player_id}`}
-              className="flex flex-col items-center gap-2 text-center hover:underline"
-            >
-              <Avatar name={playerA.name} photoUrl={playerA.photo_url} size={64} />
-              <span className="text-lg font-medium">{playerA.name}</span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {seasonA ? `${seasonA.competition} ${seasonA.label}` : "Carrera"}
-              </span>
-            </Link>
+          <section className="flex flex-col items-center gap-6 rounded-md border border-zinc-200 p-6 sm:flex-row dark:border-zinc-800">
+            <PlayerHeroCard
+              player={playerA}
+              seasonLabel={seasonLabel(seasonA)}
+              currentMarketValue={marketValueA}
+            />
             <SimilarityMeter percentage={result.similarity_percentage} />
-            <Link
-              href={`/players/${playerB.player_id}`}
-              className="flex flex-col items-center gap-2 text-center hover:underline"
-            >
-              <Avatar name={playerB.name} photoUrl={playerB.photo_url} size={64} />
-              <span className="text-lg font-medium">{playerB.name}</span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {seasonB ? `${seasonB.competition} ${seasonB.label}` : "Carrera"}
-              </span>
-            </Link>
+            <PlayerHeroCard
+              player={playerB}
+              seasonLabel={seasonLabel(seasonB)}
+              currentMarketValue={marketValueB}
+            />
           </section>
 
           <PlayerCompareChart playerA={playerA} playerB={playerB} />
+
+          {(historyA.length > 0 || historyB.length > 0) && (
+            <section className="flex flex-col gap-3">
+              <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+                <span aria-hidden="true">💶</span>
+                Valor de mercado
+              </h2>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <MarketValueChart history={historyA} />
+                <MarketValueChart history={historyB} />
+              </div>
+            </section>
+          )}
         </>
       )}
     </div>

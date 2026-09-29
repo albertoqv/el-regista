@@ -78,6 +78,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export function sortByRecency<T extends PlayerSummary>(players: T[]): T[] {
+  return [...players].sort((a, b) => {
+    const yearA = a.latest_season_year ?? -Infinity;
+    const yearB = b.latest_season_year ?? -Infinity;
+    return yearB - yearA;
+  });
+}
+
 export function listPlayers(): Promise<Player[]> {
   return request<Player[]>("/players");
 }

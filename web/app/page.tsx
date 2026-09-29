@@ -2,12 +2,12 @@ import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
 import { Leaderboard } from "@/app/components/Leaderboard";
 import { PlayerSearchForm } from "@/app/components/PlayerSearchForm";
-import { listPlayers, type Player } from "@/lib/api";
+import { listPlayers, sortByRecency, type Player } from "@/lib/api";
 
 async function loadPlayers(): Promise<{ players: Player[]; error: string | null }> {
   try {
     const players = await listPlayers();
-    return { players, error: null };
+    return { players: sortByRecency(players), error: null };
   } catch {
     return {
       players: [],
@@ -17,15 +17,8 @@ async function loadPlayers(): Promise<{ players: Player[]; error: string | null 
   }
 }
 
-function byMostRecentSeason(a: Player, b: Player): number {
-  const yearA = a.latest_season_year ?? -Infinity;
-  const yearB = b.latest_season_year ?? -Infinity;
-  return yearB - yearA;
-}
-
 export default async function HomePage() {
   const { players, error } = await loadPlayers();
-  const mostRecentFirst = [...players].sort(byMostRecentSeason);
 
   return (
     <div className="flex flex-col gap-8">
@@ -54,22 +47,28 @@ export default async function HomePage() {
 
       {players.length > 0 && (
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-          <Leaderboard title="Top goleadores" players={players} metricKey="goals" />
+          <Leaderboard
+            title="Top goleadores"
+            icon="🥇"
+            players={players}
+            metricKey="goals"
+          />
           <Leaderboard
             title="Top asistentes"
+            icon="🎯"
             players={players}
             metricKey="assists"
           />
         </div>
       )}
 
-      {mostRecentFirst.length > 0 && (
+      {players.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold tracking-tight">
             Todos los jugadores
           </h2>
           <ul className="divide-y divide-zinc-200 rounded-md border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-            {mostRecentFirst.map((player) => (
+            {players.map((player) => (
               <li key={player.player_id}>
                 <Link
                   href={`/players/${player.player_id}`}

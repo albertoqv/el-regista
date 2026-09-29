@@ -23,9 +23,10 @@ type MetricKey = keyof Pick<
 
 type MetricDef = { label: string; key: MetricKey; format?: (value: number) => string };
 
-const CATEGORIES: { title: string; metrics: MetricDef[] }[] = [
+const CATEGORIES: { title: string; icon: string; metrics: MetricDef[] }[] = [
   {
     title: "Ataque",
+    icon: "⚽",
     metrics: [
       { label: "Goles", key: "goals" },
       { label: "Tiros", key: "shots" },
@@ -35,6 +36,7 @@ const CATEGORIES: { title: string; metrics: MetricDef[] }[] = [
   },
   {
     title: "Creación",
+    icon: "🎨",
     metrics: [
       { label: "Asistencias", key: "assists" },
       { label: "Pases de gol", key: "key_passes" },
@@ -44,6 +46,7 @@ const CATEGORIES: { title: string; metrics: MetricDef[] }[] = [
   },
   {
     title: "Defensa",
+    icon: "🛡️",
     metrics: [
       { label: "Entradas ganadas", key: "tackles_won" },
       { label: "Intercepciones", key: "interceptions" },
@@ -51,6 +54,7 @@ const CATEGORIES: { title: string; metrics: MetricDef[] }[] = [
   },
   {
     title: "Disciplina",
+    icon: "🟨",
     metrics: [
       { label: "Faltas cometidas", key: "fouls_committed" },
       { label: "Faltas recibidas", key: "fouls_won" },
@@ -137,7 +141,8 @@ export function PlayerCompareChart({
       </div>
       {CATEGORIES.map((category) => (
         <div key={category.title} className="flex flex-col gap-3">
-          <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+          <h3 className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
+            <span aria-hidden="true">{category.icon}</span>
             {category.title}
           </h3>
           <div className="flex flex-col gap-3">

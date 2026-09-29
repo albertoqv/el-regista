@@ -1,19 +1,10 @@
 import type { MarketValuePoint } from "@/lib/api";
+import { formatMarketValue } from "@/lib/format";
 
 const LINE_COLOR = "#2a78d6";
 const WIDTH = 640;
 const HEIGHT = 200;
 const PADDING = 32;
-
-function formatAmount(amountEur: number): string {
-  if (amountEur >= 1_000_000) {
-    return `${(amountEur / 1_000_000).toFixed(amountEur % 1_000_000 === 0 ? 0 : 1)}M €`;
-  }
-  if (amountEur >= 1_000) {
-    return `${(amountEur / 1_000).toFixed(0)}k €`;
-  }
-  return `${amountEur} €`;
-}
 
 export function MarketValueChart({ history }: { history: MarketValuePoint[] }) {
   if (history.length === 0) {
@@ -50,7 +41,7 @@ export function MarketValueChart({ history }: { history: MarketValuePoint[] }) {
           Valor de mercado
         </h3>
         <span className="text-lg font-semibold" style={{ color: LINE_COLOR }}>
-          {formatAmount(latest.amount_eur)}
+          {formatMarketValue(latest.amount_eur)}
         </span>
       </div>
       <svg
@@ -70,7 +61,7 @@ export function MarketValueChart({ history }: { history: MarketValuePoint[] }) {
           >
             <title>
               {coord.point.as_of} · {coord.point.club} ·{" "}
-              {formatAmount(coord.point.amount_eur)}
+              {formatMarketValue(coord.point.amount_eur)}
             </title>
           </circle>
         ))}

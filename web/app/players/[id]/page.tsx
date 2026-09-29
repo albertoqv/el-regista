@@ -16,6 +16,7 @@ import {
   type Season,
   type SimilarPlayerMatch,
 } from "@/lib/api";
+import { calculateAge } from "@/lib/format";
 
 export default async function PlayerDetailPage(props: PageProps<"/players/[id]">) {
   const { id } = await props.params;
@@ -65,11 +66,11 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <div className="flex items-center gap-4">
-          <Avatar name={player.name} photoUrl={player.photo_url} size={72} />
+          <Avatar name={player.name} photoUrl={player.photo_url} size={112} />
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{player.name}</h1>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              {player.position} · nacido el {player.date_of_birth}
+              {player.position} · {calculateAge(player.date_of_birth)} años
             </p>
           </div>
         </div>
@@ -94,7 +95,8 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       <PlayerStats player={player} />
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold tracking-tight">
+        <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
+          <span aria-hidden="true">🔍</span>
           Jugadores más parecidos
           {selectedSeason
             ? ` (${selectedSeason.competition} ${selectedSeason.label})`
