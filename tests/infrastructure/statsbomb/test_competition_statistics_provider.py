@@ -7,7 +7,9 @@ ASSISTER = {"id": 102, "name": "Assister Player"}
 
 
 class FakeStatsBombClient:
-    def __init__(self, matches: list[dict], events_by_match: dict, lineups_by_match: dict):
+    def __init__(
+        self, matches: list[dict], events_by_match: dict, lineups_by_match: dict
+    ):
         self._matches = matches
         self._events_by_match = events_by_match
         self._lineups_by_match = lineups_by_match
