@@ -28,6 +28,10 @@ target-version = "py314"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
 
+[tool.ruff.lint.per-file-ignores]
+# CSV fixtures copied verbatim from the real dataset headers.
+"tests/infrastructure/fbref_kaggle/test_mapper.py" = ["E501"]
+
 [tool.mypy]
 python_version = "3.14"
 mypy_path = "src"
