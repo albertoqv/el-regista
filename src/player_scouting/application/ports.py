@@ -5,6 +5,7 @@ from datetime import date
 from typing import Protocol
 
 from player_scouting.domain.entities import Player
+from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
 
@@ -31,6 +32,12 @@ class PlayerRepository(Protocol):
     def list_all_season_statistics(
         self,
     ) -> list[tuple[Player, Season, Statistics]]: ...
+
+    def save_market_value_history(
+        self, player_id: int, points: list[MarketValuePoint]
+    ) -> None: ...
+
+    def list_market_value_history(self, player_id: int) -> list[MarketValuePoint]: ...
 
 
 class BirthDateProvider(Protocol):
@@ -88,3 +95,15 @@ class PlayerSeasonStatisticsProvider(Protocol):
     def get_player_statistics(
         self, player_name: str, league_id: int, season_year: int
     ) -> PlayerSeasonResult | None: ...
+
+
+@dataclass
+class MarketValueHistoryResult:
+    preferred_foot: str | None
+    points: list[MarketValuePoint]
+
+
+class MarketValueProvider(Protocol):
+    def get_market_value_history(
+        self, player_name: str
+    ) -> MarketValueHistoryResult | None: ...
