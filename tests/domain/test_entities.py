@@ -19,7 +19,11 @@ def test_jugador_guarda_sus_datos_correctamente():
 
 def test_jugador_acepta_una_foto_opcional():
     resultado = Player(
-        75, "Leo", "Delantero", date(2003, 6, 5), photo_url="https://example.com/leo.png"
+        75,
+        "Leo",
+        "Delantero",
+        date(2003, 6, 5),
+        photo_url="https://example.com/leo.png",
     )
     assert resultado.photo_url == "https://example.com/leo.png"
 
@@ -54,6 +58,17 @@ def test_jugador_rechaza_un_player_id_no_entero():
 def test_jugador_rechaza_una_fecha_nacimiento_futura():
     with pytest.raises(InvalidPlayerError):
         Player(75, "Pep", "delantero", manana)
+
+
+def test_jugador_acepta_solo_el_anio_de_nacimiento_sin_fecha_exacta():
+    resultado = Player(75, "Leo", "Delantero", None, birth_year=2003)
+    assert resultado.date_of_birth is None
+    assert resultado.birth_year == 2003
+
+
+def test_jugador_rechaza_un_anio_de_nacimiento_futuro():
+    with pytest.raises(InvalidPlayerError):
+        Player(75, "Pep", "delantero", None, birth_year=manana.year + 1)
 
 
 def test_jugador_rechaza_un_player_id_booleano():
