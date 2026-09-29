@@ -61,3 +61,14 @@ class PlayerMarketValueModel(Base):
     as_of_date: Mapped[date] = mapped_column(Date, nullable=False)
     amount_eur: Mapped[int] = mapped_column(Integer, nullable=False)
     club: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class LeagueIngestionJobModel(Base):
+    __tablename__ = "league_ingestion_jobs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    league_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    league_name: Mapped[str] = mapped_column(String, nullable=False)
+    season_year: Mapped[int] = mapped_column(Integer, nullable=False)
+    next_page: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    total_pages: Mapped[int | None] = mapped_column(Integer, nullable=True)
