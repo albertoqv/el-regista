@@ -10,6 +10,20 @@ export type PlayerSummary = {
 export type Player = PlayerSummary & {
   goals: number;
   assists: number;
+  shots: number;
+  shots_on_target: number;
+  expected_goals: number;
+  passes_completed: number;
+  passes_attempted: number;
+  key_passes: number;
+  dribbles_completed: number;
+  dribbles_attempted: number;
+  tackles_won: number;
+  interceptions: number;
+  fouls_committed: number;
+  fouls_won: number;
+  yellow_cards: number;
+  red_cards: number;
 };
 
 export type Comparison = {

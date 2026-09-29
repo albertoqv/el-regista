@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PlayerStats } from "@/app/components/PlayerStats";
 import { ApiError, findSimilarPlayers, getPlayer, type Comparison } from "@/lib/api";
 
 export default async function PlayerDetailPage(
@@ -31,9 +32,6 @@ export default async function PlayerDetailPage(
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           {player.position} · nacido el {player.date_of_birth}
         </p>
-        <p className="mt-2 text-lg">
-          {player.goals} goles · {player.assists} asistencias
-        </p>
         <Link
           href={`/compare?a=${player.player_id}`}
           className="mt-2 w-fit text-sm font-medium underline"
@@ -41,6 +39,8 @@ export default async function PlayerDetailPage(
           Comparar con otro jugador
         </Link>
       </section>
+
+      <PlayerStats player={player} />
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold tracking-tight">
