@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date
 from typing import Protocol
 
@@ -17,3 +18,19 @@ class PlayerRepository(Protocol):
 
 class BirthDateProvider(Protocol):
     def find(self, name: str, nationality: str | None = None) -> date | None: ...
+
+
+@dataclass
+class PlayerCompetitionStats:
+    player_id: int
+    name: str
+    position: str | None
+    nationality: str | None
+    goals: int
+    assists: int
+
+
+class CompetitionStatisticsProvider(Protocol):
+    def get_statistics(
+        self, competition_id: int, season_id: int
+    ) -> list[PlayerCompetitionStats]: ...
