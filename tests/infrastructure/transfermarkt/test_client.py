@@ -54,8 +54,7 @@ def test_get_profile_requests_the_given_path_and_returns_the_html_body():
 def test_get_market_value_graph_requests_the_expected_url_and_returns_the_json_body():
     def handler(request: httpx.Request) -> httpx.Response:
         assert (
-            str(request.url)
-            == f"{BASE_URL}/ceapi/marketValueDevelopment/graph/581678"
+            str(request.url) == f"{BASE_URL}/ceapi/marketValueDevelopment/graph/581678"
         )
         return httpx.Response(200, json={"list": [{"y": 1}]})
 

@@ -35,9 +35,7 @@ def test_maps_a_real_shaped_entry_to_a_player_season_result():
     assert result.position == "Midfielder"
     assert result.date_of_birth == date(2003, 6, 29)
     assert result.season == Season("La Liga", "2023")
-    assert (
-        result.photo_url == "https://media.api-sports.io/football/players/129718.png"
-    )
+    assert result.photo_url == "https://media.api-sports.io/football/players/129718.png"
 
 
 def test_maps_the_statistics_block_including_derived_passes_completed():

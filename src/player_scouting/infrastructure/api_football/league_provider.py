@@ -55,7 +55,7 @@ class ApiFootballLeaguePlayersProvider:
                         entry["player"], stats_blocks[0], season_year
                     )
                 )
-            except (KeyError, TypeError, ValueError):
+            except KeyError, TypeError, ValueError:
                 continue
 
         paging = data.get("paging") or {}
