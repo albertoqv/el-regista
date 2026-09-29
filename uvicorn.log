@@ -1,10 +1,47 @@
-INFO:     Started server process [9048]
+INFO:     Started server process [6876]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:56182 - "GET /docs HTTP/1.1" 200 OK
-INFO:     127.0.0.1:56183 - "POST /ingestion/statsbomb/87/84 HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:64880 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49686 - "POST /ingestion/statsbomb/87/84 HTTP/1.1" 500 Internal Server Error
 ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_transports\default.py", line 101, in map_httpcore_exceptions
+    yield
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_transports\default.py", line 250, in handle_request
+    resp = self._pool.handle_request(req)
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpcore\_sync\connection_pool.py", line 256, in handle_request
+    raise exc from None
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpcore\_sync\connection_pool.py", line 236, in handle_request
+    response = connection.handle_request(
+        pool_request.request
+    )
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpcore\_sync\connection.py", line 103, in handle_request
+    return self._connection.handle_request(request)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpcore\_sync\http11.py", line 136, in handle_request
+    raise exc
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpcore\_sync\http11.py", line 106, in handle_request
+    ) = self._receive_response_headers(**kwargs)
+        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpcore\_sync\http11.py", line 177, in _receive_response_headers
+    event = self._receive_event(timeout=timeout)
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpcore\_sync\http11.py", line 217, in _receive_event
+    data = self._network_stream.read(
+        self.READ_NUM_BYTES, timeout=timeout
+    )
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpcore\_backends\sync.py", line 126, in read
+    with map_exceptions(exc_map):
+         ~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\Alberto Quesada\AppData\Local\Python\pythoncore-3.14-64\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpcore\_exceptions.py", line 14, in map_exceptions
+    raise to_exc(exc) from exc
+httpcore.ReadTimeout: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
 Traceback (most recent call last):
   File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\uvicorn\protocols\http\httptools_impl.py", line 422, in run_asgi
     result = await app(  # type: ignore[func-returns-value]
@@ -81,10 +118,47 @@ Traceback (most recent call last):
     result = use_case.execute(competition_id, season_id)
   File "C:\Users\Alberto Quesada\Desktop\player-scouting\src\player_scouting\application\use_cases\ingest_competition.py", line 43, in execute
     birth_date = self.birth_date_provider.find(stats.name, stats.nationality)
-  File "C:\Users\Alberto Quesada\Desktop\player-scouting\src\player_scouting\infrastructure\birth_dates\wikidata_provider.py", line 47, in find
-    response.raise_for_status()
-    ~~~~~~~~~~~~~~~~~~~~~~~~~^^
-  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_models.py", line 829, in raise_for_status
-    raise HTTPStatusError(message, request=request, response=self)
-httpx.HTTPStatusError: Client error '403 Forbidden' for url 'https://query.wikidata.org/sparql?query=%0A++++SELECT+%3FbirthDate+%3FcountryLabel+WHERE+%7B%0A++++++%3Fperson+rdfs%3Alabel+%3Flabel.%0A++++++FILTER%28LCASE%28STR%28%3Flabel%29%29+%3D+LCASE%28%22Miguel+de+Andr%C3%A9s%22%29%29%0A++++++%3Fperson+wdt%3AP31+wd%3AQ5.%0A++++++%3Fperson+wdt%3AP106+wd%3AQ937857.%0A++++++%3Fperson+wdt%3AP569+%3FbirthDate.%0A++++++OPTIONAL+%7B%0A++++++++%3Fperson+wdt%3AP27+%3Fcountry.%0A++++++++%3Fcountry+rdfs%3Alabel+%3FcountryLabel.%0A++++++++FILTER%28LANG%28%3FcountryLabel%29+%3D+%22en%22%29%0A++++++%7D%0A++++%7D%0A++++&format=json'
-For more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/403
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\src\player_scouting\infrastructure\birth_dates\wikidata_provider.py", line 43, in find
+    response = self._http_client.get(
+        self._endpoint,
+    ...<4 lines>...
+        },
+    )
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_client.py", line 1053, in get
+    return self.request(
+           ~~~~~~~~~~~~^
+        "GET",
+        ^^^^^^
+    ...<7 lines>...
+        extensions=extensions,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_client.py", line 825, in request
+    return self.send(request, auth=auth, follow_redirects=follow_redirects)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_client.py", line 914, in send
+    response = self._send_handling_auth(
+        request,
+    ...<2 lines>...
+        history=[],
+    )
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_client.py", line 942, in _send_handling_auth
+    response = self._send_handling_redirects(
+        request,
+        follow_redirects=follow_redirects,
+        history=history,
+    )
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_client.py", line 979, in _send_handling_redirects
+    response = self._send_single_request(request)
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_client.py", line 1014, in _send_single_request
+    response = transport.handle_request(request)
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_transports\default.py", line 249, in handle_request
+    with map_httpcore_exceptions():
+         ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Alberto Quesada\AppData\Local\Python\pythoncore-3.14-64\Lib\contextlib.py", line 162, in __exit__
+    self.gen.throw(value)
+    ~~~~~~~~~~~~~~^^^^^^^
+  File "C:\Users\Alberto Quesada\Desktop\player-scouting\.venv\Lib\site-packages\httpx\_transports\default.py", line 118, in map_httpcore_exceptions
+    raise mapped_exc(message) from exc
+httpx.ReadTimeout: The read operation timed out
