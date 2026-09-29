@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from player_scouting.presentation.api.dependencies import (
     EnqueueLeagueIngestionUseCaseDep,
@@ -21,8 +21,13 @@ from player_scouting.presentation.api.schemas import (
     league_ingestion_job_out_from_domain,
     league_summary_out_from_domain,
 )
+from player_scouting.presentation.api.security import verify_ingestion_api_key
 
-router = APIRouter(prefix="/ingestion", tags=["ingestion"])
+router = APIRouter(
+    prefix="/ingestion",
+    tags=["ingestion"],
+    dependencies=[Depends(verify_ingestion_api_key)],
+)
 
 
 @router.post(

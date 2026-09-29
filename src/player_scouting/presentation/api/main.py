@@ -8,7 +8,7 @@ from player_scouting.presentation.api.settings import get_api_settings
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="Player Scouting API")
+    app = FastAPI(title="TalentScope API")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=get_api_settings().cors_origins_list,

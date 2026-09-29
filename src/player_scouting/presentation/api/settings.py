@@ -9,6 +9,7 @@ class ApiSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     cors_origins: str = "http://localhost:3000"
+    ingestion_api_key: str = ""
 
     @property
     def cors_origins_list(self) -> list[str]:
