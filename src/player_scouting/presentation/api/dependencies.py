@@ -107,7 +107,9 @@ def get_api_football_http_client() -> httpx.Client:
     return httpx.Client()
 
 
-ApiFootballHttpClientDep = Annotated[httpx.Client, Depends(get_api_football_http_client)]
+ApiFootballHttpClientDep = Annotated[
+    httpx.Client, Depends(get_api_football_http_client)
+]
 
 
 def get_player_season_statistics_provider(

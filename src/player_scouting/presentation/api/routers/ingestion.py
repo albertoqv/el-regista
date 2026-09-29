@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from player_scouting.presentation.api.dependencies import IngestCompetitionUseCaseDep
+from player_scouting.presentation.api.dependencies import (
+    IngestCompetitionUseCaseDep,
+    IngestPlayerSeasonUseCaseDep,
+)
 from player_scouting.presentation.api.schemas import (
     IngestionResultOut,
     ingestion_result_out_from_domain,
@@ -20,4 +23,15 @@ def ingest_statsbomb_competition(
     use_case: IngestCompetitionUseCaseDep,
 ) -> IngestionResultOut:
     result = use_case.execute(competition_id, season_id)
+    return ingestion_result_out_from_domain(result)
+
+
+@router.post("/api-football/players", response_model=IngestionResultOut)
+def ingest_api_football_player(
+    name: str,
+    league: int,
+    season: int,
+    use_case: IngestPlayerSeasonUseCaseDep,
+) -> IngestionResultOut:
+    result = use_case.execute(name, league_id=league, season_year=season)
     return ingestion_result_out_from_domain(result)

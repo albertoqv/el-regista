@@ -23,9 +23,7 @@ class PlayerModel(Base):
 
 class PlayerSeasonStatisticsModel(Base):
     __tablename__ = "player_season_statistics"
-    __table_args__ = (
-        UniqueConstraint("player_id", "competition", "season_label"),
-    )
+    __table_args__ = (UniqueConstraint("player_id", "competition", "season_label"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     player_id: Mapped[int] = mapped_column(

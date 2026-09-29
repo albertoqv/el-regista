@@ -55,9 +55,7 @@ def upgrade() -> None:
             sa.Column(column_name, sa.Integer(), nullable=False, server_default="0")
             for column_name in INT_COLUMNS
         ),
-        sa.Column(
-            "expected_goals", sa.Float(), nullable=False, server_default="0.0"
-        ),
+        sa.Column("expected_goals", sa.Float(), nullable=False, server_default="0.0"),
         sa.UniqueConstraint("player_id", "competition", "season_label"),
     )
 

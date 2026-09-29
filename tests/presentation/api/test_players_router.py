@@ -192,7 +192,9 @@ def test_compare_players_returns_404_when_a_player_is_missing():
 def test_find_similar_players_returns_ranked_matches_with_their_season():
     repository = InMemoryPlayerRepository()
     repository.add(
-        Player(1, "Target", "Forward", date(1995, 1, 1)), LA_LIGA_2023, Statistics(10, 10)
+        Player(1, "Target", "Forward", date(1995, 1, 1)),
+        LA_LIGA_2023,
+        Statistics(10, 10),
     )
     repository.add(
         Player(2, "Close", "Forward", date(1996, 1, 1)),

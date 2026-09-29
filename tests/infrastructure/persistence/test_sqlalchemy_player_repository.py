@@ -158,7 +158,5 @@ def test_lists_every_season_statistics_record_across_all_players(session):
 
     entries = repository.list_all_season_statistics()
 
-    seasons_by_player = {
-        player.player_id: season for player, season, _ in entries
-    }
+    seasons_by_player = {player.player_id: season for player, season, _ in entries}
     assert seasons_by_player == {1: LA_LIGA_2023, 2: PREMIER_LEAGUE_2023}
