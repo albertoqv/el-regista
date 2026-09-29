@@ -34,6 +34,7 @@ class IngestPlayerSeasonUseCase:
             result.name,
             result.position or UNKNOWN_POSITION,
             result.date_of_birth,
+            photo_url=result.photo_url,
         )
         self.repository.save_player(player)
         self.repository.save_season_statistics(
