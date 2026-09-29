@@ -107,3 +107,27 @@ class MarketValueProvider(Protocol):
     def get_market_value_history(
         self, player_name: str
     ) -> MarketValueHistoryResult | None: ...
+
+
+@dataclass
+class LeaguePlayersPage:
+    players: list[PlayerSeasonResult]
+    current_page: int
+    total_pages: int
+
+
+class LeaguePlayersProvider(Protocol):
+    def get_players_page(
+        self, league_id: int, season_year: int, page: int
+    ) -> LeaguePlayersPage: ...
+
+
+@dataclass
+class LeagueSummary:
+    id: int
+    name: str
+    country: str
+
+
+class LeagueSearchProvider(Protocol):
+    def search_leagues(self, query: str) -> list[LeagueSummary]: ...
