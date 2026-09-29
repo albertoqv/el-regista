@@ -21,6 +21,7 @@ from player_scouting.presentation.api.schemas import (
     season_out_from_domain,
     similar_player_match_out_from_domain,
 )
+from player_scouting.presentation.api.season_year import extract_season_year
 
 router = APIRouter(prefix="/players", tags=["players"])
 
@@ -31,11 +32,24 @@ def _season_or_none(competition: str | None, label: str | None) -> Season | None
     return Season(competition, label)
 
 
+def _latest_season_year(
+    repository: PlayerRepositoryDep, player_id: int
+) -> int | None:
+    years = [
+        year
+        for season in repository.list_seasons_for_player(player_id)
+        if (year := extract_season_year(season.label)) is not None
+    ]
+    return max(years) if years else None
+
+
 @router.get("", response_model=list[PlayerOut])
 def list_players(repository: PlayerRepositoryDep) -> list[PlayerOut]:
     return [
         player_out_from_domain(
-            player, repository.get_career_statistics(player.player_id)
+            player,
+            repository.get_career_statistics(player.player_id),
+            _latest_season_year(repository, player.player_id),
         )
         for player in repository.list_players()
     ]

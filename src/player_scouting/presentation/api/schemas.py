@@ -27,6 +27,7 @@ class PlayerSummaryOut(BaseModel):
     date_of_birth: date
     photo_url: str | None = None
     preferred_foot: str | None = None
+    latest_season_year: int | None = None
 
 
 class PlayerOut(PlayerSummaryOut):
@@ -107,7 +108,9 @@ class LeagueIngestionBatchSummaryOut(BaseModel):
     players_ingested: int
 
 
-def player_summary_from_domain(player: Player) -> PlayerSummaryOut:
+def player_summary_from_domain(
+    player: Player, latest_season_year: int | None = None
+) -> PlayerSummaryOut:
     return PlayerSummaryOut(
         player_id=player.player_id,
         name=player.name,
@@ -115,12 +118,15 @@ def player_summary_from_domain(player: Player) -> PlayerSummaryOut:
         date_of_birth=player.date_of_birth,
         photo_url=player.photo_url,
         preferred_foot=player.preferred_foot,
+        latest_season_year=latest_season_year,
     )
 
 
-def player_out_from_domain(player: Player, statistics: Statistics) -> PlayerOut:
+def player_out_from_domain(
+    player: Player, statistics: Statistics, latest_season_year: int | None = None
+) -> PlayerOut:
     return PlayerOut(
-        **player_summary_from_domain(player).model_dump(),
+        **player_summary_from_domain(player, latest_season_year).model_dump(),
         goals=statistics.goals,
         assists=statistics.assists,
         shots=statistics.shots,
