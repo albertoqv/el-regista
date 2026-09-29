@@ -47,6 +47,31 @@ def test_saves_and_retrieves_a_player(session):
     assert repository.get_player(1) == player
 
 
+def test_saves_and_retrieves_a_players_photo(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    player = Player(
+        1,
+        "Player One",
+        "Forward",
+        date(1995, 1, 1),
+        photo_url="https://media.api-sports.io/football/players/1.png",
+    )
+
+    repository.save_player(player)
+
+    assert (
+        repository.get_player(1).photo_url
+        == "https://media.api-sports.io/football/players/1.png"
+    )
+
+
+def test_a_player_without_a_photo_has_none(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+
+    assert repository.get_player(1).photo_url is None
+
+
 def test_get_player_returns_none_for_a_missing_player(session):
     repository = SqlAlchemyPlayerRepository(session)
 
