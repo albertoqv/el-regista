@@ -4,6 +4,11 @@ from player_scouting.domain.statistics import Statistics
 from player_scouting.domain.value_objects import SimilarityScore
 
 
+# Playing time is context, not playing style: two players are not less alike
+# because one of them played more minutes.
+_EXCLUDED_FIELDS = frozenset({"minutes_played"})
+
+
 class SimilarityCalculator:
     def similarity_metric(self, value_a: int | float, value_b: int | float) -> float:
         if value_a == value_b:
@@ -17,6 +22,8 @@ class SimilarityCalculator:
     ) -> SimilarityScore:
         scores = []
         for field in fields(Statistics):
+            if field.name in _EXCLUDED_FIELDS:
+                continue
             value_a = getattr(player1_stats, field.name)
             value_b = getattr(player2_stats, field.name)
             if value_a == 0 and value_b == 0:
