@@ -12,6 +12,7 @@ from tests.application.doubles import InMemoryPlayerRepository
 
 LA_LIGA_2023 = Season("La Liga", "2023")
 PREMIER_LEAGUE_2023 = Season("Premier League", "2023")
+COPA_DEL_REY_1984 = Season("Copa del Rey", "1983/1984")
 
 
 def _client_with_repository(repository: InMemoryPlayerRepository) -> TestClient:
@@ -39,6 +40,57 @@ def test_list_players_returns_every_player():
     assert response.status_code == 200
     body = response.json()
     assert {player["player_id"] for player in body} == {1, 2}
+
+
+def test_list_players_returns_the_most_recent_season_year_for_each_player():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Current Player", "Forward", date(1995, 1, 1)),
+        LA_LIGA_2023,
+        Statistics(10, 5),
+    )
+    repository.add(
+        Player(2, "Historical Player", "Forward", date(1960, 1, 1)),
+        COPA_DEL_REY_1984,
+        Statistics(0, 0),
+    )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players")
+
+    body = {player["player_id"]: player for player in response.json()}
+    assert body[1]["latest_season_year"] == 2023
+    assert body[2]["latest_season_year"] == 1983
+
+
+def test_list_players_returns_the_highest_season_year_when_a_player_has_several():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)),
+        LA_LIGA_2023,
+        Statistics(10, 5),
+    )
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)),
+        Season("Premier League", "2018"),
+        Statistics(2, 1),
+    )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players")
+
+    body = response.json()[0]
+    assert body["latest_season_year"] == 2023
+
+
+def test_list_players_returns_null_season_year_for_a_player_with_no_seasons():
+    repository = InMemoryPlayerRepository()
+    repository.save_player(Player(1, "No Seasons", "Forward", date(1995, 1, 1)))
+    client = _client_with_repository(repository)
+
+    response = client.get("/players")
+
+    assert response.json()[0]["latest_season_year"] is None
 
 
 def test_list_players_returns_an_empty_list_when_there_are_no_players():
