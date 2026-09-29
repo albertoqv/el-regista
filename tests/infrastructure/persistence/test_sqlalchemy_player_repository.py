@@ -239,3 +239,64 @@ def test_lists_every_season_statistics_record_across_all_players(session):
 
     seasons_by_player = {player.player_id: season for player, season, _ in entries}
     assert seasons_by_player == {1: LA_LIGA_2023, 2: PREMIER_LEAGUE_2023}
+
+
+def test_saves_a_player_with_only_a_birth_year(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", None, birth_year=2003))
+
+    player = repository.get_player(1)
+
+    assert player.date_of_birth is None
+    assert player.birth_year == 2003
+
+
+def _seed_summaries(repository: SqlAlchemyPlayerRepository) -> None:
+    repository.save_player(Player(1, "Historic Striker", "Forward", date(1960, 1, 1)))
+    repository.save_season_statistics(
+        1, Season("Copa del Rey", "1983/1984"), Statistics(40, 1)
+    )
+    repository.save_player(
+        Player(2, "Current Winger", "Forward", None, birth_year=2001)
+    )
+    repository.save_season_statistics(2, Season("La Liga", "2026"), Statistics(3, 9))
+    repository.save_player(
+        Player(3, "Current Striker", "Forward", None, birth_year=1998)
+    )
+    repository.save_season_statistics(3, Season("La Liga", "2025"), Statistics(20, 2))
+    repository.save_season_statistics(3, Season("La Liga", "2026"), Statistics(7, 1))
+    repository.save_player(Player(4, "No Seasons Yet", "Defender", None))
+
+
+def test_summaries_sorted_by_recency_then_contribution(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_summaries(repository)
+
+    summaries = repository.search_player_summaries(None, "recent", 10)
+
+    assert [s.player.player_id for s in summaries] == [3, 2, 1, 4]
+    assert summaries[0].latest_season_year == 2026
+    assert summaries[0].career.goals == 27
+    assert summaries[2].latest_season_year == 1983
+    assert summaries[3].latest_season_year is None
+    assert summaries[3].career == Statistics(0, 0)
+
+
+def test_summaries_sorted_by_goals_and_by_assists(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_summaries(repository)
+
+    by_goals = repository.search_player_summaries(None, "goals", 2)
+    by_assists = repository.search_player_summaries(None, "assists", 1)
+
+    assert [s.player.player_id for s in by_goals] == [1, 3]
+    assert [s.player.player_id for s in by_assists] == [2]
+
+
+def test_summaries_filter_by_name_case_insensitively(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_summaries(repository)
+
+    summaries = repository.search_player_summaries("current", "recent", 10)
+
+    assert {s.player.player_id for s in summaries} == {2, 3}
