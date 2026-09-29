@@ -1,0 +1,83 @@
+from datetime import date
+
+from fastapi.testclient import TestClient
+
+from player_scouting.domain.entities import Player
+from player_scouting.domain.statistics import Statistics
+from player_scouting.presentation.api.dependencies import get_player_repository
+from player_scouting.presentation.api.main import create_app
+from tests.application.doubles import InMemoryPlayerRepository
+
+
+def _client_with_repository(repository: InMemoryPlayerRepository) -> TestClient:
+    app = create_app()
+    app.dependency_overrides[get_player_repository] = lambda: repository
+    return TestClient(app)
+
+
+def test_get_player_returns_its_data_and_statistics():
+    repository = InMemoryPlayerRepository()
+    repository.add(Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 5))
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["name"] == "Player One"
+    assert body["goals"] == 10
+    assert body["assists"] == 5
+
+
+def test_get_player_returns_404_when_player_is_missing():
+    client = _client_with_repository(InMemoryPlayerRepository())
+
+    response = client.get("/players/999")
+
+    assert response.status_code == 404
+
+
+def test_compare_players_returns_the_similarity_percentage():
+    repository = InMemoryPlayerRepository()
+    repository.add(Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 15))
+    repository.add(Player(2, "Player Two", "Forward", date(1996, 1, 1)), Statistics(15, 10))
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1/compare/2")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["similarity_percentage"] == 67
+    assert body["player1"]["player_id"] == 1
+    assert body["player2"]["player_id"] == 2
+
+
+def test_compare_players_returns_404_when_a_player_is_missing():
+    client = _client_with_repository(InMemoryPlayerRepository())
+
+    response = client.get("/players/1/compare/2")
+
+    assert response.status_code == 404
+
+
+def test_find_similar_players_returns_ranked_comparisons():
+    repository = InMemoryPlayerRepository()
+    repository.add(Player(1, "Target", "Forward", date(1995, 1, 1)), Statistics(10, 10))
+    repository.add(Player(2, "Close", "Forward", date(1996, 1, 1)), Statistics(10, 9))
+    repository.add(Player(3, "Far", "Forward", date(1997, 1, 1)), Statistics(1, 1))
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1/similar?top=1")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body) == 1
+    assert body[0]["player2"]["player_id"] == 2
+
+
+def test_find_similar_players_returns_404_when_target_is_missing():
+    client = _client_with_repository(InMemoryPlayerRepository())
+
+    response = client.get("/players/1/similar")
+
+    assert response.status_code == 404
