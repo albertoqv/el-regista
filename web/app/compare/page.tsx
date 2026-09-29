@@ -1,16 +1,51 @@
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
-import { CompareForm } from "@/app/components/CompareForm";
+import { ComparePicker } from "@/app/components/ComparePicker";
 import { PlayerCompareChart } from "@/app/components/PlayerCompareChart";
 import { SimilarityMeter } from "@/app/components/SimilarityMeter";
-import { ApiError, comparePlayers, getPlayer, type Comparison, type Player } from "@/lib/api";
+import {
+  ApiError,
+  comparePlayers,
+  getPlayer,
+  getPlayerSeason,
+  listPlayers,
+  type Comparison,
+  type Player,
+  type Season,
+} from "@/lib/api";
+
+function paramValue(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function seasonFromParams(
+  competition: string | undefined,
+  label: string | undefined,
+): Season | null {
+  return competition && label ? { competition, label } : null;
+}
 
 export default async function ComparePage(props: PageProps<"/compare">) {
   const searchParams = await props.searchParams;
-  const rawA = searchParams.a;
-  const rawB = searchParams.b;
-  const idA = Array.isArray(rawA) ? rawA[0] : rawA;
-  const idB = Array.isArray(rawB) ? rawB[0] : rawB;
+  const rawA = paramValue(searchParams.a);
+  const rawB = paramValue(searchParams.b);
+  const idA = rawA ? Number(rawA) : null;
+  const idB = rawB ? Number(rawB) : null;
+  const seasonA = seasonFromParams(
+    paramValue(searchParams.sac),
+    paramValue(searchParams.sal),
+  );
+  const seasonB = seasonFromParams(
+    paramValue(searchParams.sbc),
+    paramValue(searchParams.sbl),
+  );
+
+  let players: Player[] = [];
+  try {
+    players = await listPlayers();
+  } catch {
+    players = [];
+  }
 
   let result: Comparison | null = null;
   let playerA: Player | null = null;
@@ -20,14 +55,14 @@ export default async function ComparePage(props: PageProps<"/compare">) {
   if (idA && idB) {
     try {
       [result, playerA, playerB] = await Promise.all([
-        comparePlayers(Number(idA), Number(idB)),
-        getPlayer(Number(idA)),
-        getPlayer(Number(idB)),
+        comparePlayers(idA, idB, { seasonA: seasonA ?? undefined, seasonB: seasonB ?? undefined }),
+        seasonA ? getPlayerSeason(idA, seasonA) : getPlayer(idA),
+        seasonB ? getPlayerSeason(idB, seasonB) : getPlayer(idB),
       ]);
     } catch (thrown) {
       error =
         thrown instanceof ApiError && thrown.status === 404
-          ? "Alguno de los dos jugadores no existe."
+          ? "Alguno de los dos jugadores no existe para la temporada elegida."
           : "No se ha podido comparar a los jugadores.";
     }
   }
@@ -38,7 +73,13 @@ export default async function ComparePage(props: PageProps<"/compare">) {
         <h1 className="text-2xl font-semibold tracking-tight">
           Comparar jugadores
         </h1>
-        <CompareForm defaultA={idA ?? ""} defaultB={idB ?? ""} />
+        <ComparePicker
+          players={players}
+          defaultA={idA}
+          defaultB={idB}
+          defaultSeasonA={seasonA}
+          defaultSeasonB={seasonB}
+        />
       </section>
 
       {error && (
@@ -56,6 +97,9 @@ export default async function ComparePage(props: PageProps<"/compare">) {
             >
               <Avatar name={playerA.name} photoUrl={playerA.photo_url} size={64} />
               <span className="text-lg font-medium">{playerA.name}</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                {seasonA ? `${seasonA.competition} ${seasonA.label}` : "Carrera"}
+              </span>
             </Link>
             <SimilarityMeter percentage={result.similarity_percentage} />
             <Link
@@ -64,6 +108,9 @@ export default async function ComparePage(props: PageProps<"/compare">) {
             >
               <Avatar name={playerB.name} photoUrl={playerB.photo_url} size={64} />
               <span className="text-lg font-medium">{playerB.name}</span>
+              <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                {seasonB ? `${seasonB.competition} ${seasonB.label}` : "Carrera"}
+              </span>
             </Link>
           </section>
 
