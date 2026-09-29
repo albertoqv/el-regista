@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from player_scouting.domain.entities import Player
+from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
 from player_scouting.infrastructure.persistence.models import Base
@@ -76,6 +77,59 @@ def test_get_player_returns_none_for_a_missing_player(session):
     repository = SqlAlchemyPlayerRepository(session)
 
     assert repository.get_player(999) is None
+
+
+def test_saves_and_retrieves_a_players_preferred_foot(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    player = Player(
+        1, "Player One", "Forward", date(1995, 1, 1), preferred_foot="right"
+    )
+
+    repository.save_player(player)
+
+    assert repository.get_player(1).preferred_foot == "right"
+
+
+def test_a_player_without_a_preferred_foot_has_none(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+
+    assert repository.get_player(1).preferred_foot is None
+
+
+def test_saves_and_lists_market_value_history(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+    points = [
+        MarketValuePoint(date(2019, 10, 17), 2_500_000, "Birmingham City"),
+        MarketValuePoint(date(2025, 1, 1), 160_000_000, "Real Madrid"),
+    ]
+
+    repository.save_market_value_history(1, points)
+
+    assert repository.list_market_value_history(1) == points
+
+
+def test_saving_market_value_history_again_replaces_the_previous_one(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+    repository.save_market_value_history(
+        1, [MarketValuePoint(date(2019, 10, 17), 2_500_000, "Birmingham City")]
+    )
+
+    repository.save_market_value_history(
+        1, [MarketValuePoint(date(2025, 1, 1), 160_000_000, "Real Madrid")]
+    )
+
+    history = repository.list_market_value_history(1)
+    assert history == [MarketValuePoint(date(2025, 1, 1), 160_000_000, "Real Madrid")]
+
+
+def test_market_value_history_is_empty_for_a_player_with_none(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+
+    assert repository.list_market_value_history(1) == []
 
 
 def test_saves_and_retrieves_season_statistics(session):
