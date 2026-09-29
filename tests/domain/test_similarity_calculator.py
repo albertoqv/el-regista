@@ -55,3 +55,13 @@ def test_similitud_total_es_cien_cuando_todas_las_metricas_estan_a_cero():
     resultado = calculador.total_similarity(estadistica_j1, estadistica_j2)
 
     assert resultado == SimilarityScore(100)
+
+
+def test_similitud_total_no_compara_los_minutos_jugados():
+    calculadora = SimilarityCalculator()
+    mismo_estilo_distintos_minutos = calculadora.total_similarity(
+        Statistics(10, 5, minutes_played=900),
+        Statistics(10, 5, minutes_played=2700),
+    )
+
+    assert mismo_estilo_distintos_minutos.percentage == 100

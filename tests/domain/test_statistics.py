@@ -1,7 +1,7 @@
 import pytest
 
 from player_scouting.domain.exceptions import InvalidStatisticsError
-from player_scouting.domain.statistics import Statistics
+from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 
 
 def test_estadisticas_guarda_sus_datos_correctamente():
@@ -136,3 +136,56 @@ def test_sumar_estadisticas_no_muta_los_operandos():
 
     assert a == Statistics(10, 5)
     assert b == Statistics(2, 1)
+
+
+def test_estadisticas_incluyen_minutos_y_metricas_de_understat_a_cero_por_defecto():
+    estadisticas = Statistics(1, 1)
+
+    assert estadisticas.minutes_played == 0
+    assert estadisticas.expected_assists == 0.0
+    assert estadisticas.xg_chain == 0.0
+    assert estadisticas.xg_buildup == 0.0
+
+
+def test_estadisticas_rechazan_minutos_negativos():
+    with pytest.raises(InvalidStatisticsError):
+        Statistics(1, 1, minutes_played=-1)
+
+
+def test_estadisticas_rechazan_expected_assists_negativo():
+    with pytest.raises(InvalidStatisticsError):
+        Statistics(1, 1, expected_assists=-0.1)
+
+
+def test_with_advanced_sustituye_xg_y_pases_clave_y_anade_las_metricas_nuevas():
+    basicas = Statistics(7, 2, shots=20, minutes_played=610)
+    avanzadas = AdvancedStatistics(
+        expected_goals=8.35,
+        expected_assists=1.81,
+        key_passes=11,
+        xg_chain=9.9,
+        xg_buildup=1.2,
+    )
+
+    combinadas = basicas.with_advanced(avanzadas)
+
+    assert combinadas.expected_goals == 8.35
+    assert combinadas.key_passes == 11
+    assert combinadas.expected_assists == 1.81
+    assert combinadas.xg_chain == 9.9
+    assert combinadas.xg_buildup == 1.2
+    assert combinadas.goals == 7
+    assert combinadas.shots == 20
+    assert combinadas.minutes_played == 610
+    assert basicas.expected_goals == 0.0
+
+
+def test_avanzadas_rechazan_valores_negativos():
+    with pytest.raises(InvalidStatisticsError):
+        AdvancedStatistics(
+            expected_goals=-1.0,
+            expected_assists=0.0,
+            key_passes=0,
+            xg_chain=0.0,
+            xg_buildup=0.0,
+        )
