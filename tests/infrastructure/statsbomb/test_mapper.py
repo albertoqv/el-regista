@@ -1,5 +1,6 @@
 from player_scouting.infrastructure.statsbomb.mapper import (
     PlayerMatchStats,
+    extract_lineup_players,
     extract_player_statistics,
     merge_statistics,
 )
@@ -108,3 +109,52 @@ def test_merge_statistics_keeps_a_player_only_present_in_the_new_match():
     merged = merge_statistics(accumulated, match_stats)
 
     assert merged[102].assists == 1
+
+
+def _lineup_player(player_id: int, name: str, positions: list[dict]) -> dict:
+    return {"player_id": player_id, "player_name": name, "positions": positions}
+
+
+def test_extract_lineup_players_creates_a_zero_stats_entry_per_player():
+    lineups = [
+        {
+            "team_id": 1,
+            "lineup": [
+                _lineup_player(
+                    201, "Bench Defender", [{"position": "Center Back"}]
+                )
+            ],
+        }
+    ]
+
+    players = extract_lineup_players(lineups)
+
+    assert players[201].goals == 0
+    assert players[201].assists == 0
+    assert players[201].name == "Bench Defender"
+    assert players[201].position == "Center Back"
+
+
+def test_extract_lineup_players_handles_a_player_with_no_recorded_position():
+    lineups = [{"team_id": 1, "lineup": [_lineup_player(202, "Unused Sub", [])]}]
+
+    players = extract_lineup_players(lineups)
+
+    assert players[202].position is None
+
+
+def test_extract_lineup_players_includes_players_from_both_teams():
+    lineups = [
+        {
+            "team_id": 1,
+            "lineup": [_lineup_player(201, "Home Player", [{"position": "Left Back"}])],
+        },
+        {
+            "team_id": 2,
+            "lineup": [_lineup_player(301, "Away Player", [{"position": "Right Back"}])],
+        },
+    ]
+
+    players = extract_lineup_players(lineups)
+
+    assert set(players.keys()) == {201, 301}
