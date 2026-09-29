@@ -26,10 +26,20 @@ export type Player = PlayerSummary & {
   red_cards: number;
 };
 
+export type Season = {
+  competition: string;
+  label: string;
+};
+
 export type Comparison = {
   player1: PlayerSummary;
   player2: PlayerSummary;
   similarity_percentage: number;
+};
+
+export type SimilarPlayerMatch = {
+  comparison: Comparison;
+  candidate_season: Season;
 };
 
 export type SkippedPlayer = {
@@ -73,6 +83,19 @@ export function getPlayer(playerId: number): Promise<Player> {
   return request<Player>(`/players/${playerId}`);
 }
 
+export function listPlayerSeasons(playerId: number): Promise<Season[]> {
+  return request<Season[]>(`/players/${playerId}/seasons`);
+}
+
+export function getPlayerSeason(
+  playerId: number,
+  season: Season,
+): Promise<Player> {
+  return request<Player>(
+    `/players/${playerId}/seasons/${encodeURIComponent(season.competition)}/${encodeURIComponent(season.label)}`,
+  );
+}
+
 export function comparePlayers(
   playerIdA: number,
   playerIdB: number,
@@ -82,9 +105,18 @@ export function comparePlayers(
 
 export function findSimilarPlayers(
   playerId: number,
-  top = 5,
-): Promise<Comparison[]> {
-  return request<Comparison[]>(`/players/${playerId}/similar?top=${top}`);
+  options?: { top?: number; season?: Season },
+): Promise<SimilarPlayerMatch[]> {
+  const params = new URLSearchParams();
+  if (options?.top) params.set("top", String(options.top));
+  if (options?.season) {
+    params.set("season_competition", options.season.competition);
+    params.set("season_label", options.season.label);
+  }
+  const query = params.toString();
+  return request<SimilarPlayerMatch[]>(
+    `/players/${playerId}/similar${query ? `?${query}` : ""}`,
+  );
 }
 
 export function ingestCompetition(
@@ -95,4 +127,19 @@ export function ingestCompetition(
     `/ingestion/statsbomb/${competitionId}/${seasonId}`,
     { method: "POST" },
   );
+}
+
+export function ingestApiFootballPlayer(
+  name: string,
+  leagueId: number,
+  seasonYear: number,
+): Promise<IngestionResult> {
+  const params = new URLSearchParams({
+    name,
+    league: String(leagueId),
+    season: String(seasonYear),
+  });
+  return request<IngestionResult>(`/ingestion/api-football/players?${params}`, {
+    method: "POST",
+  });
 }
