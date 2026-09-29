@@ -136,35 +136,90 @@ implementación (`feat:`), siguiendo el convenio de
 - [x] Presentación: API REST con FastAPI (jugadores, comparación,
       similares, ingesta)
 - [x] Docker Compose para desarrollo local, Postgres + Ruff + mypy en CI
+- [x] Verificado end-to-end contra datos reales (StatsBomb + Wikidata
+      + PostgreSQL en vivo): la ingesta real persiste jugadores
+      históricos con su fecha de nacimiento correcta (p. ej. Maradona)
+      y `/compare` y `/similar` funcionan sobre esos datos
 - [ ] Dashboard (Next.js)
 
 ## ⚙️ Cómo ejecutar el proyecto
 
 Este proyecto usa [uv](https://docs.astral.sh/uv/) para gestionar
-dependencias y el entorno virtual, y Docker Compose para levantar
-PostgreSQL en local:
+dependencias y el entorno virtual. Para PostgreSQL en local hay dos
+caminos:
+
+### Opción A: Docker Compose (recomendado, requiere admin)
+
+Docker Desktop necesita permisos de administrador y (en Windows) WSL2
+para instalarse. Si aún no lo tienes, ábrelo desde una PowerShell
+**como administrador** y ejecuta:
+
+```powershell
+winget install --id Docker.DockerDesktop -e
+```
+
+Sigue el asistente (puede pedir activar WSL2 y reiniciar). Una vez
+instalado:
 
 ```bash
 uv sync
-cp .env.example .env          # ajusta DATABASE_URL si hace falta
+cp .env.example .env          # DATABASE_URL apunta al puerto 5432 (Docker)
 docker compose up -d db       # levanta Postgres
 uv run alembic upgrade head   # aplica las migraciones
 uv run uvicorn player_scouting.presentation.api.main:app --reload
 ```
 
+También puedes levantar toda la pila (Postgres + API) con
+`docker compose up`.
+
+### Opción B: PostgreSQL portable, sin Docker ni admin
+
+Para desarrollar sin instalar nada a nivel de sistema, hay binarios
+portables de PostgreSQL 16 en `C:\tools\pgsql-portable\pgsql`
+(descargados de [EnterpriseDB](https://www.enterprisedb.com/download-postgresql-binaries),
+sin necesidad de admin) con un clúster ya inicializado y la base de
+datos `scouting` creada, escuchando en el puerto **5433**:
+
+```powershell
+.\scripts\local_postgres_start.ps1   # arranca Postgres en localhost:5433
+```
+
+```bash
+uv sync
+export DATABASE_URL="postgresql+psycopg://scouting:scouting@localhost:5433/scouting"
+uv run alembic upgrade head
+uv run uvicorn player_scouting.presentation.api.main:app --reload
+```
+
+Para detenerlo: `.\scripts\local_postgres_stop.ps1`.
+
+### Probar la ingesta con datos reales
+
 Con la API arriba, puedes ingerir una competición real de StatsBomb
-Open Data (por ejemplo, el Mundial 2018: `competition_id=43`,
-`season_id=3`) y consultar los datos ingeridos:
+Open Data. Para una primera prueba rápida (1 solo partido, unos
+segundos), usa una final histórica de Copa del Rey:
+
+```bash
+curl -X POST http://localhost:8000/ingestion/statsbomb/87/84
+```
+
+Para una competición grande de verdad (el Mundial 2018:
+`competition_id=43`, `season_id=3`, 64 partidos) ten en cuenta que la
+ingesta es secuencial (una petición HTTP por partido a StatsBomb, y
+1-2 peticiones a Wikidata por cada jugador que marcó o asistió), así
+que puede tardar varios minutos:
 
 ```bash
 curl -X POST http://localhost:8000/ingestion/statsbomb/43/3
+```
+
+Y para consultar lo ingerido:
+
+```bash
 curl http://localhost:8000/players/{player_id}
 curl http://localhost:8000/players/{id1}/compare/{id2}
 curl "http://localhost:8000/players/{player_id}/similar?top=5"
 ```
-
-También puedes levantar toda la pila (Postgres + API) con
-`docker compose up`.
 
 ## 🧪 Cómo ejecutar los tests
 
@@ -175,11 +230,11 @@ uv run pytest
 Los tests de infraestructura (StatsBomb, Wikidata) mockean el HTTP con
 `httpx.MockTransport`, así que no requieren red. Los tests del
 repositorio de PostgreSQL se saltan automáticamente si no hay
-`DATABASE_URL` definida; para ejecutarlos:
+`DATABASE_URL` definida; para ejecutarlos (con cualquiera de las dos
+opciones de Postgres de arriba):
 
 ```bash
-docker compose up -d db
-DATABASE_URL=postgresql+psycopg://scouting:scouting@localhost:5432/scouting uv run pytest
+DATABASE_URL=postgresql+psycopg://scouting:scouting@localhost:5433/scouting uv run pytest
 ```
 
 ## 🧹 Linting, formatting y tipos
@@ -208,6 +263,7 @@ player-scouting/
 │       └── presentation/
 │           └── api/                      # FastAPI: schemas, dependencias, routers
 ├── tests/                                # misma estructura que src/, capa a capa
+├── scripts/                              # start/stop de Postgres portable (sin Docker)
 ├── docker-compose.yml
 ├── Dockerfile
 ├── .env.example
