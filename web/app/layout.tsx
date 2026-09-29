@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Player Scouting",
-  description: "Comparación y scouting de jugadores de fútbol",
+  title: "TalentScope",
+  description:
+    "Compara jugadores de fútbol y encuentra similares con datos reales",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

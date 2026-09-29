@@ -17,18 +17,25 @@ async function loadPlayers(): Promise<{ players: Player[]; error: string | null 
   }
 }
 
+function byMostRecentSeason(a: Player, b: Player): number {
+  const yearA = a.latest_season_year ?? -Infinity;
+  const yearB = b.latest_season_year ?? -Infinity;
+  return yearB - yearA;
+}
+
 export default async function HomePage() {
   const { players, error } = await loadPlayers();
+  const mostRecentFirst = [...players].sort(byMostRecentSeason);
 
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">Jugadores</h1>
-        <PlayerSearchForm />
+        <PlayerSearchForm players={players} />
         {players.length > 0 && (
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            {players.length} jugador{players.length === 1 ? "" : "es"} ingerido
-            {players.length === 1 ? "" : "s"} de momento.
+            {players.length} jugador{players.length === 1 ? "" : "es"} disponible
+            {players.length === 1 ? "" : "s"}.
           </p>
         )}
       </section>
@@ -41,11 +48,7 @@ export default async function HomePage() {
 
       {!error && players.length === 0 && (
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Todavía no hay jugadores ingeridos.{" "}
-          <Link href="/ingest" className="font-medium underline">
-            Ingiere una competición
-          </Link>{" "}
-          para empezar.
+          Todavía no hay jugadores disponibles. Vuelve pronto.
         </p>
       )}
 
@@ -60,13 +63,13 @@ export default async function HomePage() {
         </div>
       )}
 
-      {players.length > 0 && (
+      {mostRecentFirst.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="text-lg font-semibold tracking-tight">
             Todos los jugadores
           </h2>
           <ul className="divide-y divide-zinc-200 rounded-md border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-            {players.map((player) => (
+            {mostRecentFirst.map((player) => (
               <li key={player.player_id}>
                 <Link
                   href={`/players/${player.player_id}`}

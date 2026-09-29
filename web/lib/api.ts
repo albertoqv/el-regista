@@ -7,6 +7,7 @@ export type PlayerSummary = {
   date_of_birth: string;
   photo_url: string | null;
   preferred_foot: string | null;
+  latest_season_year: number | null;
 };
 
 export type Player = PlayerSummary & {
@@ -44,17 +45,6 @@ export type SimilarPlayerMatch = {
   candidate_season: Season;
 };
 
-export type SkippedPlayer = {
-  player_id: number;
-  name: string;
-  reason: string;
-};
-
-export type IngestionResult = {
-  ingested: number;
-  skipped: SkippedPlayer[];
-};
-
 export type MarketValuePoint = {
   as_of: string;
   amount_eur: number;
@@ -64,27 +54,6 @@ export type MarketValuePoint = {
 export type MarketValueHistory = {
   current: MarketValuePoint | null;
   history: MarketValuePoint[];
-};
-
-export type LeagueSummary = {
-  id: number;
-  name: string;
-  country: string;
-};
-
-export type LeagueIngestionJob = {
-  id: number;
-  league_id: number;
-  league_name: string;
-  season_year: number;
-  next_page: number;
-  total_pages: number | null;
-  is_completed: boolean;
-};
-
-export type LeagueIngestionBatchSummary = {
-  pages_processed: number;
-  players_ingested: number;
 };
 
 export class ApiError extends Error {
@@ -167,74 +136,5 @@ export function findSimilarPlayers(
   const query = params.toString();
   return request<SimilarPlayerMatch[]>(
     `/players/${playerId}/similar${query ? `?${query}` : ""}`,
-  );
-}
-
-export function ingestCompetition(
-  competitionId: number,
-  seasonId: number,
-): Promise<IngestionResult> {
-  return request<IngestionResult>(
-    `/ingestion/statsbomb/${competitionId}/${seasonId}`,
-    { method: "POST" },
-  );
-}
-
-export function ingestApiFootballPlayer(
-  name: string,
-  leagueId: number,
-  seasonYear: number,
-): Promise<IngestionResult> {
-  const params = new URLSearchParams({
-    name,
-    league: String(leagueId),
-    season: String(seasonYear),
-  });
-  return request<IngestionResult>(`/ingestion/api-football/players?${params}`, {
-    method: "POST",
-  });
-}
-
-export function ingestTransfermarktPlayer(
-  playerId: number,
-  name: string,
-): Promise<IngestionResult> {
-  const params = new URLSearchParams({ player_id: String(playerId), name });
-  return request<IngestionResult>(`/ingestion/transfermarkt/players?${params}`, {
-    method: "POST",
-  });
-}
-
-export function searchLeagues(query: string): Promise<LeagueSummary[]> {
-  const params = new URLSearchParams({ q: query });
-  return request<LeagueSummary[]>(`/ingestion/leagues/search?${params}`);
-}
-
-export function enqueueLeagueIngestion(
-  leagueId: number,
-  leagueName: string,
-  seasonYear: number,
-): Promise<LeagueIngestionJob> {
-  const params = new URLSearchParams({
-    league_id: String(leagueId),
-    league_name: leagueName,
-    season_year: String(seasonYear),
-  });
-  return request<LeagueIngestionJob>(`/ingestion/leagues?${params}`, {
-    method: "POST",
-  });
-}
-
-export function listLeagueIngestionJobs(): Promise<LeagueIngestionJob[]> {
-  return request<LeagueIngestionJob[]>("/ingestion/leagues");
-}
-
-export function processLeagueIngestionBatch(
-  budget?: number,
-): Promise<LeagueIngestionBatchSummary> {
-  const params = budget ? `?budget=${budget}` : "";
-  return request<LeagueIngestionBatchSummary>(
-    `/ingestion/leagues/process${params}`,
-    { method: "POST" },
   );
 }
