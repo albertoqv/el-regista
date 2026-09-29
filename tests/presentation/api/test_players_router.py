@@ -15,6 +15,32 @@ def _client_with_repository(repository: InMemoryPlayerRepository) -> TestClient:
     return TestClient(app)
 
 
+def test_list_players_returns_every_player():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 5)
+    )
+    repository.add(
+        Player(2, "Player Two", "Midfielder", date(1996, 1, 1)), Statistics(3, 3)
+    )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert {player["player_id"] for player in body} == {1, 2}
+
+
+def test_list_players_returns_an_empty_list_when_there_are_no_players():
+    client = _client_with_repository(InMemoryPlayerRepository())
+
+    response = client.get("/players")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
 def test_get_player_returns_its_data_and_statistics():
     repository = InMemoryPlayerRepository()
     repository.add(
