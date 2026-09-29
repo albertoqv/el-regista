@@ -2,26 +2,40 @@ from datetime import date
 
 from fastapi.testclient import TestClient
 
-from player_scouting.application.ports import PlayerCompetitionStats
+from player_scouting.application.ports import (
+    CompetitionStatisticsResult,
+    PlayerCompetitionStats,
+    PlayerSeasonResult,
+)
+from player_scouting.domain.season import Season
+from player_scouting.domain.statistics import Statistics
 from player_scouting.presentation.api.dependencies import (
     get_birth_date_provider,
     get_player_repository,
+    get_player_season_statistics_provider,
     get_statistics_provider,
 )
 from player_scouting.presentation.api.main import create_app
 from tests.application.doubles import (
     FakeBirthDateProvider,
     FakeCompetitionStatisticsProvider,
+    FakePlayerSeasonStatisticsProvider,
     InMemoryPlayerRepository,
 )
+
+WORLD_CUP_2018 = Season("FIFA World Cup", "2018")
+PREMIER_LEAGUE_2023 = Season("Premier League", "2023")
 
 
 def test_ingest_statsbomb_competition_returns_a_summary_and_persists_players():
     stats_provider = FakeCompetitionStatisticsProvider(
-        [
-            PlayerCompetitionStats(1, "Player One", "Forward", "Argentina", 10, 5),
-            PlayerCompetitionStats(2, "Unknown Player", "Midfielder", None, 1, 1),
-        ]
+        CompetitionStatisticsResult(
+            WORLD_CUP_2018,
+            [
+                PlayerCompetitionStats(1, "Player One", "Forward", "Argentina", 10, 5),
+                PlayerCompetitionStats(2, "Unknown Player", "Midfielder", None, 1, 1),
+            ],
+        )
     )
     birth_date_provider = FakeBirthDateProvider({"Player One": date(1995, 1, 1)})
     repository = InMemoryPlayerRepository()
@@ -38,4 +52,49 @@ def test_ingest_statsbomb_competition_returns_a_summary_and_persists_players():
     assert body["ingested"] == 1
     assert len(body["skipped"]) == 1
     assert body["skipped"][0]["player_id"] == 2
-    assert repository.get(1) is not None
+    assert repository.get_player(1) is not None
+
+
+def test_ingest_api_football_player_returns_a_summary_and_persists_the_player():
+    provider = FakePlayerSeasonStatisticsProvider(
+        PlayerSeasonResult(
+            player_id=1,
+            name="E. Haaland",
+            position="Attacker",
+            date_of_birth=date(2000, 7, 21),
+            season=PREMIER_LEAGUE_2023,
+            statistics=Statistics(36, 8),
+        )
+    )
+    repository = InMemoryPlayerRepository()
+    app = create_app()
+    app.dependency_overrides[get_player_season_statistics_provider] = lambda: provider
+    app.dependency_overrides[get_player_repository] = lambda: repository
+    client = TestClient(app)
+
+    response = client.post(
+        "/ingestion/api-football/players?name=Haaland&league=39&season=2023"
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["ingested"] == 1
+    assert repository.get_player(1).name == "E. Haaland"
+
+
+def test_ingest_api_football_player_reports_when_the_player_is_not_found():
+    provider = FakePlayerSeasonStatisticsProvider(None)
+    repository = InMemoryPlayerRepository()
+    app = create_app()
+    app.dependency_overrides[get_player_season_statistics_provider] = lambda: provider
+    app.dependency_overrides[get_player_repository] = lambda: repository
+    client = TestClient(app)
+
+    response = client.post(
+        "/ingestion/api-football/players?name=Nobody&league=39&season=2023"
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["ingested"] == 0
+    assert len(body["skipped"]) == 1

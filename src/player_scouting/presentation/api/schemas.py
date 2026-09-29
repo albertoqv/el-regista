@@ -4,9 +4,13 @@ from datetime import date
 
 from pydantic import BaseModel
 
-from player_scouting.application.use_cases.ingest_competition import IngestionResult
+from player_scouting.application.ingestion_result import IngestionResult
+from player_scouting.application.use_cases.find_similar_players import (
+    SimilarPlayerMatch,
+)
 from player_scouting.domain.comparison import Comparison
 from player_scouting.domain.entities import Player
+from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
 
 
@@ -36,10 +40,20 @@ class PlayerOut(PlayerSummaryOut):
     red_cards: int
 
 
+class SeasonOut(BaseModel):
+    competition: str
+    label: str
+
+
 class ComparisonOut(BaseModel):
     player1: PlayerSummaryOut
     player2: PlayerSummaryOut
     similarity_percentage: int
+
+
+class SimilarPlayerMatchOut(BaseModel):
+    comparison: ComparisonOut
+    candidate_season: SeasonOut
 
 
 class SkippedPlayerOut(BaseModel):
@@ -84,11 +98,24 @@ def player_out_from_domain(player: Player, statistics: Statistics) -> PlayerOut:
     )
 
 
+def season_out_from_domain(season: Season) -> SeasonOut:
+    return SeasonOut(competition=season.competition, label=season.label)
+
+
 def comparison_out_from_domain(comparison: Comparison) -> ComparisonOut:
     return ComparisonOut(
         player1=player_summary_from_domain(comparison.player1),
         player2=player_summary_from_domain(comparison.player2),
         similarity_percentage=comparison.similarity_score.percentage,
+    )
+
+
+def similar_player_match_out_from_domain(
+    match: SimilarPlayerMatch,
+) -> SimilarPlayerMatchOut:
+    return SimilarPlayerMatchOut(
+        comparison=comparison_out_from_domain(match.comparison),
+        candidate_season=season_out_from_domain(match.candidate_season),
     )
 
 

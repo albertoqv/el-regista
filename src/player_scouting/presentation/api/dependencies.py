@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
+import httpx
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
@@ -12,7 +13,16 @@ from player_scouting.application.use_cases.find_similar_players import (
 from player_scouting.application.use_cases.ingest_competition import (
     IngestCompetitionUseCase,
 )
+from player_scouting.application.use_cases.ingest_player_season import (
+    IngestPlayerSeasonUseCase,
+)
 from player_scouting.domain.similarity_calculator import SimilarityCalculator
+from player_scouting.infrastructure.api_football.provider import (
+    ApiFootballPlayerSeasonProvider,
+)
+from player_scouting.infrastructure.api_football.settings import (
+    get_api_football_settings,
+)
 from player_scouting.infrastructure.birth_dates.wikidata_provider import (
     WikidataBirthDateProvider,
 )
@@ -93,6 +103,34 @@ def get_ingest_competition_use_case(
     )
 
 
+def get_api_football_http_client() -> httpx.Client:
+    return httpx.Client()
+
+
+ApiFootballHttpClientDep = Annotated[httpx.Client, Depends(get_api_football_http_client)]
+
+
+def get_player_season_statistics_provider(
+    http_client: ApiFootballHttpClientDep,
+) -> ApiFootballPlayerSeasonProvider:
+    return ApiFootballPlayerSeasonProvider(
+        http_client=http_client,
+        api_key=get_api_football_settings().api_football_key,
+    )
+
+
+PlayerSeasonStatisticsProviderDep = Annotated[
+    ApiFootballPlayerSeasonProvider, Depends(get_player_season_statistics_provider)
+]
+
+
+def get_ingest_player_season_use_case(
+    provider: PlayerSeasonStatisticsProviderDep,
+    repository: PlayerRepositoryDep,
+) -> IngestPlayerSeasonUseCase:
+    return IngestPlayerSeasonUseCase(provider, repository)
+
+
 ComparePlayersUseCaseDep = Annotated[
     ComparePlayersUseCase, Depends(get_compare_players_use_case)
 ]
@@ -101,4 +139,7 @@ FindSimilarPlayersUseCaseDep = Annotated[
 ]
 IngestCompetitionUseCaseDep = Annotated[
     IngestCompetitionUseCase, Depends(get_ingest_competition_use_case)
+]
+IngestPlayerSeasonUseCaseDep = Annotated[
+    IngestPlayerSeasonUseCase, Depends(get_ingest_player_season_use_case)
 ]
