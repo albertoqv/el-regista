@@ -1,9 +1,11 @@
 from datetime import date
 
 import httpx
+import pytest
 
 from player_scouting.domain.season import Season
 from player_scouting.infrastructure.api_football.provider import (
+    ApiFootballError,
     ApiFootballPlayerSeasonProvider,
 )
 
@@ -124,11 +126,20 @@ def test_sums_red_and_second_yellow_cards_into_red_cards():
 
 
 def test_returns_none_when_there_are_no_results():
-    provider = _provider_with({"response": []})
+    provider = _provider_with({"errors": [], "response": []})
 
     result = provider.get_player_statistics("Nobody", league_id=140, season_year=2023)
 
     assert result is None
+
+
+def test_raises_when_the_api_reports_an_error_instead_of_silently_returning_none():
+    provider = _provider_with(
+        {"errors": {"rateLimit": "Too many requests"}, "response": []}
+    )
+
+    with pytest.raises(ApiFootballError):
+        provider.get_player_statistics("Haaland", league_id=39, season_year=2023)
 
 
 def test_sends_the_expected_query_params_and_api_key_header():
