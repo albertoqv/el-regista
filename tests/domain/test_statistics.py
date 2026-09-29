@@ -115,3 +115,24 @@ def test_estadisticas_rechaza_expected_goals_negativo():
 def test_estadisticas_rechaza_expected_goals_no_numerico():
     with pytest.raises(InvalidStatisticsError):
         Statistics(1, 1, expected_goals="0.5")
+
+
+def test_sumar_dos_estadisticas_suma_cada_metrica():
+    total = Statistics(10, 5, shots=3, expected_goals=0.4) + Statistics(
+        2, 1, shots=1, expected_goals=0.2
+    )
+
+    assert total.goals == 12
+    assert total.assists == 6
+    assert total.shots == 4
+    assert total.expected_goals == pytest.approx(0.6)
+
+
+def test_sumar_estadisticas_no_muta_los_operandos():
+    a = Statistics(10, 5)
+    b = Statistics(2, 1)
+
+    a + b
+
+    assert a == Statistics(10, 5)
+    assert b == Statistics(2, 1)
