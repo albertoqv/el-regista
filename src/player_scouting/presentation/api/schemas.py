@@ -20,6 +20,20 @@ class PlayerSummaryOut(BaseModel):
 class PlayerOut(PlayerSummaryOut):
     goals: int
     assists: int
+    shots: int
+    shots_on_target: int
+    expected_goals: float
+    passes_completed: int
+    passes_attempted: int
+    key_passes: int
+    dribbles_completed: int
+    dribbles_attempted: int
+    tackles_won: int
+    interceptions: int
+    fouls_committed: int
+    fouls_won: int
+    yellow_cards: int
+    red_cards: int
 
 
 class ComparisonOut(BaseModel):
@@ -53,6 +67,20 @@ def player_out_from_domain(player: Player, statistics: Statistics) -> PlayerOut:
         **player_summary_from_domain(player).model_dump(),
         goals=statistics.goals,
         assists=statistics.assists,
+        shots=statistics.shots,
+        shots_on_target=statistics.shots_on_target,
+        expected_goals=statistics.expected_goals,
+        passes_completed=statistics.passes_completed,
+        passes_attempted=statistics.passes_attempted,
+        key_passes=statistics.key_passes,
+        dribbles_completed=statistics.dribbles_completed,
+        dribbles_attempted=statistics.dribbles_attempted,
+        tackles_won=statistics.tackles_won,
+        interceptions=statistics.interceptions,
+        fouls_committed=statistics.fouls_committed,
+        fouls_won=statistics.fouls_won,
+        yellow_cards=statistics.yellow_cards,
+        red_cards=statistics.red_cards,
     )
 
 
