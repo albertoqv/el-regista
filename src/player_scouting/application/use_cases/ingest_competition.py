@@ -55,7 +55,25 @@ class IngestCompetitionUseCase:
                 stats.position or UNKNOWN_POSITION,
                 birth_date,
             )
-            self.repository.save(player, Statistics(stats.goals, stats.assists))
+            statistics = Statistics(
+                goals=stats.goals,
+                assists=stats.assists,
+                shots=stats.shots,
+                shots_on_target=stats.shots_on_target,
+                expected_goals=stats.expected_goals,
+                passes_completed=stats.passes_completed,
+                passes_attempted=stats.passes_attempted,
+                key_passes=stats.key_passes,
+                dribbles_completed=stats.dribbles_completed,
+                dribbles_attempted=stats.dribbles_attempted,
+                tackles_won=stats.tackles_won,
+                interceptions=stats.interceptions,
+                fouls_committed=stats.fouls_committed,
+                fouls_won=stats.fouls_won,
+                yellow_cards=stats.yellow_cards,
+                red_cards=stats.red_cards,
+            )
+            self.repository.save(player, statistics)
             ingested += 1
 
         return IngestionResult(ingested=ingested, skipped=skipped)

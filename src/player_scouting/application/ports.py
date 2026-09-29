@@ -28,6 +28,20 @@ class PlayerCompetitionStats:
     nationality: str | None
     goals: int
     assists: int
+    shots: int = 0
+    shots_on_target: int = 0
+    expected_goals: float = 0.0
+    passes_completed: int = 0
+    passes_attempted: int = 0
+    key_passes: int = 0
+    dribbles_completed: int = 0
+    dribbles_attempted: int = 0
+    tackles_won: int = 0
+    interceptions: int = 0
+    fouls_committed: int = 0
+    fouls_won: int = 0
+    yellow_cards: int = 0
+    red_cards: int = 0
 
 
 class CompetitionStatisticsProvider(Protocol):
