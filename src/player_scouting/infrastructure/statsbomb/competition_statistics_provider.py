@@ -4,6 +4,7 @@ from player_scouting.application.ports import PlayerCompetitionStats
 from player_scouting.infrastructure.statsbomb.client import StatsBombClient
 from player_scouting.infrastructure.statsbomb.mapper import (
     PlayerMatchStats,
+    extract_lineup_players,
     extract_player_statistics,
     merge_statistics,
 )
@@ -22,9 +23,12 @@ class StatsBombCompetitionStatisticsProvider:
         nationalities: dict[int, str] = {}
         for match in matches:
             match_id = match["match_id"]
-            match_stats = extract_player_statistics(self._client.get_events(match_id))
-            merge_statistics(aggregated, match_stats)
-            nationalities.update(self._extract_nationalities(match_id))
+            lineups = self._client.get_lineups(match_id)
+            merge_statistics(aggregated, extract_lineup_players(lineups))
+            merge_statistics(
+                aggregated, extract_player_statistics(self._client.get_events(match_id))
+            )
+            nationalities.update(self._extract_nationalities(lineups))
 
         return [
             PlayerCompetitionStats(
@@ -38,9 +42,9 @@ class StatsBombCompetitionStatisticsProvider:
             for stats in aggregated.values()
         ]
 
-    def _extract_nationalities(self, match_id: int) -> dict[int, str]:
+    def _extract_nationalities(self, lineups: list[dict]) -> dict[int, str]:
         nationalities: dict[int, str] = {}
-        for team_lineup in self._client.get_lineups(match_id):
+        for team_lineup in lineups:
             for player in team_lineup.get("lineup", []):
                 country = player.get("country") or {}
                 nationality = country.get("name")
