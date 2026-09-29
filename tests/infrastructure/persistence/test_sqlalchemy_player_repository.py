@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
 from player_scouting.domain.entities import Player
+from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
 from player_scouting.infrastructure.persistence.models import Base
 from player_scouting.infrastructure.persistence.sqlalchemy_player_repository import (
@@ -18,6 +19,9 @@ pytestmark = pytest.mark.skipif(
     DATABASE_URL is None,
     reason="DATABASE_URL is not set; start Postgres with `docker compose up -d db`",
 )
+
+LA_LIGA_2023 = Season("La Liga", "2023")
+PREMIER_LEAGUE_2023 = Season("Premier League", "2023")
 
 
 @pytest.fixture
@@ -34,37 +38,51 @@ def session():
     engine.dispose()
 
 
-def test_saves_and_retrieves_a_player_with_its_statistics(session):
+def test_saves_and_retrieves_a_player(session):
     repository = SqlAlchemyPlayerRepository(session)
     player = Player(1, "Player One", "Forward", date(1995, 1, 1))
 
-    repository.save(player, Statistics(10, 5))
-    retrieved_player, retrieved_stats = repository.get(1)
+    repository.save_player(player)
 
-    assert retrieved_player == player
-    assert retrieved_stats == Statistics(10, 5)
+    assert repository.get_player(1) == player
 
 
-def test_get_returns_none_for_a_missing_player(session):
+def test_get_player_returns_none_for_a_missing_player(session):
     repository = SqlAlchemyPlayerRepository(session)
 
-    assert repository.get(999) is None
+    assert repository.get_player(999) is None
 
 
-def test_save_updates_an_already_existing_player(session):
+def test_saves_and_retrieves_season_statistics(session):
     repository = SqlAlchemyPlayerRepository(session)
-    player = Player(1, "Player One", "Forward", date(1995, 1, 1))
-    repository.save(player, Statistics(10, 5))
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
 
-    repository.save(player, Statistics(20, 15))
+    repository.save_season_statistics(1, LA_LIGA_2023, Statistics(10, 5))
 
-    _, updated_stats = repository.get(1)
-    assert updated_stats == Statistics(20, 15)
+    assert repository.get_season_statistics(1, LA_LIGA_2023) == Statistics(10, 5)
+
+
+def test_get_season_statistics_returns_none_when_not_ingested(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+
+    assert repository.get_season_statistics(1, LA_LIGA_2023) is None
+
+
+def test_saving_the_same_season_twice_updates_it_instead_of_duplicating(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+    repository.save_season_statistics(1, LA_LIGA_2023, Statistics(10, 5))
+
+    repository.save_season_statistics(1, LA_LIGA_2023, Statistics(20, 15))
+
+    assert repository.get_season_statistics(1, LA_LIGA_2023) == Statistics(20, 15)
+    assert repository.list_seasons_for_player(1) == [LA_LIGA_2023]
 
 
 def test_saves_and_retrieves_extended_metrics(session):
     repository = SqlAlchemyPlayerRepository(session)
-    player = Player(1, "Player One", "Forward", date(1995, 1, 1))
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
     statistics = Statistics(
         goals=10,
         assists=5,
@@ -84,21 +102,63 @@ def test_saves_and_retrieves_extended_metrics(session):
         red_cards=0,
     )
 
-    repository.save(player, statistics)
-    _, retrieved_stats = repository.get(1)
+    repository.save_season_statistics(1, LA_LIGA_2023, statistics)
 
-    assert retrieved_stats == statistics
+    assert repository.get_season_statistics(1, LA_LIGA_2023) == statistics
 
 
-def test_list_all_returns_every_saved_player(session):
+def test_lists_every_season_a_player_has_statistics_for(session):
     repository = SqlAlchemyPlayerRepository(session)
-    repository.save(
-        Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 5)
-    )
-    repository.save(
-        Player(2, "Player Two", "Midfielder", date(1996, 1, 1)), Statistics(3, 3)
-    )
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+    repository.save_season_statistics(1, LA_LIGA_2023, Statistics(10, 5))
+    repository.save_season_statistics(1, PREMIER_LEAGUE_2023, Statistics(3, 3))
 
-    entries = repository.list_all()
+    seasons = repository.list_seasons_for_player(1)
 
-    assert {player.player_id for player, _ in entries} == {1, 2}
+    assert set(seasons) == {LA_LIGA_2023, PREMIER_LEAGUE_2023}
+
+
+def test_career_statistics_sum_every_season(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+    repository.save_season_statistics(1, LA_LIGA_2023, Statistics(10, 5))
+    repository.save_season_statistics(1, PREMIER_LEAGUE_2023, Statistics(3, 3))
+
+    career = repository.get_career_statistics(1)
+
+    assert career.goals == 13
+    assert career.assists == 8
+
+
+def test_career_statistics_are_zero_for_a_player_with_no_seasons(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+
+    career = repository.get_career_statistics(1)
+
+    assert career == Statistics(0, 0)
+
+
+def test_lists_every_player(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+    repository.save_player(Player(2, "Player Two", "Midfielder", date(1996, 1, 1)))
+
+    players = repository.list_players()
+
+    assert {player.player_id for player in players} == {1, 2}
+
+
+def test_lists_every_season_statistics_record_across_all_players(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Player One", "Forward", date(1995, 1, 1)))
+    repository.save_player(Player(2, "Player Two", "Midfielder", date(1996, 1, 1)))
+    repository.save_season_statistics(1, LA_LIGA_2023, Statistics(10, 5))
+    repository.save_season_statistics(2, PREMIER_LEAGUE_2023, Statistics(3, 3))
+
+    entries = repository.list_all_season_statistics()
+
+    seasons_by_player = {
+        player.player_id: season for player, season, _ in entries
+    }
+    assert seasons_by_player == {1: LA_LIGA_2023, 2: PREMIER_LEAGUE_2023}
