@@ -10,6 +10,8 @@ from player_scouting.application.ports import (
     LeagueSummary,
     MarketValueHistoryResult,
     PlayerSeasonResult,
+    PlayerSort,
+    PlayerSummary,
 )
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
@@ -32,6 +34,41 @@ class InMemoryPlayerRepository:
 
     def list_players(self) -> list[Player]:
         return list(self._players.values())
+
+    def search_player_summaries(
+        self, query: str | None, sort: PlayerSort, limit: int
+    ) -> list[PlayerSummary]:
+        summaries = []
+        for player in self._players.values():
+            if query and query.lower() not in player.name.lower():
+                continue
+            years = [
+                season.start_year
+                for (player_id, season) in self._season_statistics
+                if player_id == player.player_id and season.start_year is not None
+            ]
+            summaries.append(
+                PlayerSummary(
+                    player,
+                    self.get_career_statistics(player.player_id),
+                    max(years) if years else None,
+                )
+            )
+
+        def sort_key(summary: PlayerSummary) -> tuple:
+            career = summary.career
+            if sort == "goals":
+                return (-career.goals, summary.player.name)
+            if sort == "assists":
+                return (-career.assists, summary.player.name)
+            return (
+                summary.latest_season_year is None,
+                -(summary.latest_season_year or 0),
+                -(career.goals + career.assists),
+                summary.player.name,
+            )
+
+        return sorted(summaries, key=sort_key)[:limit]
 
     def save_player(self, player: Player) -> None:
         self._players[player.player_id] = player
@@ -102,6 +139,14 @@ class FakePlayerSeasonStatisticsProvider:
         self, player_name: str, league_id: int, season_year: int
     ) -> PlayerSeasonResult | None:
         return self._result
+
+
+class FakeSeasonDatasetProvider:
+    def __init__(self, seasons: dict[int, list[PlayerSeasonResult]]) -> None:
+        self._seasons = seasons
+
+    def get_season(self, start_year: int) -> list[PlayerSeasonResult]:
+        return self._seasons[start_year]
 
 
 class FakeMarketValueProvider:
