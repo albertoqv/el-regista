@@ -90,6 +90,44 @@ def test_get_player_returns_its_extended_metrics():
     assert body["yellow_cards"] == 2
 
 
+def test_get_player_returns_its_photo_when_available():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(
+            1,
+            "Player One",
+            "Forward",
+            date(1995, 1, 1),
+            photo_url="https://media.api-sports.io/football/players/1.png",
+        ),
+        LA_LIGA_2023,
+        Statistics(10, 5),
+    )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1")
+
+    assert response.status_code == 200
+    assert (
+        response.json()["photo_url"]
+        == "https://media.api-sports.io/football/players/1.png"
+    )
+
+
+def test_get_player_returns_null_photo_when_not_available():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)),
+        LA_LIGA_2023,
+        Statistics(10, 5),
+    )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1")
+
+    assert response.json()["photo_url"] is None
+
+
 def test_get_player_returns_404_when_player_is_missing():
     client = _client_with_repository(InMemoryPlayerRepository())
 
