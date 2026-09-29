@@ -62,6 +62,34 @@ def test_save_updates_an_already_existing_player(session):
     assert updated_stats == Statistics(20, 15)
 
 
+def test_saves_and_retrieves_extended_metrics(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    player = Player(1, "Player One", "Forward", date(1995, 1, 1))
+    statistics = Statistics(
+        goals=10,
+        assists=5,
+        shots=20,
+        shots_on_target=8,
+        expected_goals=6.7,
+        passes_completed=300,
+        passes_attempted=350,
+        key_passes=12,
+        dribbles_completed=15,
+        dribbles_attempted=25,
+        tackles_won=4,
+        interceptions=3,
+        fouls_committed=6,
+        fouls_won=9,
+        yellow_cards=2,
+        red_cards=0,
+    )
+
+    repository.save(player, statistics)
+    _, retrieved_stats = repository.get(1)
+
+    assert retrieved_stats == statistics
+
+
 def test_list_all_returns_every_saved_player(session):
     repository = SqlAlchemyPlayerRepository(session)
     repository.save(
