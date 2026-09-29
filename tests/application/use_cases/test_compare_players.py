@@ -28,7 +28,8 @@ def test_compares_two_existing_players_by_their_statistics():
 
 def test_raises_player_not_found_when_first_player_is_missing():
     repository = InMemoryPlayerRepository()
-    repository.add(Player(2, "Player Two", "Forward", date(1996, 1, 1)), Statistics(15, 10))
+    player2 = Player(2, "Player Two", "Forward", date(1996, 1, 1))
+    repository.add(player2, Statistics(15, 10))
     use_case = ComparePlayersUseCase(repository, SimilarityCalculator())
 
     with pytest.raises(PlayerNotFoundError):
@@ -37,7 +38,8 @@ def test_raises_player_not_found_when_first_player_is_missing():
 
 def test_raises_player_not_found_when_second_player_is_missing():
     repository = InMemoryPlayerRepository()
-    repository.add(Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 15))
+    player1 = Player(1, "Player One", "Forward", date(1995, 1, 1))
+    repository.add(player1, Statistics(10, 15))
     use_case = ComparePlayersUseCase(repository, SimilarityCalculator())
 
     with pytest.raises(PlayerNotFoundError):
