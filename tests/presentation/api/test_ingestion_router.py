@@ -23,6 +23,7 @@ from player_scouting.presentation.api.dependencies import (
     get_market_value_provider,
     get_player_repository,
     get_player_season_statistics_provider,
+    get_season_dataset_provider,
     get_statistics_provider,
 )
 from player_scouting.presentation.api.main import create_app
@@ -33,6 +34,7 @@ from tests.application.doubles import (
     FakeLeagueSearchProvider,
     FakeMarketValueProvider,
     FakePlayerSeasonStatisticsProvider,
+    FakeSeasonDatasetProvider,
     InMemoryLeagueIngestionJobRepository,
     InMemoryPlayerRepository,
 )
@@ -255,3 +257,32 @@ def test_process_league_ingestion_batch_ingests_players_and_advances_jobs():
     assert body["pages_processed"] == 1
     assert body["players_ingested"] == 1
     assert player_repository.get_player(1) is not None
+
+
+def test_ingest_fbref_season_persists_every_player_of_the_season():
+    provider = FakeSeasonDatasetProvider(
+        {
+            2026: [
+                PlayerSeasonResult(
+                    player_id=1_500_000_000,
+                    name="Jude Bellingham",
+                    position="Midfielder",
+                    date_of_birth=None,
+                    birth_year=2003,
+                    season=Season("La Liga", "2026"),
+                    statistics=Statistics(3, 2),
+                )
+            ]
+        }
+    )
+    repository = InMemoryPlayerRepository()
+    app = create_app()
+    app.dependency_overrides[get_season_dataset_provider] = lambda: provider
+    app.dependency_overrides[get_player_repository] = lambda: repository
+    client = TestClient(app)
+
+    response = client.post("/ingestion/fbref/seasons/2026")
+
+    assert response.status_code == 200
+    assert response.json()["ingested"] == 1
+    assert repository.get_player(1_500_000_000).birth_year == 2003

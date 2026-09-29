@@ -93,6 +93,69 @@ def test_list_players_returns_null_season_year_for_a_player_with_no_seasons():
     assert response.json()[0]["latest_season_year"] is None
 
 
+def _repository_with_three_scorers() -> InMemoryPlayerRepository:
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Jude Bellingham", "Midfielder", None, birth_year=2003),
+        Season("La Liga", "2026"),
+        Statistics(3, 9),
+    )
+    repository.add(
+        Player(2, "Kylian Mbappe", "Forward", None, birth_year=1998),
+        Season("La Liga", "2026"),
+        Statistics(7, 2),
+    )
+    repository.add(
+        Player(3, "Old Legend", "Forward", date(1960, 1, 1)),
+        COPA_DEL_REY_1984,
+        Statistics(40, 0),
+    )
+    return repository
+
+
+def test_list_players_filters_by_name():
+    client = _client_with_repository(_repository_with_three_scorers())
+
+    response = client.get("/players?q=jude")
+
+    assert [p["name"] for p in response.json()] == ["Jude Bellingham"]
+
+
+def test_list_players_sorts_most_recent_first_by_default():
+    client = _client_with_repository(_repository_with_three_scorers())
+
+    response = client.get("/players")
+
+    # Same season (2026): Bellingham 3+9 contributions beats Mbappe 7+2.
+    assert [p["player_id"] for p in response.json()] == [1, 2, 3]
+
+
+def test_list_players_sorts_by_goals_and_limits_the_result():
+    client = _client_with_repository(_repository_with_three_scorers())
+
+    response = client.get("/players?sort=goals&limit=2")
+
+    assert [p["player_id"] for p in response.json()] == [3, 2]
+
+
+def test_list_players_rejects_an_unknown_sort():
+    client = _client_with_repository(_repository_with_three_scorers())
+
+    response = client.get("/players?sort=height")
+
+    assert response.status_code == 422
+
+
+def test_players_with_only_a_birth_year_expose_it_and_a_null_date():
+    client = _client_with_repository(_repository_with_three_scorers())
+
+    response = client.get("/players?q=jude")
+
+    player = response.json()[0]
+    assert player["birth_year"] == 2003
+    assert player["date_of_birth"] is None
+
+
 def test_list_players_returns_an_empty_list_when_there_are_no_players():
     client = _client_with_repository(InMemoryPlayerRepository())
 
