@@ -24,6 +24,16 @@ def test_jugador_acepta_una_foto_opcional():
     assert resultado.photo_url == "https://example.com/leo.png"
 
 
+def test_jugador_acepta_un_pie_preferido_opcional():
+    resultado = Player(75, "Leo", "Delantero", date(2003, 6, 5), preferred_foot="right")
+    assert resultado.preferred_foot == "right"
+
+
+def test_jugador_sin_pie_preferido_es_none():
+    resultado = Player(75, "Leo", "Delantero", date(2003, 6, 5))
+    assert resultado.preferred_foot is None
+
+
 def test_dos_jugadores_con_el_mismo_player_id_son_iguales():
     a = Player(75, "Pepe", "delantero", date(2003, 6, 5))
     b = Player(75, "Pep", "delantero", date(2003, 6, 5))
