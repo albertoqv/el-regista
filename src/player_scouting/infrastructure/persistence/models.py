@@ -20,6 +20,7 @@ class PlayerModel(Base):
     position: Mapped[str] = mapped_column(String, nullable=False)
     date_of_birth: Mapped[date] = mapped_column(Date, nullable=False)
     photo_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    preferred_foot: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class PlayerSeasonStatisticsModel(Base):
@@ -48,3 +49,15 @@ class PlayerSeasonStatisticsModel(Base):
     fouls_won: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     yellow_cards: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     red_cards: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+
+
+class PlayerMarketValueModel(Base):
+    __tablename__ = "player_market_values"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    player_id: Mapped[int] = mapped_column(
+        ForeignKey("players.player_id"), nullable=False
+    )
+    as_of_date: Mapped[date] = mapped_column(Date, nullable=False)
+    amount_eur: Mapped[int] = mapped_column(Integer, nullable=False)
+    club: Mapped[str] = mapped_column(String, nullable=False)

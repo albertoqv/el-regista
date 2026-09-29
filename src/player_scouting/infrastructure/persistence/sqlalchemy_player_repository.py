@@ -3,9 +3,11 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from player_scouting.domain.entities import Player
+from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
 from player_scouting.infrastructure.persistence.models import (
+    PlayerMarketValueModel,
     PlayerModel,
     PlayerSeasonStatisticsModel,
 )
@@ -53,6 +55,7 @@ class SqlAlchemyPlayerRepository:
         model.position = player.position
         model.date_of_birth = player.date_of_birth
         model.photo_url = player.photo_url
+        model.preferred_foot = player.preferred_foot
         self._session.flush()
 
     def save_season_statistics(
@@ -107,6 +110,35 @@ class SqlAlchemyPlayerRepository:
                 entries.append((player, season, self._statistics_to_domain(model)))
         return entries
 
+    def save_market_value_history(
+        self, player_id: int, points: list[MarketValuePoint]
+    ) -> None:
+        self._session.query(PlayerMarketValueModel).filter_by(
+            player_id=player_id
+        ).delete()
+        for point in points:
+            self._session.add(
+                PlayerMarketValueModel(
+                    player_id=player_id,
+                    as_of_date=point.as_of,
+                    amount_eur=point.amount_eur,
+                    club=point.club,
+                )
+            )
+        self._session.flush()
+
+    def list_market_value_history(self, player_id: int) -> list[MarketValuePoint]:
+        models = (
+            self._session.query(PlayerMarketValueModel)
+            .filter_by(player_id=player_id)
+            .order_by(PlayerMarketValueModel.as_of_date)
+            .all()
+        )
+        return [
+            MarketValuePoint(model.as_of_date, model.amount_eur, model.club)
+            for model in models
+        ]
+
     def _season_model(
         self, player_id: int, season: Season
     ) -> PlayerSeasonStatisticsModel | None:
@@ -128,6 +160,7 @@ class SqlAlchemyPlayerRepository:
             model.position,
             model.date_of_birth,
             photo_url=model.photo_url,
+            preferred_foot=model.preferred_foot,
         )
 
     @staticmethod
