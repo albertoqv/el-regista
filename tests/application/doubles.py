@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 
+from player_scouting.application.league_ingestion_job import LeagueIngestionJob
 from player_scouting.application.ports import (
     CompetitionStatisticsResult,
+    LeaguePlayersPage,
+    LeagueSummary,
     MarketValueHistoryResult,
     PlayerSeasonResult,
 )
@@ -108,3 +112,48 @@ class FakeMarketValueProvider:
         self, player_name: str
     ) -> MarketValueHistoryResult | None:
         return self._result
+
+
+class FakeLeaguePlayersProvider:
+    def __init__(self, pages: dict[tuple[int, int], list[LeaguePlayersPage]]) -> None:
+        self._pages = pages
+        self.requested_pages: list[tuple[int, int, int]] = []
+
+    def get_players_page(
+        self, league_id: int, season_year: int, page: int
+    ) -> LeaguePlayersPage:
+        self.requested_pages.append((league_id, season_year, page))
+        return self._pages[(league_id, season_year)][page - 1]
+
+
+class FakeLeagueSearchProvider:
+    def __init__(self, results: list[LeagueSummary]) -> None:
+        self._results = results
+
+    def search_leagues(self, query: str) -> list[LeagueSummary]:
+        return self._results
+
+
+class InMemoryLeagueIngestionJobRepository:
+    def __init__(self) -> None:
+        self._jobs: dict[int, LeagueIngestionJob] = {}
+        self._next_id = 1
+
+    def save_job(self, job: LeagueIngestionJob) -> LeagueIngestionJob:
+        if job.id is None:
+            job = replace(job, id=self._next_id)
+            self._next_id += 1
+        self._jobs[job.id] = job
+        return job
+
+    def get_job(self, job_id: int) -> LeagueIngestionJob | None:
+        return self._jobs.get(job_id)
+
+    def list_jobs(self) -> list[LeagueIngestionJob]:
+        return list(self._jobs.values())
+
+    def next_pending_job(self) -> LeagueIngestionJob | None:
+        for job in self._jobs.values():
+            if not job.is_completed:
+                return job
+        return None
