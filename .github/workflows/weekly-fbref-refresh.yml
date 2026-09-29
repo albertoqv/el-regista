@@ -1,0 +1,31 @@
+name: Weekly FBref season refresh
+
+on:
+  schedule:
+    # The source Kaggle dataset is regenerated every Monday.
+    - cron: "0 6 * * 2"
+  workflow_dispatch:
+    inputs:
+      start_year:
+        description: "Season start year (e.g. 2026 for 2026/27). Empty = current season."
+        required: false
+        default: ""
+
+jobs:
+  refresh-season:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Re-ingest the season
+        env:
+          START_YEAR: ${{ inputs.start_year }}
+        run: |
+          if [ -z "$START_YEAR" ]; then
+            MONTH=$(date -u +%-m)
+            YEAR=$(date -u +%Y)
+            if [ "$MONTH" -ge 7 ]; then START_YEAR=$YEAR; else START_YEAR=$((YEAR - 1)); fi
+          fi
+          echo "Refreshing season starting in $START_YEAR"
+          curl --fail-with-body -sS -X POST \
+            "${{ secrets.API_BASE_URL }}/ingestion/fbref/seasons/$START_YEAR" \
+            -H "X-Ingestion-Key: ${{ secrets.INGESTION_API_KEY }}"
