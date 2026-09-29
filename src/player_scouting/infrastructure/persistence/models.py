@@ -19,6 +19,7 @@ class PlayerModel(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     position: Mapped[str] = mapped_column(String, nullable=False)
     date_of_birth: Mapped[date] = mapped_column(Date, nullable=False)
+    photo_url: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class PlayerSeasonStatisticsModel(Base):

@@ -52,6 +52,7 @@ class SqlAlchemyPlayerRepository:
         model.name = player.name
         model.position = player.position
         model.date_of_birth = player.date_of_birth
+        model.photo_url = player.photo_url
         self._session.flush()
 
     def save_season_statistics(
@@ -121,7 +122,13 @@ class SqlAlchemyPlayerRepository:
 
     @staticmethod
     def _player_to_domain(model: PlayerModel) -> Player:
-        return Player(model.player_id, model.name, model.position, model.date_of_birth)
+        return Player(
+            model.player_id,
+            model.name,
+            model.position,
+            model.date_of_birth,
+            photo_url=model.photo_url,
+        )
 
     @staticmethod
     def _statistics_to_domain(model: PlayerSeasonStatisticsModel) -> Statistics:
