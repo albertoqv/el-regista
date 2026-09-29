@@ -115,3 +115,17 @@ def test_includes_players_who_did_not_score_or_assist():
     assert stats_by_id[201].goals == 0
     assert stats_by_id[201].assists == 0
     assert stats_by_id[201].nationality == "Brazil"
+
+
+def test_propagates_extended_metrics():
+    client = FakeStatsBombClient(
+        matches=[{"match_id": 1}],
+        events_by_match={1: [_shot_event(SCORER, "Off T")]},
+        lineups_by_match={1: _lineup_for(SCORER, "Argentina")},
+    )
+    provider = StatsBombCompetitionStatisticsProvider(client)
+
+    stats = provider.get_statistics(competition_id=43, season_id=3)
+
+    assert stats[0].shots == 1
+    assert stats[0].shots_on_target == 0

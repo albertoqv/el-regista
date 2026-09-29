@@ -51,6 +51,24 @@ def test_skips_players_without_a_resolvable_birth_date_and_reports_them():
     assert repository.get(2) is None
 
 
+def test_persists_extended_metrics():
+    stats_provider = FakeCompetitionStatisticsProvider(
+        [
+            PlayerCompetitionStats(
+                1, "Player One", "Forward", "Argentina", 10, 5, shots=20
+            ),
+        ]
+    )
+    birth_date_provider = FakeBirthDateProvider({"Player One": date(1995, 1, 1)})
+    repository = InMemoryPlayerRepository()
+    use_case = IngestCompetitionUseCase(stats_provider, birth_date_provider, repository)
+
+    use_case.execute(competition_id=43, season_id=3)
+
+    _, statistics = repository.get(1)
+    assert statistics.shots == 20
+
+
 def test_defaults_to_unknown_position_when_missing():
     stats_provider = FakeCompetitionStatisticsProvider(
         [PlayerCompetitionStats(1, "Player One", None, "Argentina", 10, 5)]
