@@ -25,3 +25,33 @@ def test_calcular_similitud_total():
     calculador = SimilarityCalculator()
     resultado = calculador.total_similarity(estadistica_j1, estadistica_j2)
     assert resultado == SimilarityScore(67)
+
+
+def test_similitud_total_tiene_en_cuenta_las_metricas_extendidas():
+    estadistica_j1 = Statistics(1, 1, shots=10)
+    estadistica_j2 = Statistics(1, 1, shots=5)
+    calculador = SimilarityCalculator()
+
+    resultado = calculador.total_similarity(estadistica_j1, estadistica_j2)
+
+    assert resultado == SimilarityScore(83)
+
+
+def test_similitud_total_ignora_metricas_en_las_que_ambos_estan_a_cero():
+    estadistica_j1 = Statistics(goals=0, assists=0, shots=10)
+    estadistica_j2 = Statistics(goals=10, assists=10, shots=10)
+    calculador = SimilarityCalculator()
+
+    resultado = calculador.total_similarity(estadistica_j1, estadistica_j2)
+
+    assert resultado == SimilarityScore(33)
+
+
+def test_similitud_total_es_cien_cuando_todas_las_metricas_estan_a_cero():
+    estadistica_j1 = Statistics(0, 0)
+    estadistica_j2 = Statistics(0, 0)
+    calculador = SimilarityCalculator()
+
+    resultado = calculador.total_similarity(estadistica_j1, estadistica_j2)
+
+    assert resultado == SimilarityScore(100)
