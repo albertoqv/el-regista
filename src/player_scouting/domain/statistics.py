@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 
 from player_scouting.domain.exceptions import InvalidStatisticsError
 
@@ -66,3 +66,12 @@ class Statistics:
             raise InvalidStatisticsError(
                 "Expected goals must be equal to or greater than 0"
             )
+
+    def __add__(self, other: object) -> Statistics:
+        if not isinstance(other, Statistics):
+            return NotImplemented
+        values = {
+            field.name: getattr(self, field.name) + getattr(other, field.name)
+            for field in fields(self)
+        }
+        return Statistics(**values)
