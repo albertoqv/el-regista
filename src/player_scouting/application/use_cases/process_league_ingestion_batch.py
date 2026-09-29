@@ -5,7 +5,11 @@ from dataclasses import dataclass, replace
 from player_scouting.application.league_ingestion_job import (
     LeagueIngestionJobRepository,
 )
-from player_scouting.application.ports import LeaguePlayersProvider, PlayerRepository
+from player_scouting.application.ports import (
+    LeaguePageUnavailableError,
+    LeaguePlayersProvider,
+    PlayerRepository,
+)
 from player_scouting.domain.entities import Player
 
 UNKNOWN_POSITION = "Unknown"
@@ -32,9 +36,17 @@ class ProcessLeagueIngestionBatchUseCase:
             if job is None:
                 break
 
-            page = self.provider.get_players_page(
-                job.league_id, job.season_year, job.next_page
-            )
+            try:
+                page = self.provider.get_players_page(
+                    job.league_id, job.season_year, job.next_page
+                )
+            except LeaguePageUnavailableError:
+                self.job_repository.save_job(
+                    replace(job, total_pages=job.next_page - 1)
+                )
+                pages_processed += 1
+                continue
+
             for result in page.players:
                 player = Player(
                     result.player_id,

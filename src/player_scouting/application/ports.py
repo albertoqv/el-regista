@@ -116,10 +116,16 @@ class LeaguePlayersPage:
     total_pages: int
 
 
+class LeaguePageUnavailableError(Exception):
+    """Raised when the provider cannot serve a given page (e.g. a plan limit)."""
+
+
 class LeaguePlayersProvider(Protocol):
     def get_players_page(
         self, league_id: int, season_year: int, page: int
-    ) -> LeaguePlayersPage: ...
+    ) -> LeaguePlayersPage:
+        """May raise LeaguePageUnavailableError if this page cannot be served."""
+        ...
 
 
 @dataclass

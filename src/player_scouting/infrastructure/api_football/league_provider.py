@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import httpx
 
-from player_scouting.application.ports import LeaguePlayersPage
+from player_scouting.application.ports import (
+    LeaguePageUnavailableError,
+    LeaguePlayersPage,
+)
 from player_scouting.infrastructure.api_football.mapper import (
     to_player_season_result,
 )
@@ -35,6 +38,10 @@ class ApiFootballLeaguePlayersProvider:
         data = response.json()
         errors = data.get("errors")
         if errors:
+            if isinstance(errors, dict) and "plan" in errors:
+                raise LeaguePageUnavailableError(
+                    f"API-Football plan limit reached for page {page}: {errors}"
+                )
             raise ApiFootballError(f"API-Football returned an error: {errors}")
 
         players = []
