@@ -30,7 +30,9 @@ def test_orders_candidates_by_similarity_descending_and_excludes_target():
     results = use_case.execute(1)
 
     assert [comparison.player2.player_id for comparison in results] == [2, 3]
-    assert results[0].similarity_score.percentage >= results[1].similarity_score.percentage
+    first_score = results[0].similarity_score.percentage
+    second_score = results[1].similarity_score.percentage
+    assert first_score >= second_score
 
 
 def test_limits_results_to_top_n():
