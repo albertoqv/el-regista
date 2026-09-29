@@ -3,6 +3,7 @@ from datetime import date
 from fastapi.testclient import TestClient
 
 from player_scouting.domain.entities import Player
+from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
 from player_scouting.presentation.api.dependencies import get_player_repository
@@ -126,6 +127,87 @@ def test_get_player_returns_null_photo_when_not_available():
     response = client.get("/players/1")
 
     assert response.json()["photo_url"] is None
+
+
+def test_get_player_returns_its_preferred_foot_when_available():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1), preferred_foot="right"),
+        LA_LIGA_2023,
+        Statistics(10, 5),
+    )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1")
+
+    assert response.json()["preferred_foot"] == "right"
+
+
+def test_get_player_returns_null_preferred_foot_when_not_available():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)),
+        LA_LIGA_2023,
+        Statistics(10, 5),
+    )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1")
+
+    assert response.json()["preferred_foot"] is None
+
+
+def test_get_market_value_returns_the_history_and_the_current_value():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)),
+        LA_LIGA_2023,
+        Statistics(10, 5),
+    )
+    repository.save_market_value_history(
+        1,
+        [
+            MarketValuePoint(date(2019, 10, 17), 2_500_000, "Birmingham City"),
+            MarketValuePoint(date(2025, 1, 1), 160_000_000, "Real Madrid"),
+        ],
+    )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1/market-value")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert len(body["history"]) == 2
+    assert body["current"] == {
+        "as_of": "2025-01-01",
+        "amount_eur": 160_000_000,
+        "club": "Real Madrid",
+    }
+
+
+def test_get_market_value_returns_null_current_when_there_is_no_history():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)),
+        LA_LIGA_2023,
+        Statistics(10, 5),
+    )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1/market-value")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["current"] is None
+    assert body["history"] == []
+
+
+def test_get_market_value_returns_404_when_player_is_missing():
+    client = _client_with_repository(InMemoryPlayerRepository())
+
+    response = client.get("/players/999/market-value")
+
+    assert response.status_code == 404
 
 
 def test_get_player_returns_404_when_player_is_missing():
