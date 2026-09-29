@@ -5,8 +5,13 @@ from datetime import date
 from pydantic import BaseModel
 
 from player_scouting.application.ingestion_result import IngestionResult
+from player_scouting.application.league_ingestion_job import LeagueIngestionJob
+from player_scouting.application.ports import LeagueSummary
 from player_scouting.application.use_cases.find_similar_players import (
     SimilarPlayerMatch,
+)
+from player_scouting.application.use_cases.process_league_ingestion_batch import (
+    LeagueIngestionBatchSummary,
 )
 from player_scouting.domain.comparison import Comparison
 from player_scouting.domain.entities import Player
@@ -79,6 +84,27 @@ class MarketValuePointOut(BaseModel):
 class MarketValueHistoryOut(BaseModel):
     current: MarketValuePointOut | None
     history: list[MarketValuePointOut]
+
+
+class LeagueSummaryOut(BaseModel):
+    id: int
+    name: str
+    country: str
+
+
+class LeagueIngestionJobOut(BaseModel):
+    id: int
+    league_id: int
+    league_name: str
+    season_year: int
+    next_page: int
+    total_pages: int | None
+    is_completed: bool
+
+
+class LeagueIngestionBatchSummaryOut(BaseModel):
+    pages_processed: int
+    players_ingested: int
 
 
 def player_summary_from_domain(player: Player) -> PlayerSummaryOut:
@@ -159,4 +185,32 @@ def market_value_history_out_from_domain(
     return MarketValueHistoryOut(
         current=market_value_point_out_from_domain(points[-1]) if points else None,
         history=[market_value_point_out_from_domain(point) for point in points],
+    )
+
+
+def league_summary_out_from_domain(summary: LeagueSummary) -> LeagueSummaryOut:
+    return LeagueSummaryOut(id=summary.id, name=summary.name, country=summary.country)
+
+
+def league_ingestion_job_out_from_domain(
+    job: LeagueIngestionJob,
+) -> LeagueIngestionJobOut:
+    assert job.id is not None
+    return LeagueIngestionJobOut(
+        id=job.id,
+        league_id=job.league_id,
+        league_name=job.league_name,
+        season_year=job.season_year,
+        next_page=job.next_page,
+        total_pages=job.total_pages,
+        is_completed=job.is_completed,
+    )
+
+
+def league_ingestion_batch_summary_out_from_domain(
+    summary: LeagueIngestionBatchSummary,
+) -> LeagueIngestionBatchSummaryOut:
+    return LeagueIngestionBatchSummaryOut(
+        pages_processed=summary.pages_processed,
+        players_ingested=summary.players_ingested,
     )

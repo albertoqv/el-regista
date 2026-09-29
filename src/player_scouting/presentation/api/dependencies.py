@@ -6,7 +6,13 @@ import httpx
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
+from player_scouting.application.league_ingestion_job import (
+    LeagueIngestionJobRepository,
+)
 from player_scouting.application.use_cases.compare_players import ComparePlayersUseCase
+from player_scouting.application.use_cases.enqueue_league_ingestion import (
+    EnqueueLeagueIngestionUseCase,
+)
 from player_scouting.application.use_cases.enrich_player_market_value import (
     EnrichPlayerMarketValueUseCase,
 )
@@ -19,7 +25,16 @@ from player_scouting.application.use_cases.ingest_competition import (
 from player_scouting.application.use_cases.ingest_player_season import (
     IngestPlayerSeasonUseCase,
 )
+from player_scouting.application.use_cases.process_league_ingestion_batch import (
+    ProcessLeagueIngestionBatchUseCase,
+)
 from player_scouting.domain.similarity_calculator import SimilarityCalculator
+from player_scouting.infrastructure.api_football.league_provider import (
+    ApiFootballLeaguePlayersProvider,
+)
+from player_scouting.infrastructure.api_football.league_search_provider import (
+    ApiFootballLeagueSearchProvider,
+)
 from player_scouting.infrastructure.api_football.provider import (
     ApiFootballPlayerSeasonProvider,
 )
@@ -30,6 +45,9 @@ from player_scouting.infrastructure.birth_dates.wikidata_provider import (
     WikidataBirthDateProvider,
 )
 from player_scouting.infrastructure.persistence.database import get_session
+from player_scouting.infrastructure.persistence.sqlalchemy_league_ingestion_job_repository import (  # noqa: E501
+    SqlAlchemyLeagueIngestionJobRepository,
+)
 from player_scouting.infrastructure.persistence.sqlalchemy_player_repository import (
     SqlAlchemyPlayerRepository,
 )
@@ -194,4 +212,70 @@ def get_enrich_player_market_value_use_case(
 
 EnrichPlayerMarketValueUseCaseDep = Annotated[
     EnrichPlayerMarketValueUseCase, Depends(get_enrich_player_market_value_use_case)
+]
+
+
+def get_league_ingestion_job_repository(
+    session: SessionDep,
+) -> SqlAlchemyLeagueIngestionJobRepository:
+    return SqlAlchemyLeagueIngestionJobRepository(session)
+
+
+LeagueIngestionJobRepositoryDep = Annotated[
+    LeagueIngestionJobRepository, Depends(get_league_ingestion_job_repository)
+]
+
+
+def get_league_search_provider(
+    http_client: ApiFootballHttpClientDep,
+) -> ApiFootballLeagueSearchProvider:
+    return ApiFootballLeagueSearchProvider(
+        http_client=http_client,
+        api_key=get_api_football_settings().api_football_key,
+    )
+
+
+LeagueSearchProviderDep = Annotated[
+    ApiFootballLeagueSearchProvider, Depends(get_league_search_provider)
+]
+
+
+def get_league_players_provider(
+    http_client: ApiFootballHttpClientDep,
+) -> ApiFootballLeaguePlayersProvider:
+    return ApiFootballLeaguePlayersProvider(
+        http_client=http_client,
+        api_key=get_api_football_settings().api_football_key,
+    )
+
+
+LeaguePlayersProviderDep = Annotated[
+    ApiFootballLeaguePlayersProvider, Depends(get_league_players_provider)
+]
+
+
+def get_enqueue_league_ingestion_use_case(
+    repository: LeagueIngestionJobRepositoryDep,
+) -> EnqueueLeagueIngestionUseCase:
+    return EnqueueLeagueIngestionUseCase(repository)
+
+
+EnqueueLeagueIngestionUseCaseDep = Annotated[
+    EnqueueLeagueIngestionUseCase, Depends(get_enqueue_league_ingestion_use_case)
+]
+
+
+def get_process_league_ingestion_batch_use_case(
+    provider: LeaguePlayersProviderDep,
+    player_repository: PlayerRepositoryDep,
+    job_repository: LeagueIngestionJobRepositoryDep,
+) -> ProcessLeagueIngestionBatchUseCase:
+    return ProcessLeagueIngestionBatchUseCase(
+        provider, player_repository, job_repository
+    )
+
+
+ProcessLeagueIngestionBatchUseCaseDep = Annotated[
+    ProcessLeagueIngestionBatchUseCase,
+    Depends(get_process_league_ingestion_batch_use_case),
 ]
