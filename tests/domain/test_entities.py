@@ -14,6 +14,14 @@ def test_jugador_guarda_sus_datos_correctamente():
     assert resultado.name == "Leo"
     assert resultado.position == "Delantero"
     assert resultado.date_of_birth == date(2003, 6, 5)
+    assert resultado.photo_url is None
+
+
+def test_jugador_acepta_una_foto_opcional():
+    resultado = Player(
+        75, "Leo", "Delantero", date(2003, 6, 5), photo_url="https://example.com/leo.png"
+    )
+    assert resultado.photo_url == "https://example.com/leo.png"
 
 
 def test_dos_jugadores_con_el_mismo_player_id_son_iguales():
