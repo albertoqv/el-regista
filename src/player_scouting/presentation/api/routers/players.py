@@ -18,6 +18,14 @@ from player_scouting.presentation.api.schemas import (
 router = APIRouter(prefix="/players", tags=["players"])
 
 
+@router.get("", response_model=list[PlayerOut])
+def list_players(repository: PlayerRepositoryDep) -> list[PlayerOut]:
+    return [
+        player_out_from_domain(player, statistics)
+        for player, statistics in repository.list_all()
+    ]
+
+
 @router.get("/{player_id}", response_model=PlayerOut)
 def get_player(player_id: int, repository: PlayerRepositoryDep) -> PlayerOut:
     entry = repository.get(player_id)
