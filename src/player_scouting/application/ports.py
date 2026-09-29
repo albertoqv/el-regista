@@ -2,18 +2,31 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import date
-from typing import Protocol
+from typing import Literal, Protocol
 
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
 
+PlayerSort = Literal["recent", "goals", "assists"]
+
+
+@dataclass
+class PlayerSummary:
+    player: Player
+    career: Statistics
+    latest_season_year: int | None
+
 
 class PlayerRepository(Protocol):
     def get_player(self, player_id: int) -> Player | None: ...
 
     def list_players(self) -> list[Player]: ...
+
+    def search_player_summaries(
+        self, query: str | None, sort: PlayerSort, limit: int
+    ) -> list[PlayerSummary]: ...
 
     def save_player(self, player: Player) -> None: ...
 
@@ -85,16 +98,21 @@ class PlayerSeasonResult:
     player_id: int
     name: str
     position: str | None
-    date_of_birth: date
+    date_of_birth: date | None
     season: Season
     statistics: Statistics
     photo_url: str | None = None
+    birth_year: int | None = None
 
 
 class PlayerSeasonStatisticsProvider(Protocol):
     def get_player_statistics(
         self, player_name: str, league_id: int, season_year: int
     ) -> PlayerSeasonResult | None: ...
+
+
+class SeasonDatasetProvider(Protocol):
+    def get_season(self, start_year: int) -> list[PlayerSeasonResult]: ...
 
 
 @dataclass
