@@ -19,6 +19,7 @@ class PlayerSummaryOut(BaseModel):
     name: str
     position: str
     date_of_birth: date
+    photo_url: str | None = None
 
 
 class PlayerOut(PlayerSummaryOut):
@@ -73,6 +74,7 @@ def player_summary_from_domain(player: Player) -> PlayerSummaryOut:
         name=player.name,
         position=player.position,
         date_of_birth=player.date_of_birth,
+        photo_url=player.photo_url,
     )
 
 
