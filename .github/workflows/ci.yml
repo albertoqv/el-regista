@@ -7,6 +7,25 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: scouting
+          POSTGRES_PASSWORD: scouting
+          POSTGRES_DB: scouting
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U scouting"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+psycopg://scouting:scouting@localhost:5432/scouting
+
     steps:
       - uses: actions/checkout@v4
 
@@ -18,8 +37,14 @@ jobs:
       - name: Install dependencies
         run: uv sync
 
+      - name: Run database migrations
+        run: uv run alembic upgrade head
+
       - name: Run pytest
         run: uv run pytest
 
       - name: Run mypy
         run: uv run mypy
+
+      - name: Run ruff
+        run: uv run ruff check .
