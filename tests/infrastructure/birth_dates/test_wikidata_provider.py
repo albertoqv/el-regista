@@ -72,3 +72,20 @@ def test_returns_none_when_nationality_does_not_match_any_candidate():
     result = provider.find("Lionel Messi", nationality="Brazil")
 
     assert result is None
+
+
+def test_sends_a_descriptive_user_agent_by_default():
+    captured_requests = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured_requests.append(request)
+        return httpx.Response(200, json={"results": {"bindings": []}})
+
+    provider = WikidataBirthDateProvider(
+        http_client=httpx.Client(transport=httpx.MockTransport(handler))
+    )
+
+    provider.find("Someone")
+
+    user_agent = captured_requests[0].headers.get("user-agent", "")
+    assert "player-scouting" in user_agent.lower()
