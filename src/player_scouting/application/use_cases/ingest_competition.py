@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
+from player_scouting.application.ingestion_result import IngestionResult, SkippedPlayer
 from player_scouting.application.ports import (
     BirthDateProvider,
     CompetitionStatisticsProvider,
@@ -14,32 +15,17 @@ UNKNOWN_POSITION = "Unknown"
 
 
 @dataclass
-class SkippedPlayer:
-    player_id: int
-    name: str
-    reason: str
-
-
-@dataclass
-class IngestionResult:
-    ingested: int
-    skipped: list[SkippedPlayer] = field(default_factory=list)
-
-
-@dataclass
 class IngestCompetitionUseCase:
     statistics_provider: CompetitionStatisticsProvider
     birth_date_provider: BirthDateProvider
     repository: PlayerRepository
 
     def execute(self, competition_id: int, season_id: int) -> IngestionResult:
-        player_stats = self.statistics_provider.get_statistics(
-            competition_id, season_id
-        )
+        result = self.statistics_provider.get_statistics(competition_id, season_id)
 
         ingested = 0
         skipped: list[SkippedPlayer] = []
-        for stats in player_stats:
+        for stats in result.players:
             birth_date = self.birth_date_provider.find(stats.name, stats.nationality)
             if birth_date is None:
                 skipped.append(
@@ -73,7 +59,10 @@ class IngestCompetitionUseCase:
                 yellow_cards=stats.yellow_cards,
                 red_cards=stats.red_cards,
             )
-            self.repository.save(player, statistics)
+            self.repository.save_player(player)
+            self.repository.save_season_statistics(
+                player.player_id, result.season, statistics
+            )
             ingested += 1
 
         return IngestionResult(ingested=ingested, skipped=skipped)
