@@ -3,7 +3,15 @@ name = "player-scouting"
 version = "0.1.0"
 description = "Scouting y comparación de jugadores de fútbol"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.34",
+    "httpx>=0.28",
+    "sqlalchemy>=2.0",
+    "psycopg[binary]>=3.2",
+    "alembic>=1.14",
+    "pydantic-settings>=2.7",
+]
 
 [build-system]
 requires = ["hatchling"]
