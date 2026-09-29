@@ -5,6 +5,7 @@ export type PlayerSummary = {
   name: string;
   position: string;
   date_of_birth: string;
+  photo_url: string | null;
 };
 
 export type Player = PlayerSummary & {

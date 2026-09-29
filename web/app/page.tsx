@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Avatar } from "@/app/components/Avatar";
 import { PlayerSearchForm } from "@/app/components/PlayerSearchForm";
 import { listPlayers, type Player } from "@/lib/api";
 
@@ -49,7 +50,10 @@ export default async function HomePage() {
                 href={`/players/${player.player_id}`}
                 className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-900"
               >
-                <span className="font-medium">{player.name}</span>
+                <span className="flex items-center gap-3">
+                  <Avatar name={player.name} photoUrl={player.photo_url} size={40} />
+                  <span className="font-medium">{player.name}</span>
+                </span>
                 <span className="text-sm text-zinc-500 dark:text-zinc-400">
                   {player.position} · {player.goals}G {player.assists}A
                 </span>

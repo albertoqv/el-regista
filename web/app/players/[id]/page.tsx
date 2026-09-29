@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Avatar } from "@/app/components/Avatar";
 import { PlayerStats } from "@/app/components/PlayerStats";
 import { SeasonSelector } from "@/app/components/SeasonSelector";
 import {
@@ -52,11 +53,14 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{player.name}</h1>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            {player.position} · nacido el {player.date_of_birth}
-          </p>
+        <div className="flex items-center gap-4">
+          <Avatar name={player.name} photoUrl={player.photo_url} size={72} />
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">{player.name}</h1>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              {player.position} · nacido el {player.date_of_birth}
+            </p>
+          </div>
         </div>
         <SeasonSelector
           playerId={Number(id)}
@@ -93,13 +97,20 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
                   href={`/players/${match.comparison.player2.player_id}`}
                   className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-900"
                 >
-                  <span>
-                    <span className="font-medium">
-                      {match.comparison.player2.name}
-                    </span>
-                    <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
-                      {match.candidate_season.competition}{" "}
-                      {match.candidate_season.label}
+                  <span className="flex items-center gap-3">
+                    <Avatar
+                      name={match.comparison.player2.name}
+                      photoUrl={match.comparison.player2.photo_url}
+                      size={36}
+                    />
+                    <span>
+                      <span className="font-medium">
+                        {match.comparison.player2.name}
+                      </span>
+                      <span className="ml-2 text-xs text-zinc-500 dark:text-zinc-400">
+                        {match.candidate_season.competition}{" "}
+                        {match.candidate_season.label}
+                      </span>
                     </span>
                   </span>
                   <span className="text-sm text-zinc-500 dark:text-zinc-400">

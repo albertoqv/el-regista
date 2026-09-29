@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { Avatar } from "@/app/components/Avatar";
 import { CompareForm } from "@/app/components/CompareForm";
-import { ApiError, comparePlayers } from "@/lib/api";
+import { PlayerCompareChart } from "@/app/components/PlayerCompareChart";
+import { SimilarityMeter } from "@/app/components/SimilarityMeter";
+import { ApiError, comparePlayers, getPlayer, type Comparison, type Player } from "@/lib/api";
 
 export default async function ComparePage(props: PageProps<"/compare">) {
   const searchParams = await props.searchParams;
@@ -9,12 +12,18 @@ export default async function ComparePage(props: PageProps<"/compare">) {
   const idA = Array.isArray(rawA) ? rawA[0] : rawA;
   const idB = Array.isArray(rawB) ? rawB[0] : rawB;
 
-  let result = null;
+  let result: Comparison | null = null;
+  let playerA: Player | null = null;
+  let playerB: Player | null = null;
   let error: string | null = null;
 
   if (idA && idB) {
     try {
-      result = await comparePlayers(Number(idA), Number(idB));
+      [result, playerA, playerB] = await Promise.all([
+        comparePlayers(Number(idA), Number(idB)),
+        getPlayer(Number(idA)),
+        getPlayer(Number(idB)),
+      ]);
     } catch (thrown) {
       error =
         thrown instanceof ApiError && thrown.status === 404
@@ -38,26 +47,28 @@ export default async function ComparePage(props: PageProps<"/compare">) {
         </p>
       )}
 
-      {result && (
-        <section className="rounded-md border border-zinc-200 p-6 dark:border-zinc-800">
-          <div className="flex items-center justify-between gap-6">
+      {result && playerA && playerB && (
+        <>
+          <section className="flex items-center justify-center gap-8 rounded-md border border-zinc-200 p-6 dark:border-zinc-800">
             <Link
-              href={`/players/${result.player1.player_id}`}
-              className="text-lg font-medium hover:underline"
+              href={`/players/${playerA.player_id}`}
+              className="flex flex-col items-center gap-2 text-center hover:underline"
             >
-              {result.player1.name}
+              <Avatar name={playerA.name} photoUrl={playerA.photo_url} size={64} />
+              <span className="text-lg font-medium">{playerA.name}</span>
             </Link>
-            <span className="text-2xl font-semibold tabular-nums">
-              {result.similarity_percentage}%
-            </span>
+            <SimilarityMeter percentage={result.similarity_percentage} />
             <Link
-              href={`/players/${result.player2.player_id}`}
-              className="text-lg font-medium hover:underline"
+              href={`/players/${playerB.player_id}`}
+              className="flex flex-col items-center gap-2 text-center hover:underline"
             >
-              {result.player2.name}
+              <Avatar name={playerB.name} photoUrl={playerB.photo_url} size={64} />
+              <span className="text-lg font-medium">{playerB.name}</span>
             </Link>
-          </div>
-        </section>
+          </section>
+
+          <PlayerCompareChart playerA={playerA} playerB={playerB} />
+        </>
       )}
     </div>
   );
