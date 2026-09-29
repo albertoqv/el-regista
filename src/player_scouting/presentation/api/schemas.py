@@ -10,6 +10,7 @@ from player_scouting.application.use_cases.find_similar_players import (
 )
 from player_scouting.domain.comparison import Comparison
 from player_scouting.domain.entities import Player
+from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
 
@@ -20,6 +21,7 @@ class PlayerSummaryOut(BaseModel):
     position: str
     date_of_birth: date
     photo_url: str | None = None
+    preferred_foot: str | None = None
 
 
 class PlayerOut(PlayerSummaryOut):
@@ -68,6 +70,17 @@ class IngestionResultOut(BaseModel):
     skipped: list[SkippedPlayerOut]
 
 
+class MarketValuePointOut(BaseModel):
+    as_of: date
+    amount_eur: int
+    club: str
+
+
+class MarketValueHistoryOut(BaseModel):
+    current: MarketValuePointOut | None
+    history: list[MarketValuePointOut]
+
+
 def player_summary_from_domain(player: Player) -> PlayerSummaryOut:
     return PlayerSummaryOut(
         player_id=player.player_id,
@@ -75,6 +88,7 @@ def player_summary_from_domain(player: Player) -> PlayerSummaryOut:
         position=player.position,
         date_of_birth=player.date_of_birth,
         photo_url=player.photo_url,
+        preferred_foot=player.preferred_foot,
     )
 
 
@@ -128,4 +142,21 @@ def ingestion_result_out_from_domain(result: IngestionResult) -> IngestionResult
             SkippedPlayerOut(player_id=s.player_id, name=s.name, reason=s.reason)
             for s in result.skipped
         ],
+    )
+
+
+def market_value_point_out_from_domain(
+    point: MarketValuePoint,
+) -> MarketValuePointOut:
+    return MarketValuePointOut(
+        as_of=point.as_of, amount_eur=point.amount_eur, club=point.club
+    )
+
+
+def market_value_history_out_from_domain(
+    points: list[MarketValuePoint],
+) -> MarketValueHistoryOut:
+    return MarketValueHistoryOut(
+        current=market_value_point_out_from_domain(points[-1]) if points else None,
+        history=[market_value_point_out_from_domain(point) for point in points],
     )

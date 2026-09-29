@@ -7,6 +7,9 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from player_scouting.application.use_cases.compare_players import ComparePlayersUseCase
+from player_scouting.application.use_cases.enrich_player_market_value import (
+    EnrichPlayerMarketValueUseCase,
+)
 from player_scouting.application.use_cases.find_similar_players import (
     FindSimilarPlayersUseCase,
 )
@@ -33,6 +36,10 @@ from player_scouting.infrastructure.persistence.sqlalchemy_player_repository imp
 from player_scouting.infrastructure.statsbomb.client import StatsBombClient
 from player_scouting.infrastructure.statsbomb.competition_statistics_provider import (
     StatsBombCompetitionStatisticsProvider,
+)
+from player_scouting.infrastructure.transfermarkt.client import TransfermarktClient
+from player_scouting.infrastructure.transfermarkt.provider import (
+    TransfermarktMarketValueProvider,
 )
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -144,4 +151,47 @@ IngestCompetitionUseCaseDep = Annotated[
 ]
 IngestPlayerSeasonUseCaseDep = Annotated[
     IngestPlayerSeasonUseCase, Depends(get_ingest_player_season_use_case)
+]
+
+
+def get_transfermarkt_http_client() -> httpx.Client:
+    return httpx.Client()
+
+
+TransfermarktHttpClientDep = Annotated[
+    httpx.Client, Depends(get_transfermarkt_http_client)
+]
+
+
+def get_transfermarkt_client(
+    http_client: TransfermarktHttpClientDep,
+) -> TransfermarktClient:
+    return TransfermarktClient(http_client=http_client)
+
+
+TransfermarktClientDep = Annotated[
+    TransfermarktClient, Depends(get_transfermarkt_client)
+]
+
+
+def get_market_value_provider(
+    client: TransfermarktClientDep,
+) -> TransfermarktMarketValueProvider:
+    return TransfermarktMarketValueProvider(client)
+
+
+MarketValueProviderDep = Annotated[
+    TransfermarktMarketValueProvider, Depends(get_market_value_provider)
+]
+
+
+def get_enrich_player_market_value_use_case(
+    provider: MarketValueProviderDep,
+    repository: PlayerRepositoryDep,
+) -> EnrichPlayerMarketValueUseCase:
+    return EnrichPlayerMarketValueUseCase(provider, repository)
+
+
+EnrichPlayerMarketValueUseCaseDep = Annotated[
+    EnrichPlayerMarketValueUseCase, Depends(get_enrich_player_market_value_use_case)
 ]

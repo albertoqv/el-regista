@@ -11,10 +11,12 @@ from player_scouting.presentation.api.dependencies import (
 )
 from player_scouting.presentation.api.schemas import (
     ComparisonOut,
+    MarketValueHistoryOut,
     PlayerOut,
     SeasonOut,
     SimilarPlayerMatchOut,
     comparison_out_from_domain,
+    market_value_history_out_from_domain,
     player_out_from_domain,
     season_out_from_domain,
     similar_player_match_out_from_domain,
@@ -82,6 +84,19 @@ def get_player_season(
             detail=f"No statistics found for player {player_id} in {season}",
         )
     return player_out_from_domain(player, statistics)
+
+
+@router.get("/{player_id}/market-value", response_model=MarketValueHistoryOut)
+def get_market_value(
+    player_id: int, repository: PlayerRepositoryDep
+) -> MarketValueHistoryOut:
+    player = repository.get_player(player_id)
+    if player is None:
+        raise HTTPException(
+            status_code=404, detail=f"No player found with id {player_id}"
+        )
+    history = repository.list_market_value_history(player_id)
+    return market_value_history_out_from_domain(history)
 
 
 @router.get("/{player_id_a}/compare/{player_id_b}", response_model=ComparisonOut)

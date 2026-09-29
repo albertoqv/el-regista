@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from player_scouting.presentation.api.dependencies import (
+    EnrichPlayerMarketValueUseCaseDep,
     IngestCompetitionUseCaseDep,
     IngestPlayerSeasonUseCaseDep,
 )
@@ -34,4 +35,14 @@ def ingest_api_football_player(
     use_case: IngestPlayerSeasonUseCaseDep,
 ) -> IngestionResultOut:
     result = use_case.execute(name, league_id=league, season_year=season)
+    return ingestion_result_out_from_domain(result)
+
+
+@router.post("/transfermarkt/players", response_model=IngestionResultOut)
+def ingest_transfermarkt_player(
+    player_id: int,
+    name: str,
+    use_case: EnrichPlayerMarketValueUseCaseDep,
+) -> IngestionResultOut:
+    result = use_case.execute(player_id, name)
     return ingestion_result_out_from_domain(result)
