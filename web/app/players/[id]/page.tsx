@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Avatar } from "@/app/components/Avatar";
+import { MarketValueChart } from "@/app/components/MarketValueChart";
+import { PlayerBioCard } from "@/app/components/PlayerBioCard";
 import { PlayerStats } from "@/app/components/PlayerStats";
 import { SeasonSelector } from "@/app/components/SeasonSelector";
 import {
   ApiError,
   findSimilarPlayers,
+  getMarketValue,
   getPlayer,
   getPlayerSeason,
   listPlayerSeasons,
+  type MarketValueHistory,
   type Season,
   type SimilarPlayerMatch,
 } from "@/lib/api";
@@ -50,6 +54,13 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     similar = [];
   }
 
+  let marketValue: MarketValueHistory = { current: null, history: [] };
+  try {
+    marketValue = await getMarketValue(Number(id));
+  } catch {
+    marketValue = { current: null, history: [] };
+  }
+
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
@@ -67,6 +78,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
           seasons={seasons}
           selected={selectedSeason}
         />
+        <PlayerBioCard player={player} currentMarketValue={marketValue.current} />
         <Link
           href={`/compare?a=${player.player_id}`}
           className="w-fit text-sm font-medium underline"
@@ -74,6 +86,10 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
           Comparar con otro jugador
         </Link>
       </section>
+
+      {marketValue.history.length > 0 && (
+        <MarketValueChart history={marketValue.history} />
+      )}
 
       <PlayerStats player={player} />
 

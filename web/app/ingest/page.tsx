@@ -6,6 +6,7 @@ import {
   ApiError,
   ingestApiFootballPlayer,
   ingestCompetition,
+  ingestTransfermarktPlayer,
   type IngestionResult,
 } from "@/lib/api";
 
@@ -222,6 +223,76 @@ function ApiFootballIngestForm() {
   );
 }
 
+function TransfermarktIngestForm() {
+  const [playerId, setPlayerId] = useState("");
+  const [name, setName] = useState("Jude Bellingham");
+  const [pending, setPending] = useState(false);
+  const [result, setResult] = useState<IngestionResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPending(true);
+    setError(null);
+    setResult(null);
+    try {
+      setResult(await ingestTransfermarktPlayer(Number(playerId), name));
+    } catch (thrown) {
+      setError(errorMessage(thrown));
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <section className="flex flex-col gap-3">
+      <h2 className="text-xl font-semibold tracking-tight">
+        Transfermarkt (pie preferido y valor de mercado)
+      </h2>
+      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        Enriquece un jugador que ya exista en la base de datos con su pie
+        preferido y el histórico completo de valor de mercado de
+        Transfermarkt. Usa el id del jugador (visible en su ficha) y el
+        nombre por el que buscarlo.
+      </p>
+      <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
+        <label className="flex flex-col gap-1 text-sm">
+          Player ID
+          <input
+            type="number"
+            inputMode="numeric"
+            value={playerId}
+            onChange={(event) => setPlayerId(event.target.value)}
+            className="w-32 rounded-md border border-zinc-300 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          />
+        </label>
+        <label className="flex flex-col gap-1 text-sm">
+          Nombre en Transfermarkt
+          <input
+            type="text"
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            className="rounded-md border border-zinc-300 bg-white px-3 py-2 dark:border-zinc-700 dark:bg-zinc-900"
+          />
+        </label>
+        <button
+          type="submit"
+          disabled={pending}
+          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        >
+          {pending ? "Enriqueciendo…" : "Enriquecer"}
+        </button>
+      </form>
+      {error && (
+        <p className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+          {error}
+        </p>
+      )}
+      {result && <IngestionResultCard result={result} />}
+    </section>
+  );
+}
+
 export default function IngestPage() {
   return (
     <div className="flex flex-col gap-10">
@@ -229,6 +300,8 @@ export default function IngestPage() {
       <StatsBombIngestForm />
       <hr className="border-zinc-200 dark:border-zinc-800" />
       <ApiFootballIngestForm />
+      <hr className="border-zinc-200 dark:border-zinc-800" />
+      <TransfermarktIngestForm />
     </div>
   );
 }

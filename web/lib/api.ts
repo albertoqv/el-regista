@@ -6,6 +6,7 @@ export type PlayerSummary = {
   position: string;
   date_of_birth: string;
   photo_url: string | null;
+  preferred_foot: string | null;
 };
 
 export type Player = PlayerSummary & {
@@ -54,6 +55,17 @@ export type IngestionResult = {
   skipped: SkippedPlayer[];
 };
 
+export type MarketValuePoint = {
+  as_of: string;
+  amount_eur: number;
+  club: string;
+};
+
+export type MarketValueHistory = {
+  current: MarketValuePoint | null;
+  history: MarketValuePoint[];
+};
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -100,8 +112,25 @@ export function getPlayerSeason(
 export function comparePlayers(
   playerIdA: number,
   playerIdB: number,
+  options?: { seasonA?: Season; seasonB?: Season },
 ): Promise<Comparison> {
-  return request<Comparison>(`/players/${playerIdA}/compare/${playerIdB}`);
+  const params = new URLSearchParams();
+  if (options?.seasonA) {
+    params.set("season_a_competition", options.seasonA.competition);
+    params.set("season_a_label", options.seasonA.label);
+  }
+  if (options?.seasonB) {
+    params.set("season_b_competition", options.seasonB.competition);
+    params.set("season_b_label", options.seasonB.label);
+  }
+  const query = params.toString();
+  return request<Comparison>(
+    `/players/${playerIdA}/compare/${playerIdB}${query ? `?${query}` : ""}`,
+  );
+}
+
+export function getMarketValue(playerId: number): Promise<MarketValueHistory> {
+  return request<MarketValueHistory>(`/players/${playerId}/market-value`);
 }
 
 export function findSimilarPlayers(
@@ -141,6 +170,16 @@ export function ingestApiFootballPlayer(
     season: String(seasonYear),
   });
   return request<IngestionResult>(`/ingestion/api-football/players?${params}`, {
+    method: "POST",
+  });
+}
+
+export function ingestTransfermarktPlayer(
+  playerId: number,
+  name: string,
+): Promise<IngestionResult> {
+  const params = new URLSearchParams({ player_id: String(playerId), name });
+  return request<IngestionResult>(`/ingestion/transfermarkt/players?${params}`, {
     method: "POST",
   });
 }
