@@ -72,6 +72,7 @@ def _statistics(row: dict[str, str]) -> Statistics:
         yellow_cards=_int(row, "CrdY"),
         # FBref's CrdR already counts reds that came from a second yellow.
         red_cards=_int(row, "CrdR"),
+        minutes_played=_int(row, "Min"),
     )
 
 
@@ -89,11 +90,14 @@ def rows_to_results(
             normalize_competition((row.get("Comp") or "").strip()), str(start_year)
         )
         statistics = _statistics(row)
+        team = (row.get("Squad") or "").strip() or None
 
         key = (player_id, season.competition)
         existing = by_key.get(key)
         if existing is not None:
             existing.statistics = existing.statistics + statistics
+            if team and team not in (existing.team or ""):
+                existing.team = f"{existing.team}, {team}" if existing.team else team
             continue
         by_key[key] = PlayerSeasonResult(
             player_id=player_id,
@@ -103,5 +107,6 @@ def rows_to_results(
             birth_year=birth_year,
             season=season,
             statistics=statistics,
+            team=team,
         )
     return list(by_key.values())

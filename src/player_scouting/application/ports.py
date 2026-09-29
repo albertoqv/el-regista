@@ -7,9 +7,17 @@ from typing import Literal, Protocol
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
-from player_scouting.domain.statistics import Statistics
+from player_scouting.application.player_matching import ExternalPlayer
+from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 
 PlayerSort = Literal["recent", "goals", "assists"]
+
+
+@dataclass
+class SeasonEntry:
+    player: Player
+    team: str | None
+    statistics: Statistics
 
 
 @dataclass
@@ -31,8 +39,24 @@ class PlayerRepository(Protocol):
     def save_player(self, player: Player) -> None: ...
 
     def save_season_statistics(
-        self, player_id: int, season: Season, statistics: Statistics
+        self,
+        player_id: int,
+        season: Season,
+        statistics: Statistics,
+        team: str | None = None,
     ) -> None: ...
+
+    def save_season_advanced(
+        self, player_id: int, season: Season, advanced: AdvancedStatistics
+    ) -> None: ...
+
+    def list_season_entries(self, season: Season) -> list[SeasonEntry]: ...
+
+    def set_understat_id(self, player_id: int, understat_id: int) -> None: ...
+
+    def list_players_pending_enrichment(self, limit: int) -> list[Player]: ...
+
+    def mark_enrichment_checked(self, player_id: int) -> None: ...
 
     def get_season_statistics(
         self, player_id: int, season: Season
@@ -103,6 +127,7 @@ class PlayerSeasonResult:
     statistics: Statistics
     photo_url: str | None = None
     birth_year: int | None = None
+    team: str | None = None
 
 
 class PlayerSeasonStatisticsProvider(Protocol):
@@ -113,6 +138,17 @@ class PlayerSeasonStatisticsProvider(Protocol):
 
 class SeasonDatasetProvider(Protocol):
     def get_season(self, start_year: int) -> list[PlayerSeasonResult]: ...
+
+
+@dataclass
+class AdvancedSeasonRow:
+    competition: str
+    player: ExternalPlayer
+    advanced: AdvancedStatistics
+
+
+class AdvancedSeasonProvider(Protocol):
+    def get_season(self, start_year: int) -> list[AdvancedSeasonRow]: ...
 
 
 @dataclass

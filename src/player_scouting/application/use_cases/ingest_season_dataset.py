@@ -23,7 +23,7 @@ class IngestSeasonDatasetUseCase:
         for result in results:
             self.repository.save_player(self._merge_with_existing(result))
             self.repository.save_season_statistics(
-                result.player_id, result.season, result.statistics
+                result.player_id, result.season, result.statistics, team=result.team
             )
         return IngestionResult(ingested=len(results), skipped=[])
 
