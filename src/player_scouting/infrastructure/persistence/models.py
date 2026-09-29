@@ -13,7 +13,9 @@ class Base(DeclarativeBase):
 class PlayerModel(Base):
     __tablename__ = "players"
 
-    player_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    player_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=False
+    )
     name: Mapped[str] = mapped_column(String, nullable=False)
     position: Mapped[str] = mapped_column(String, nullable=False)
     date_of_birth: Mapped[date] = mapped_column(Date, nullable=False)
