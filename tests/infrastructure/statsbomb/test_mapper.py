@@ -1,3 +1,5 @@
+import pytest
+
 from player_scouting.infrastructure.statsbomb.mapper import (
     PlayerMatchStats,
     extract_lineup_players,
@@ -63,6 +65,167 @@ def test_does_not_count_a_pass_without_goal_assist():
     assert stats == {}
 
 
+def test_counts_shots_shots_on_target_and_expected_goals():
+    events = [
+        {
+            "type": {"name": "Shot"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "shot": {"outcome": {"name": "Off T"}, "statsbomb_xg": 0.1},
+        },
+        {
+            "type": {"name": "Shot"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "shot": {"outcome": {"name": "Saved"}, "statsbomb_xg": 0.2},
+        },
+        {
+            "type": {"name": "Shot"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "shot": {"outcome": {"name": "Goal"}, "statsbomb_xg": 0.3},
+        },
+    ]
+
+    stats = extract_player_statistics(events)
+
+    assert stats[101].shots == 3
+    assert stats[101].shots_on_target == 2
+    assert stats[101].goals == 1
+    assert stats[101].expected_goals == pytest.approx(0.6)
+
+
+def test_counts_passes_attempted_completed_and_key_passes():
+    events = [
+        {
+            "type": {"name": "Pass"},
+            "player": ASSISTER,
+            "position": {"name": "Left Wing"},
+            "pass": {},
+        },
+        {
+            "type": {"name": "Pass"},
+            "player": ASSISTER,
+            "position": {"name": "Left Wing"},
+            "pass": {"outcome": {"name": "Incomplete"}},
+        },
+        {
+            "type": {"name": "Pass"},
+            "player": ASSISTER,
+            "position": {"name": "Left Wing"},
+            "pass": {"shot_assist": True},
+        },
+    ]
+
+    stats = extract_player_statistics(events)
+
+    assert stats[102].passes_attempted == 3
+    assert stats[102].passes_completed == 2
+    assert stats[102].key_passes == 1
+
+
+def test_counts_dribbles_attempted_and_completed():
+    events = [
+        {
+            "type": {"name": "Dribble"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "dribble": {"outcome": {"name": "Complete"}},
+        },
+        {
+            "type": {"name": "Dribble"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "dribble": {"outcome": {"name": "Incomplete"}},
+        },
+    ]
+
+    stats = extract_player_statistics(events)
+
+    assert stats[101].dribbles_attempted == 2
+    assert stats[101].dribbles_completed == 1
+
+
+def test_counts_a_won_tackle_duel():
+    events = [
+        {
+            "type": {"name": "Duel"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "duel": {"type": {"name": "Tackle"}, "outcome": {"name": "Won"}},
+        }
+    ]
+
+    stats = extract_player_statistics(events)
+
+    assert stats[101].tackles_won == 1
+
+
+def test_does_not_count_a_lost_tackle_duel_or_a_non_tackle_duel():
+    events = [
+        {
+            "type": {"name": "Duel"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "duel": {"type": {"name": "Tackle"}, "outcome": {"name": "Lost Out"}},
+        },
+        {
+            "type": {"name": "Duel"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "duel": {"type": {"name": "Aerial Lost"}},
+        },
+    ]
+
+    stats = extract_player_statistics(events)
+
+    assert stats[101].tackles_won == 0
+
+
+def test_counts_interceptions():
+    events = [
+        {
+            "type": {"name": "Interception"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "interception": {"outcome": {"name": "Won"}},
+        }
+    ]
+
+    stats = extract_player_statistics(events)
+
+    assert stats[101].interceptions == 1
+
+
+def test_counts_fouls_committed_fouls_won_and_cards():
+    events = [
+        {
+            "type": {"name": "Foul Committed"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "foul_committed": {"card": {"name": "Yellow Card"}},
+        },
+        {
+            "type": {"name": "Foul Committed"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+            "foul_committed": {"card": {"name": "Red Card"}},
+        },
+        {
+            "type": {"name": "Foul Won"},
+            "player": SCORER,
+            "position": {"name": "Center Forward"},
+        },
+    ]
+
+    stats = extract_player_statistics(events)
+
+    assert stats[101].fouls_committed == 2
+    assert stats[101].yellow_cards == 1
+    assert stats[101].red_cards == 1
+    assert stats[101].fouls_won == 1
+
+
 def test_ignores_own_goal_events():
     own_goal_event = {
         "type": {"id": 25, "name": "Own Goal Against"},
@@ -109,6 +272,24 @@ def test_merge_statistics_keeps_a_player_only_present_in_the_new_match():
     merged = merge_statistics(accumulated, match_stats)
 
     assert merged[102].assists == 1
+
+
+def test_merge_statistics_adds_extended_metrics_too():
+    accumulated = {
+        101: PlayerMatchStats(
+            101, "Scorer Player", "Center Forward", shots=2, expected_goals=0.3
+        )
+    }
+    match_stats = {
+        101: PlayerMatchStats(
+            101, "Scorer Player", "Center Forward", shots=1, expected_goals=0.4
+        )
+    }
+
+    merged = merge_statistics(accumulated, match_stats)
+
+    assert merged[101].shots == 3
+    assert merged[101].expected_goals == pytest.approx(0.7)
 
 
 def _lineup_player(player_id: int, name: str, positions: list[dict]) -> dict:
