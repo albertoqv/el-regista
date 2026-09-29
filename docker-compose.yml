@@ -19,11 +19,22 @@ services:
     build: .
     environment:
       DATABASE_URL: postgresql+psycopg://scouting:scouting@db:5432/scouting
+      CORS_ORIGINS: http://localhost:3000
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
+
+  web:
+    build:
+      context: ./web
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
