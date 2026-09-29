@@ -3,8 +3,12 @@ from __future__ import annotations
 from sqlalchemy.orm import Session
 
 from player_scouting.domain.entities import Player
+from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import Statistics
-from player_scouting.infrastructure.persistence.models import PlayerModel
+from player_scouting.infrastructure.persistence.models import (
+    PlayerModel,
+    PlayerSeasonStatisticsModel,
+)
 
 _STATISTICS_FIELDS = (
     "goals",
@@ -30,17 +34,17 @@ class SqlAlchemyPlayerRepository:
     def __init__(self, session: Session) -> None:
         self._session = session
 
-    def get(self, player_id: int) -> tuple[Player, Statistics] | None:
+    def get_player(self, player_id: int) -> Player | None:
         model = self._session.get(PlayerModel, player_id)
         if model is None:
             return None
-        return self._to_domain(model)
+        return self._player_to_domain(model)
 
-    def list_all(self) -> list[tuple[Player, Statistics]]:
+    def list_players(self) -> list[Player]:
         models = self._session.query(PlayerModel).all()
-        return [self._to_domain(model) for model in models]
+        return [self._player_to_domain(model) for model in models]
 
-    def save(self, player: Player, statistics: Statistics) -> None:
+    def save_player(self, player: Player) -> None:
         model = self._session.get(PlayerModel, player.player_id)
         if model is None:
             model = PlayerModel(player_id=player.player_id)
@@ -48,19 +52,82 @@ class SqlAlchemyPlayerRepository:
         model.name = player.name
         model.position = player.position
         model.date_of_birth = player.date_of_birth
+        self._session.flush()
+
+    def save_season_statistics(
+        self, player_id: int, season: Season, statistics: Statistics
+    ) -> None:
+        model = self._season_model(player_id, season)
+        if model is None:
+            model = PlayerSeasonStatisticsModel(
+                player_id=player_id,
+                competition=season.competition,
+                season_label=season.label,
+            )
+            self._session.add(model)
         for field_name in _STATISTICS_FIELDS:
             setattr(model, field_name, getattr(statistics, field_name))
         self._session.flush()
 
-    @staticmethod
-    def _to_domain(model: PlayerModel) -> tuple[Player, Statistics]:
-        player = Player(
-            model.player_id, model.name, model.position, model.date_of_birth
+    def get_season_statistics(
+        self, player_id: int, season: Season
+    ) -> Statistics | None:
+        model = self._season_model(player_id, season)
+        if model is None:
+            return None
+        return self._statistics_to_domain(model)
+
+    def list_seasons_for_player(self, player_id: int) -> list[Season]:
+        models = (
+            self._session.query(PlayerSeasonStatisticsModel)
+            .filter_by(player_id=player_id)
+            .all()
         )
-        statistics = Statistics(
+        return [Season(model.competition, model.season_label) for model in models]
+
+    def get_career_statistics(self, player_id: int) -> Statistics:
+        models = (
+            self._session.query(PlayerSeasonStatisticsModel)
+            .filter_by(player_id=player_id)
+            .all()
+        )
+        statistics = [self._statistics_to_domain(model) for model in models]
+        return sum(statistics, Statistics(0, 0))
+
+    def list_all_season_statistics(
+        self,
+    ) -> list[tuple[Player, Season, Statistics]]:
+        models = self._session.query(PlayerSeasonStatisticsModel).all()
+        entries = []
+        for model in models:
+            player = self.get_player(model.player_id)
+            if player is not None:
+                season = Season(model.competition, model.season_label)
+                entries.append((player, season, self._statistics_to_domain(model)))
+        return entries
+
+    def _season_model(
+        self, player_id: int, season: Season
+    ) -> PlayerSeasonStatisticsModel | None:
+        return (
+            self._session.query(PlayerSeasonStatisticsModel)
+            .filter_by(
+                player_id=player_id,
+                competition=season.competition,
+                season_label=season.label,
+            )
+            .one_or_none()
+        )
+
+    @staticmethod
+    def _player_to_domain(model: PlayerModel) -> Player:
+        return Player(model.player_id, model.name, model.position, model.date_of_birth)
+
+    @staticmethod
+    def _statistics_to_domain(model: PlayerSeasonStatisticsModel) -> Statistics:
+        return Statistics(
             **{
                 field_name: getattr(model, field_name)
                 for field_name in _STATISTICS_FIELDS
             }
         )
-        return player, statistics
