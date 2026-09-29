@@ -1,0 +1,17 @@
+name: Daily league ingestion batch
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  process-batch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger ingestion batch
+        run: |
+          curl --fail-with-body -sS -X POST \
+            "${{ secrets.API_BASE_URL }}/ingestion/leagues/process?budget=90" \
+            -H "X-Ingestion-Key: ${{ secrets.INGESTION_API_KEY }}"
