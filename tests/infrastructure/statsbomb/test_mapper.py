@@ -87,8 +87,12 @@ def test_accumulates_goals_and_assists_for_the_same_player_across_events():
 
 
 def test_merge_statistics_adds_goals_and_assists_for_a_player_present_in_both_matches():
-    accumulated = {101: PlayerMatchStats(101, "Scorer Player", "Center Forward", goals=1)}
-    match_stats = {101: PlayerMatchStats(101, "Scorer Player", "Center Forward", goals=2)}
+    accumulated = {
+        101: PlayerMatchStats(101, "Scorer Player", "Center Forward", goals=1)
+    }
+    match_stats = {
+        101: PlayerMatchStats(101, "Scorer Player", "Center Forward", goals=2)
+    }
 
     merged = merge_statistics(accumulated, match_stats)
 
@@ -97,7 +101,9 @@ def test_merge_statistics_adds_goals_and_assists_for_a_player_present_in_both_ma
 
 def test_merge_statistics_keeps_a_player_only_present_in_the_new_match():
     accumulated: dict[int, PlayerMatchStats] = {}
-    match_stats = {102: PlayerMatchStats(102, "Assister Player", "Left Wing", assists=1)}
+    match_stats = {
+        102: PlayerMatchStats(102, "Assister Player", "Left Wing", assists=1)
+    }
 
     merged = merge_statistics(accumulated, match_stats)
 

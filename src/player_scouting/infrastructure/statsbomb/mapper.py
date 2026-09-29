@@ -36,3 +36,15 @@ def extract_player_statistics(events: list[dict]) -> dict[int, PlayerMatchStats]
     return stats
 
 
+def merge_statistics(
+    accumulated: dict[int, PlayerMatchStats],
+    match_stats: dict[int, PlayerMatchStats],
+) -> dict[int, PlayerMatchStats]:
+    for player_id, stats in match_stats.items():
+        existing = accumulated.get(player_id)
+        if existing is None:
+            accumulated[player_id] = stats
+        else:
+            existing.goals += stats.goals
+            existing.assists += stats.assists
+    return accumulated
