@@ -24,7 +24,8 @@ class PlayerSummaryOut(BaseModel):
     player_id: int
     name: str
     position: str
-    date_of_birth: date
+    date_of_birth: date | None
+    birth_year: int | None = None
     photo_url: str | None = None
     preferred_foot: str | None = None
     latest_season_year: int | None = None
@@ -116,6 +117,7 @@ def player_summary_from_domain(
         name=player.name,
         position=player.position,
         date_of_birth=player.date_of_birth,
+        birth_year=player.birth_year,
         photo_url=player.photo_url,
         preferred_foot=player.preferred_foot,
         latest_season_year=latest_season_year,

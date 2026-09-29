@@ -1,8 +1,11 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, Query
 
 from player_scouting.application.exceptions import PlayerNotFoundError
+from player_scouting.application.ports import PlayerSort
 from player_scouting.domain.season import Season
 from player_scouting.presentation.api.dependencies import (
     ComparePlayersUseCaseDep,
@@ -21,7 +24,6 @@ from player_scouting.presentation.api.schemas import (
     season_out_from_domain,
     similar_player_match_out_from_domain,
 )
-from player_scouting.presentation.api.season_year import extract_season_year
 
 router = APIRouter(prefix="/players", tags=["players"])
 
@@ -32,26 +34,18 @@ def _season_or_none(competition: str | None, label: str | None) -> Season | None
     return Season(competition, label)
 
 
-def _latest_season_year(
-    repository: PlayerRepositoryDep, player_id: int
-) -> int | None:
-    years = [
-        year
-        for season in repository.list_seasons_for_player(player_id)
-        if (year := extract_season_year(season.label)) is not None
-    ]
-    return max(years) if years else None
-
-
 @router.get("", response_model=list[PlayerOut])
-def list_players(repository: PlayerRepositoryDep) -> list[PlayerOut]:
+def list_players(
+    repository: PlayerRepositoryDep,
+    q: str | None = None,
+    sort: PlayerSort = "recent",
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> list[PlayerOut]:
     return [
         player_out_from_domain(
-            player,
-            repository.get_career_statistics(player.player_id),
-            _latest_season_year(repository, player.player_id),
+            summary.player, summary.career, summary.latest_season_year
         )
-        for player in repository.list_players()
+        for summary in repository.search_player_summaries(q, sort, limit)
     ]
 
 

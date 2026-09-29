@@ -25,6 +25,9 @@ from player_scouting.application.use_cases.ingest_competition import (
 from player_scouting.application.use_cases.ingest_player_season import (
     IngestPlayerSeasonUseCase,
 )
+from player_scouting.application.use_cases.ingest_season_dataset import (
+    IngestSeasonDatasetUseCase,
+)
 from player_scouting.application.use_cases.process_league_ingestion_batch import (
     ProcessLeagueIngestionBatchUseCase,
 )
@@ -43,6 +46,10 @@ from player_scouting.infrastructure.api_football.settings import (
 )
 from player_scouting.infrastructure.birth_dates.wikidata_provider import (
     WikidataBirthDateProvider,
+)
+from player_scouting.infrastructure.fbref_kaggle.client import FbrefKaggleClient
+from player_scouting.infrastructure.fbref_kaggle.provider import (
+    FbrefKaggleSeasonProvider,
 )
 from player_scouting.infrastructure.persistence.database import get_session
 from player_scouting.infrastructure.persistence.sqlalchemy_league_ingestion_job_repository import (  # noqa: E501
@@ -278,4 +285,25 @@ def get_process_league_ingestion_batch_use_case(
 ProcessLeagueIngestionBatchUseCaseDep = Annotated[
     ProcessLeagueIngestionBatchUseCase,
     Depends(get_process_league_ingestion_batch_use_case),
+]
+
+
+def get_season_dataset_provider() -> FbrefKaggleSeasonProvider:
+    return FbrefKaggleSeasonProvider(FbrefKaggleClient(httpx.Client()))
+
+
+SeasonDatasetProviderDep = Annotated[
+    FbrefKaggleSeasonProvider, Depends(get_season_dataset_provider)
+]
+
+
+def get_ingest_season_dataset_use_case(
+    provider: SeasonDatasetProviderDep,
+    repository: PlayerRepositoryDep,
+) -> IngestSeasonDatasetUseCase:
+    return IngestSeasonDatasetUseCase(provider, repository)
+
+
+IngestSeasonDatasetUseCaseDep = Annotated[
+    IngestSeasonDatasetUseCase, Depends(get_ingest_season_dataset_use_case)
 ]

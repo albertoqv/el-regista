@@ -7,6 +7,7 @@ from player_scouting.presentation.api.dependencies import (
     EnrichPlayerMarketValueUseCaseDep,
     IngestCompetitionUseCaseDep,
     IngestPlayerSeasonUseCaseDep,
+    IngestSeasonDatasetUseCaseDep,
     LeagueIngestionJobRepositoryDep,
     LeagueSearchProviderDep,
     ProcessLeagueIngestionBatchUseCaseDep,
@@ -50,6 +51,15 @@ def ingest_api_football_player(
     use_case: IngestPlayerSeasonUseCaseDep,
 ) -> IngestionResultOut:
     result = use_case.execute(name, league_id=league, season_year=season)
+    return ingestion_result_out_from_domain(result)
+
+
+@router.post("/fbref/seasons/{start_year}", response_model=IngestionResultOut)
+def ingest_fbref_season(
+    start_year: int,
+    use_case: IngestSeasonDatasetUseCaseDep,
+) -> IngestionResultOut:
+    result = use_case.execute(start_year)
     return ingestion_result_out_from_domain(result)
 
 
