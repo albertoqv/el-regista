@@ -76,7 +76,9 @@ def test_uses_a_specific_season_as_the_reference_when_given():
 def test_returns_empty_list_when_no_other_season_records_exist():
     repository = InMemoryPlayerRepository()
     repository.add(
-        Player(1, "Target", "Forward", date(1995, 1, 1)), LA_LIGA_2023, Statistics(10, 10)
+        Player(1, "Target", "Forward", date(1995, 1, 1)),
+        LA_LIGA_2023,
+        Statistics(10, 10),
     )
     use_case = FindSimilarPlayersUseCase(repository, SimilarityCalculator())
 

@@ -47,7 +47,9 @@ def _provider_with(response_body: dict) -> ApiFootballPlayerSeasonProvider:
 def test_maps_a_real_shaped_response_to_a_player_season_result():
     provider = _provider_with(BELLINGHAM_RESPONSE)
 
-    result = provider.get_player_statistics("Bellingham", league_id=140, season_year=2023)
+    result = provider.get_player_statistics(
+        "Bellingham", league_id=140, season_year=2023
+    )
 
     assert result is not None
     assert result.player_id == 129718
@@ -60,7 +62,9 @@ def test_maps_a_real_shaped_response_to_a_player_season_result():
 def test_maps_the_statistics_block_including_derived_passes_completed():
     provider = _provider_with(BELLINGHAM_RESPONSE)
 
-    result = provider.get_player_statistics("Bellingham", league_id=140, season_year=2023)
+    result = provider.get_player_statistics(
+        "Bellingham", league_id=140, season_year=2023
+    )
 
     stats = result.statistics
     assert stats.goals == 19
@@ -84,7 +88,11 @@ def test_sums_red_and_second_yellow_cards_into_red_cards():
     response = {
         "response": [
             {
-                "player": {"id": 1, "name": "Some Player", "birth": {"date": "1995-01-01"}},
+                "player": {
+                    "id": 1,
+                    "name": "Some Player",
+                    "birth": {"date": "1995-01-01"},
+                },
                 "statistics": [
                     {
                         "league": {"name": "Premier League", "season": 2023},
@@ -103,7 +111,9 @@ def test_sums_red_and_second_yellow_cards_into_red_cards():
     }
     provider = _provider_with(response)
 
-    result = provider.get_player_statistics("Some Player", league_id=39, season_year=2023)
+    result = provider.get_player_statistics(
+        "Some Player", league_id=39, season_year=2023
+    )
 
     assert result.statistics.red_cards == 2
 
@@ -124,7 +134,9 @@ def test_sends_the_expected_query_params_and_api_key_header():
         return httpx.Response(200, json={"response": []})
 
     http_client = httpx.Client(transport=httpx.MockTransport(handler))
-    provider = ApiFootballPlayerSeasonProvider(http_client=http_client, api_key="secret-key")
+    provider = ApiFootballPlayerSeasonProvider(
+        http_client=http_client, api_key="secret-key"
+    )
 
     provider.get_player_statistics("Haaland", league_id=39, season_year=2023)
 
