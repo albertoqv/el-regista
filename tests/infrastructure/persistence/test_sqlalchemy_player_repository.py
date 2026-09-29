@@ -64,8 +64,12 @@ def test_save_updates_an_already_existing_player(session):
 
 def test_list_all_returns_every_saved_player(session):
     repository = SqlAlchemyPlayerRepository(session)
-    repository.save(Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 5))
-    repository.save(Player(2, "Player Two", "Midfielder", date(1996, 1, 1)), Statistics(3, 3))
+    repository.save(
+        Player(1, "Player One", "Forward", date(1995, 1, 1)), Statistics(10, 5)
+    )
+    repository.save(
+        Player(2, "Player Two", "Midfielder", date(1996, 1, 1)), Statistics(3, 3)
+    )
 
     entries = repository.list_all()
 
