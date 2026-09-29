@@ -1,4 +1,5 @@
 import { ComparePicker } from "@/app/components/ComparePicker";
+import { IconValue } from "@/app/components/icons";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
 import { PlayerCompareChart } from "@/app/components/PlayerCompareChart";
 import { PlayerHeroCard } from "@/app/components/PlayerHeroCard";
@@ -133,7 +134,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
           {(historyA.length > 0 || historyB.length > 0) && (
             <section className="flex flex-col gap-3">
               <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-                <span aria-hidden="true">💶</span>
+                <IconValue size={18} />
                 Valor de mercado
               </h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

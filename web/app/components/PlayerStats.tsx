@@ -1,3 +1,10 @@
+import type { ComponentType } from "react";
+import {
+  IconAttack,
+  IconCard,
+  IconCreate,
+  IconDefense,
+} from "@/app/components/icons";
 import type { Player } from "@/lib/api";
 
 const ACCENT_COLOR = "#2a78d6";
@@ -16,17 +23,17 @@ function StatTile({ label, value }: { label: string; value: string | number }) {
 
 function StatGroup({
   title,
-  icon,
+  icon: Icon,
   tiles,
 }: {
   title: string;
-  icon: string;
+  icon: ComponentType<{ size?: number }>;
   tiles: { label: string; value: string | number }[];
 }) {
   return (
     <div className="flex flex-col gap-2">
       <h3 className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-        <span aria-hidden="true">{icon}</span>
+        <Icon size={16} />
         {title}
       </h3>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -43,7 +50,7 @@ export function PlayerStats({ player }: { player: Player }) {
     <div className="flex flex-col gap-6">
       <StatGroup
         title="Ataque"
-        icon="⚽"
+        icon={IconAttack}
         tiles={[
           { label: "Goles", value: player.goals },
           { label: "Tiros", value: player.shots },
@@ -53,7 +60,7 @@ export function PlayerStats({ player }: { player: Player }) {
       />
       <StatGroup
         title="Creación"
-        icon="🎨"
+        icon={IconCreate}
         tiles={[
           { label: "Asistencias", value: player.assists },
           { label: "Pases de gol", value: player.key_passes },
@@ -69,7 +76,7 @@ export function PlayerStats({ player }: { player: Player }) {
       />
       <StatGroup
         title="Defensa"
-        icon="🛡️"
+        icon={IconDefense}
         tiles={[
           { label: "Entradas ganadas", value: player.tackles_won },
           { label: "Intercepciones", value: player.interceptions },
@@ -77,7 +84,7 @@ export function PlayerStats({ player }: { player: Player }) {
       />
       <StatGroup
         title="Disciplina"
-        icon="🟨"
+        icon={IconCard}
         tiles={[
           { label: "Faltas cometidas", value: player.fouls_committed },
           { label: "Faltas recibidas", value: player.fouls_won },

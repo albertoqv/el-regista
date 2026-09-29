@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
 import type { Player } from "@/lib/api";
@@ -6,13 +7,13 @@ const BAR_COLOR = "#2a78d6";
 
 export function Leaderboard({
   title,
-  icon,
+  icon: Icon,
   players,
   metricKey,
   limit = 8,
 }: {
   title: string;
-  icon?: string;
+  icon?: ComponentType<{ size?: number }>;
   players: Player[];
   metricKey: keyof Player;
   limit?: number;
@@ -31,7 +32,7 @@ export function Leaderboard({
   return (
     <div className="flex flex-col gap-3">
       <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-        {icon && <span aria-hidden="true">{icon}</span>}
+        {Icon && <Icon size={20} />}
         {title}
       </h2>
       <div className="flex flex-col gap-2 rounded-md border border-zinc-200 p-4 dark:border-zinc-800">

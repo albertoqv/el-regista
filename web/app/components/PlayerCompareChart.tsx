@@ -1,3 +1,10 @@
+import type { ComponentType } from "react";
+import {
+  IconAttack,
+  IconCard,
+  IconCreate,
+  IconDefense,
+} from "@/app/components/icons";
 import type { Player } from "@/lib/api";
 
 const SERIES_A_COLOR = "#2a78d6";
@@ -23,10 +30,14 @@ type MetricKey = keyof Pick<
 
 type MetricDef = { label: string; key: MetricKey; format?: (value: number) => string };
 
-const CATEGORIES: { title: string; icon: string; metrics: MetricDef[] }[] = [
+const CATEGORIES: {
+  title: string;
+  icon: ComponentType<{ size?: number }>;
+  metrics: MetricDef[];
+}[] = [
   {
     title: "Ataque",
-    icon: "⚽",
+    icon: IconAttack,
     metrics: [
       { label: "Goles", key: "goals" },
       { label: "Tiros", key: "shots" },
@@ -36,7 +47,7 @@ const CATEGORIES: { title: string; icon: string; metrics: MetricDef[] }[] = [
   },
   {
     title: "Creación",
-    icon: "🎨",
+    icon: IconCreate,
     metrics: [
       { label: "Asistencias", key: "assists" },
       { label: "Pases de gol", key: "key_passes" },
@@ -46,7 +57,7 @@ const CATEGORIES: { title: string; icon: string; metrics: MetricDef[] }[] = [
   },
   {
     title: "Defensa",
-    icon: "🛡️",
+    icon: IconDefense,
     metrics: [
       { label: "Entradas ganadas", key: "tackles_won" },
       { label: "Intercepciones", key: "interceptions" },
@@ -54,7 +65,7 @@ const CATEGORIES: { title: string; icon: string; metrics: MetricDef[] }[] = [
   },
   {
     title: "Disciplina",
-    icon: "🟨",
+    icon: IconCard,
     metrics: [
       { label: "Faltas cometidas", key: "fouls_committed" },
       { label: "Faltas recibidas", key: "fouls_won" },
@@ -142,7 +153,7 @@ export function PlayerCompareChart({
       {CATEGORIES.map((category) => (
         <div key={category.title} className="flex flex-col gap-3">
           <h3 className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-            <span aria-hidden="true">{category.icon}</span>
+            <category.icon size={16} />
             {category.title}
           </h3>
           <div className="flex flex-col gap-3">

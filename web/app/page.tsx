@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
+import { IconTarget, IconTrophy } from "@/app/components/icons";
 import { Leaderboard } from "@/app/components/Leaderboard";
 import { PlayerSearchForm } from "@/app/components/PlayerSearchForm";
 import { listPlayers, sortByRecency, type Player } from "@/lib/api";
@@ -49,13 +50,13 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
           <Leaderboard
             title="Top goleadores"
-            icon="🥇"
+            icon={IconTrophy}
             players={players}
             metricKey="goals"
           />
           <Leaderboard
             title="Top asistentes"
-            icon="🎯"
+            icon={IconTarget}
             players={players}
             metricKey="assists"
           />

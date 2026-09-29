@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Avatar } from "@/app/components/Avatar";
+import { IconSearch } from "@/app/components/icons";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
 import { PlayerBioCard } from "@/app/components/PlayerBioCard";
 import { PlayerStats } from "@/app/components/PlayerStats";
@@ -96,7 +97,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
 
       <section className="flex flex-col gap-3">
         <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-          <span aria-hidden="true">🔍</span>
+          <IconSearch size={18} />
           Jugadores más parecidos
           {selectedSeason
             ? ` (${selectedSeason.competition} ${selectedSeason.label})`

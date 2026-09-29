@@ -12,24 +12,18 @@ export function Logo({
       <svg
         width={size}
         height={size}
-        viewBox="0 0 32 32"
+        viewBox="0 0 24 24"
         fill="none"
+        stroke={BRAND_COLOR}
+        strokeWidth={1.75}
+        strokeLinecap="round"
+        strokeLinejoin="round"
         aria-hidden="true"
       >
-        <circle cx="14" cy="14" r="10" stroke={BRAND_COLOR} strokeWidth="3" />
-        <path
-          d="M14 8.5 L16 12.5 L20.5 13 L17 16 L18 20.5 L14 18.2 L10 20.5 L11 16 L7.5 13 L12 12.5 Z"
-          fill={BRAND_COLOR}
-        />
-        <line
-          x1="21.5"
-          y1="21.5"
-          x2="28"
-          y2="28"
-          stroke={BRAND_COLOR}
-          strokeWidth="3.5"
-          strokeLinecap="round"
-        />
+        <circle cx="10.5" cy="10.5" r="6.5" />
+        <circle cx="10.5" cy="10.5" r="3" />
+        <circle cx="10.5" cy="10.5" r="0.75" fill={BRAND_COLOR} />
+        <line x1="15.3" y1="15.3" x2="20.5" y2="20.5" />
       </svg>
       {withWordmark && (
         <span
