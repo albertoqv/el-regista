@@ -41,9 +41,7 @@ def upgrade() -> None:
     for column_name in INT_COLUMNS:
         op.add_column(
             "players",
-            sa.Column(
-                column_name, sa.Integer(), nullable=False, server_default="0"
-            ),
+            sa.Column(column_name, sa.Integer(), nullable=False, server_default="0"),
         )
     op.add_column(
         "players",

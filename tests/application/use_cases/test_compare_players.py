@@ -39,9 +39,7 @@ def test_compares_two_players_by_a_specific_season_when_given():
     repository.add(player2, LA_LIGA_2023, Statistics(15, 10))
     use_case = ComparePlayersUseCase(repository, SimilarityCalculator())
 
-    comparison = use_case.execute(
-        1, 2, season_a=LA_LIGA_2023, season_b=LA_LIGA_2023
-    )
+    comparison = use_case.execute(1, 2, season_a=LA_LIGA_2023, season_b=LA_LIGA_2023)
 
     assert comparison.similarity_score == SimilarityScore(67)
 

@@ -5,9 +5,7 @@ from player_scouting.domain.value_objects import SimilarityScore
 
 
 class SimilarityCalculator:
-    def similarity_metric(
-        self, value_a: int | float, value_b: int | float
-    ) -> float:
+    def similarity_metric(self, value_a: int | float, value_b: int | float) -> float:
         if value_a == value_b:
             return 1
         else:

@@ -40,11 +40,7 @@ class InMemoryPlayerRepository:
         return self._season_statistics.get((player_id, season))
 
     def list_seasons_for_player(self, player_id: int) -> list[Season]:
-        return [
-            season
-            for (pid, season) in self._season_statistics
-            if pid == player_id
-        ]
+        return [season for (pid, season) in self._season_statistics if pid == player_id]
 
     def get_career_statistics(self, player_id: int) -> Statistics:
         stats = [
