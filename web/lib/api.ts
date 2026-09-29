@@ -66,6 +66,27 @@ export type MarketValueHistory = {
   history: MarketValuePoint[];
 };
 
+export type LeagueSummary = {
+  id: number;
+  name: string;
+  country: string;
+};
+
+export type LeagueIngestionJob = {
+  id: number;
+  league_id: number;
+  league_name: string;
+  season_year: number;
+  next_page: number;
+  total_pages: number | null;
+  is_completed: boolean;
+};
+
+export type LeagueIngestionBatchSummary = {
+  pages_processed: number;
+  players_ingested: number;
+};
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -182,4 +203,38 @@ export function ingestTransfermarktPlayer(
   return request<IngestionResult>(`/ingestion/transfermarkt/players?${params}`, {
     method: "POST",
   });
+}
+
+export function searchLeagues(query: string): Promise<LeagueSummary[]> {
+  const params = new URLSearchParams({ q: query });
+  return request<LeagueSummary[]>(`/ingestion/leagues/search?${params}`);
+}
+
+export function enqueueLeagueIngestion(
+  leagueId: number,
+  leagueName: string,
+  seasonYear: number,
+): Promise<LeagueIngestionJob> {
+  const params = new URLSearchParams({
+    league_id: String(leagueId),
+    league_name: leagueName,
+    season_year: String(seasonYear),
+  });
+  return request<LeagueIngestionJob>(`/ingestion/leagues?${params}`, {
+    method: "POST",
+  });
+}
+
+export function listLeagueIngestionJobs(): Promise<LeagueIngestionJob[]> {
+  return request<LeagueIngestionJob[]>("/ingestion/leagues");
+}
+
+export function processLeagueIngestionBatch(
+  budget?: number,
+): Promise<LeagueIngestionBatchSummary> {
+  const params = budget ? `?budget=${budget}` : "";
+  return request<LeagueIngestionBatchSummary>(
+    `/ingestion/leagues/process${params}`,
+    { method: "POST" },
+  );
 }

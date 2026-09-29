@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { LeagueIngestionPanel } from "@/app/components/LeagueIngestionPanel";
 import {
   ApiError,
   ingestApiFootballPlayer,
@@ -297,6 +298,8 @@ export default function IngestPage() {
   return (
     <div className="flex flex-col gap-10">
       <h1 className="text-2xl font-semibold tracking-tight">Ingesta de datos</h1>
+      <LeagueIngestionPanel />
+      <hr className="border-zinc-200 dark:border-zinc-800" />
       <StatsBombIngestForm />
       <hr className="border-zinc-200 dark:border-zinc-800" />
       <ApiFootballIngestForm />
