@@ -65,21 +65,23 @@ function SeasonSelect({
 }
 
 export function ComparePicker({
-  players,
   defaultA,
   defaultB,
   defaultSeasonA,
   defaultSeasonB,
 }: {
-  players: PlayerSummary[];
-  defaultA: number | null;
-  defaultB: number | null;
+  defaultA: PlayerSummary | null;
+  defaultB: PlayerSummary | null;
   defaultSeasonA: Season | null;
   defaultSeasonB: Season | null;
 }) {
   const router = useRouter();
-  const [playerA, setPlayerA] = useState<number | null>(defaultA);
-  const [playerB, setPlayerB] = useState<number | null>(defaultB);
+  const [playerA, setPlayerA] = useState<number | null>(
+    defaultA?.player_id ?? null,
+  );
+  const [playerB, setPlayerB] = useState<number | null>(
+    defaultB?.player_id ?? null,
+  );
   const [seasonA, setSeasonA] = useState<Season | null>(defaultSeasonA);
   const [seasonB, setSeasonB] = useState<Season | null>(defaultSeasonB);
 
@@ -102,8 +104,7 @@ export function ComparePicker({
     <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
       <div className="flex flex-col gap-2">
         <PlayerAutocomplete
-          players={players}
-          selectedId={playerA}
+          initialPlayer={defaultA}
           onSelect={(player) => {
             setPlayerA(player?.player_id ?? null);
             setSeasonA(null);
@@ -115,8 +116,7 @@ export function ComparePicker({
       <span className="pb-2 text-sm text-zinc-500 dark:text-zinc-400">vs</span>
       <div className="flex flex-col gap-2">
         <PlayerAutocomplete
-          players={players}
-          selectedId={playerB}
+          initialPlayer={defaultB}
           onSelect={(player) => {
             setPlayerB(player?.player_id ?? null);
             setSeasonB(null);

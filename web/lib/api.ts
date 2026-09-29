@@ -4,7 +4,8 @@ export type PlayerSummary = {
   player_id: number;
   name: string;
   position: string;
-  date_of_birth: string;
+  date_of_birth: string | null;
+  birth_year: number | null;
   photo_url: string | null;
   preferred_foot: string | null;
   latest_season_year: number | null;
@@ -78,16 +79,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export function sortByRecency<T extends PlayerSummary>(players: T[]): T[] {
-  return [...players].sort((a, b) => {
-    const yearA = a.latest_season_year ?? -Infinity;
-    const yearB = b.latest_season_year ?? -Infinity;
-    return yearB - yearA;
-  });
-}
+export type PlayerSort = "recent" | "goals" | "assists";
 
-export function listPlayers(): Promise<Player[]> {
-  return request<Player[]>("/players");
+export function listPlayers(options?: {
+  q?: string;
+  sort?: PlayerSort;
+  limit?: number;
+}): Promise<Player[]> {
+  const params = new URLSearchParams();
+  if (options?.q) params.set("q", options.q);
+  if (options?.sort) params.set("sort", options.sort);
+  if (options?.limit) params.set("limit", String(options.limit));
+  const query = params.toString();
+  return request<Player[]>(`/players${query ? `?${query}` : ""}`);
 }
 
 export function getPlayer(playerId: number): Promise<Player> {

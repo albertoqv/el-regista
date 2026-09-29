@@ -18,7 +18,20 @@ export function formatMarketValue(amountEur: number): string {
   return `${amountEur} €`;
 }
 
-export function calculateAge(dateOfBirth: string): number {
+export function formatAge(player: {
+  date_of_birth: string | null;
+  birth_year: number | null;
+}): string | null {
+  if (player.date_of_birth) {
+    return String(calculateAge(player.date_of_birth));
+  }
+  if (player.birth_year) {
+    return `~${new Date().getFullYear() - player.birth_year}`;
+  }
+  return null;
+}
+
+function calculateAge(dateOfBirth: string): number {
   const birth = new Date(dateOfBirth);
   const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
 import type { MarketValuePoint, Player } from "@/lib/api";
-import { calculateAge, footLabel, formatMarketValue } from "@/lib/format";
+import { footLabel, formatAge, formatMarketValue } from "@/lib/format";
 
 function Chip({ label, value }: { label: string; value: string }) {
   return (
@@ -23,6 +23,8 @@ export function PlayerHeroCard({
   seasonLabel: string;
   currentMarketValue: MarketValuePoint | null;
 }) {
+  const age = formatAge(player);
+
   return (
     <Link
       href={`/players/${player.player_id}`}
@@ -36,7 +38,7 @@ export function PlayerHeroCard({
         </p>
       </div>
       <div className="flex flex-wrap justify-center gap-2">
-        <Chip label="Edad" value={String(calculateAge(player.date_of_birth))} />
+        {age && <Chip label="Edad" value={age} />}
         {player.preferred_foot && (
           <Chip label="Pie" value={footLabel(player.preferred_foot)} />
         )}

@@ -10,8 +10,6 @@ import {
   getMarketValue,
   getPlayer,
   getPlayerSeason,
-  listPlayers,
-  sortByRecency,
   type Comparison,
   type MarketValuePoint,
   type Player,
@@ -48,12 +46,10 @@ export default async function ComparePage(props: PageProps<"/compare">) {
     paramValue(searchParams.sbl),
   );
 
-  let players: Player[] = [];
-  try {
-    players = sortByRecency(await listPlayers());
-  } catch {
-    players = [];
-  }
+  const [preselectedA, preselectedB] = await Promise.all([
+    idA ? getPlayer(idA).catch(() => null) : null,
+    idB ? getPlayer(idB).catch(() => null) : null,
+  ]);
 
   let result: Comparison | null = null;
   let playerA: Player | null = null;
@@ -99,9 +95,8 @@ export default async function ComparePage(props: PageProps<"/compare">) {
           Comparar jugadores
         </h1>
         <ComparePicker
-          players={players}
-          defaultA={idA}
-          defaultB={idB}
+          defaultA={preselectedA}
+          defaultB={preselectedB}
           defaultSeasonA={seasonA}
           defaultSeasonB={seasonB}
         />

@@ -17,7 +17,7 @@ import {
   type Season,
   type SimilarPlayerMatch,
 } from "@/lib/api";
-import { calculateAge } from "@/lib/format";
+import { formatAge } from "@/lib/format";
 
 export default async function PlayerDetailPage(props: PageProps<"/players/[id]">) {
   const { id } = await props.params;
@@ -71,7 +71,8 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{player.name}</h1>
             <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              {player.position} · {calculateAge(player.date_of_birth)} años
+              {player.position}
+              {formatAge(player) && ` · ${formatAge(player)} años`}
             </p>
           </div>
         </div>
