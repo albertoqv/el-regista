@@ -2,10 +2,22 @@
 
 import { useState } from "react";
 
-/** Shares the player's card image (native share sheet on phones, download elsewhere). */
-export function ShareCard({ playerId, name }: { playerId: number; name: string }) {
+/** Shares a card image (native share sheet on phones, download elsewhere). */
+export function ShareCard({
+  playerId,
+  name,
+  imageUrl,
+  shareText,
+  label = "Compartir carta",
+}: {
+  playerId?: number;
+  name: string;
+  imageUrl?: string;
+  shareText?: string;
+  label?: string;
+}) {
   const [busy, setBusy] = useState(false);
-  const url = `/players/${playerId}/card`;
+  const url = imageUrl ?? `/players/${playerId}/card`;
   const fileName = `${name.replace(/\s+/g, "-").toLowerCase()}-talentscope.png`;
 
   async function share() {
@@ -17,7 +29,7 @@ export function ShareCard({ playerId, name }: { playerId: number; name: string }
         await navigator.share({
           files: [file],
           title: `${name} · TalentScope`,
-          text: `Mira el perfil de ${name} en TalentScope`,
+          text: shareText ?? `Mira el perfil de ${name} en TalentScope`,
         });
       } else {
         const link = document.createElement("a");
@@ -40,7 +52,7 @@ export function ShareCard({ playerId, name }: { playerId: number; name: string }
       disabled={busy}
       className="glass rounded-full px-5 py-2.5 text-sm font-semibold transition hover:border-line-strong disabled:opacity-60"
     >
-      {busy ? "Preparando carta…" : "Compartir carta"}
+      {busy ? "Preparando imagen…" : label}
     </button>
   );
 }
