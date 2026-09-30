@@ -16,6 +16,15 @@ export function NavBar() {
             Explorar
           </Link>
           <Link
+            href="/gemelos"
+            className="relative rounded-full px-3 py-1.5 font-semibold text-[#ffd76a] transition hover:bg-[#ffd76a]/10"
+          >
+            Gemelos
+            <span className="absolute -right-1 -top-1.5 rotate-6 rounded-sm bg-[#ffd76a] px-1 text-[8px] font-black uppercase leading-3 text-black">
+              top
+            </span>
+          </Link>
+          <Link
             href="/compare"
             className="rounded-full bg-gradient-to-r from-brand to-brand-2 px-4 py-1.5 font-semibold text-white shadow-[0_0_20px_rgba(61,139,255,0.45)] transition hover:brightness-110"
           >

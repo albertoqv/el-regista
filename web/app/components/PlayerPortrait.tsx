@@ -34,6 +34,7 @@ export function PlayerPortrait({
   mirrored = false,
   className = "",
   rounded = "rounded-3xl",
+  focus = "center top",
 }: {
   name: string;
   photoUrl: string | null | undefined;
@@ -41,6 +42,8 @@ export function PlayerPortrait({
   mirrored?: boolean;
   className?: string;
   rounded?: string;
+  /** CSS object-position: landscape crops need to aim lower to keep the face. */
+  focus?: string;
 }) {
   // Try the sharp portrait first, then the original one, then the silhouette.
   const sources = [bigPhoto(photoUrl), photoUrl].filter(
@@ -77,8 +80,9 @@ export function PlayerPortrait({
             // The error may fire before hydration, when onError is not attached yet.
             if (node && node.complete && node.naturalWidth === 0) next();
           }}
-          className="absolute inset-0 h-full w-full object-cover object-top"
+          className="absolute inset-0 h-full w-full object-cover"
           style={{
+            objectPosition: focus,
             transform: mirrored ? "scaleX(-1)" : undefined,
             maskImage: "linear-gradient(180deg, black 55%, transparent 98%)",
             WebkitMaskImage: "linear-gradient(180deg, black 55%, transparent 98%)",

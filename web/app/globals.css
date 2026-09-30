@@ -30,6 +30,7 @@
   --color-gold: var(--gold);
   --font-sans: var(--font-inter);
   --font-display: var(--font-grotesk);
+  --font-hand: var(--font-caveat);
 }
 
 html {
@@ -91,44 +92,118 @@ body {
   color: transparent;
 }
 
-/* Animated aurora backdrop */
-.aurora {
+/* Coach's whiteboard backdrop */
+.tactics {
   position: fixed;
   inset: 0;
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
+  background: radial-gradient(120% 80% at 50% -10%, #0c1426 0%, #05070d 55%);
 }
 
-.aurora::after {
-  /* pitch-like grid */
-  content: "";
+.tactics-glow {
   position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse at 50% 0%, black 20%, transparent 75%);
+  left: 50%;
+  top: -30vh;
+  width: 90vw;
+  height: 70vh;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(61, 139, 255, 0.22), transparent);
+  filter: blur(20px);
 }
 
-.aurora-blob {
+.tactics-pitch {
   position: absolute;
-  border-radius: 9999px;
-  filter: blur(90px);
-  opacity: 0.45;
-  animation: drift 22s ease-in-out infinite alternate;
+  inset: -4%;
+  width: 108%;
+  height: 108%;
+  transform: rotate(-4deg);
+  opacity: 0.8;
 }
 
-@keyframes drift {
+.chalk {
+  stroke: rgba(226, 232, 255, 0.11);
+  stroke-width: 2.2;
+  /* uneven dashes read as chalk rather than a vector line */
+  stroke-dasharray: 38 3 21 2 55 4;
+}
+
+.chalk-dot {
+  fill: rgba(226, 232, 255, 0.12);
+}
+
+.play .run,
+.play .pass {
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.play .run {
+  stroke: rgba(255, 215, 106, 0.22);
+  stroke-dasharray: 10 9;
+}
+
+.play .pass {
+  stroke: rgba(126, 240, 176, 0.2);
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: draw-pass 9s ease-in-out infinite;
+}
+
+.play-2 .pass {
+  animation-delay: 4.5s;
+}
+
+.play .mark {
+  fill: rgba(255, 255, 255, 0.14);
+  font: 700 26px var(--font-caveat), cursive;
+}
+
+.play .mark-o {
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 2.4;
+}
+
+@keyframes draw-pass {
   0% {
-    transform: translate3d(0, 0, 0) scale(1);
+    stroke-dashoffset: 600;
   }
-  50% {
-    transform: translate3d(6vw, 4vh, 0) scale(1.15);
+  45%,
+  80% {
+    stroke-dashoffset: 0;
   }
   100% {
-    transform: translate3d(-5vw, 8vh, 0) scale(0.95);
+    stroke-dashoffset: -600;
+  }
+}
+
+/* Paper/film grain so flat colours stop looking computer-generated */
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.sticker {
+  border-radius: 3px;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.25),
+    0 6px 14px -6px rgba(0, 0, 0, 0.6);
+}
+
+.marker-stroke {
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+  animation: marker-in 0.9s 0.4s ease-out forwards;
+}
+
+@keyframes marker-in {
+  to {
+    stroke-dashoffset: 0;
   }
 }
 
@@ -177,7 +252,8 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aurora-blob,
+  .play .pass,
+  .marker-stroke,
   .spin-slow,
   .skeleton::after {
     animation: none;

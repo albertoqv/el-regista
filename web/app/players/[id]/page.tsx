@@ -10,7 +10,7 @@ import { SeasonSelector } from "@/app/components/SeasonSelector";
 import { SimilarPlayers } from "@/app/components/SimilarPlayers";
 import {
   ApiError,
-  findSimilarPlayers,
+  findTwins,
   getMarketValue,
   getPlayer,
   getPlayerPercentiles,
@@ -19,7 +19,7 @@ import {
   type MarketValueHistory,
   type PercentileReport,
   type Season,
-  type SimilarPlayerMatch,
+  type TwinReport,
 } from "@/lib/api";
 import {
   competitionColor,
@@ -69,10 +69,8 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     throw error;
   }
 
-  const [similar, marketValue, percentiles] = await Promise.all([
-    findSimilarPlayers(playerId, { season: season ?? undefined, top: 6 }).catch(
-      () => [] as SimilarPlayerMatch[],
-    ),
+  const [twins, marketValue, percentiles] = await Promise.all([
+    findTwins(playerId, { limit: 6 }).catch((): TwinReport | null => null),
     getMarketValue(playerId).catch(
       (): MarketValueHistory => ({ current: null, history: [] }),
     ),
@@ -155,7 +153,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
                 href="#parecidos"
                 className="glass rounded-full px-5 py-2.5 text-sm font-semibold transition hover:border-line-strong"
               >
-                Ver jugadores parecidos
+                Ver sus gemelos
               </a>
             </Reveal>
           </div>
@@ -208,17 +206,23 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       <PlayerStats player={player} />
 
       <section id="parecidos" className="flex scroll-mt-24 flex-col gap-5">
-        <Reveal>
-          <h2 className="font-display text-2xl font-bold tracking-tight">
-            Jugadores con un perfil parecido
-          </h2>
-          <p className="text-sm text-muted">
-            {season
-              ? `Según sus números en ${season.competition} ${seasonDisplay(season.label)}. Pulsa uno para verlos cara a cara.`
-              : "Según sus números de toda la carrera. Pulsa uno para verlos cara a cara."}
-          </p>
+        <Reveal className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="font-display text-2xl font-bold tracking-tight">Sus gemelos</h2>
+            <p className="text-sm text-muted">
+              {twins
+                ? `Juegan como él en su ${seasonDisplay(twins.target.season_label)} con ${twins.target.team ?? twins.target.competition}. Pulsa uno para verlos cara a cara.`
+                : "Jugadores con un estilo parecido."}
+            </p>
+          </div>
+          <Link
+            href={`/gemelos?p=${player.player_id}`}
+            className="rounded-full bg-[#ffd76a] px-4 py-2 text-sm font-bold text-black transition hover:brightness-105"
+          >
+            Buscar gemelos baratos →
+          </Link>
         </Reveal>
-        <SimilarPlayers player={player} season={season} matches={similar} />
+        <SimilarPlayers report={twins} />
       </section>
     </div>
   );
