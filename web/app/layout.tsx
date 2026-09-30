@@ -1,7 +1,9 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Caveat, Inter, Space_Grotesk } from "next/font/google";
 import { NavBar } from "@/app/components/NavBar";
 import { TacticsBackground } from "@/app/components/TacticsBackground";
+import { VisitTracker } from "@/app/components/VisitTracker";
 import "./globals.css";
 
 const inter = Inter({
@@ -54,6 +56,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </a>
           </p>
         </footer>
+        <VisitTracker />
+        <Analytics />
       </body>
     </html>
   );
