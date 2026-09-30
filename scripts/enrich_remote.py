@@ -14,6 +14,7 @@ import io
 import os
 import sys
 import time
+from collections.abc import Callable
 
 import httpx
 
@@ -25,6 +26,25 @@ from player_scouting.infrastructure.transfermarkt.provider import (
 
 PAUSE_SECONDS = 1.5
 PAGE_SIZE = 50
+RETRIES = 6
+RETRY_PAUSE_SECONDS = 20
+
+
+def _call(send: Callable[[], httpx.Response]) -> httpx.Response:
+    """Retries API calls through a redeploy (502/503) or a network blip."""
+    for attempt in range(RETRIES):
+        try:
+            response = send()
+            if response.status_code < 500:
+                response.raise_for_status()
+                return response
+        except httpx.TransportError:
+            pass
+        if attempt < RETRIES - 1:
+            time.sleep(RETRY_PAUSE_SECONDS)
+    response = send()
+    response.raise_for_status()
+    return response
 
 
 def main() -> int:
@@ -47,8 +67,9 @@ def main() -> int:
     found = missing = 0
     while found + missing < args.limit:
         size = min(PAGE_SIZE, args.limit - found - missing)
-        pending = api.get("/ingestion/enrichment/pending", params={"limit": size})
-        pending.raise_for_status()
+        pending = _call(
+            lambda: api.get("/ingestion/enrichment/pending", params={"limit": size})
+        )
         players = pending.json()
         if not players:
             break
@@ -83,9 +104,8 @@ def main() -> int:
                 found += 1
             else:
                 missing += 1
-            api.post(
-                f"/ingestion/enrichment/{player['player_id']}", json=body
-            ).raise_for_status()
+            url = f"/ingestion/enrichment/{player['player_id']}"
+            _call(lambda: api.post(url, json=body))
             status = "ok" if result else "not found"
             print(f"{found + missing:4d} {player['name']}: {status}", flush=True)
             time.sleep(PAUSE_SECONDS)
