@@ -24,6 +24,9 @@ from player_scouting.application.use_cases.enrich_player_market_value import (
 from player_scouting.application.use_cases.find_similar_players import (
     FindSimilarPlayersUseCase,
 )
+from player_scouting.application.use_cases.get_player_percentiles import (
+    GetPlayerPercentilesUseCase,
+)
 from player_scouting.application.use_cases.ingest_advanced_season import (
     IngestAdvancedSeasonUseCase,
 )
@@ -356,4 +359,15 @@ def get_enrich_pending_players_use_case(
 
 EnrichPendingPlayersUseCaseDep = Annotated[
     EnrichPendingPlayersUseCase, Depends(get_enrich_pending_players_use_case)
+]
+
+
+def get_player_percentiles_use_case(
+    repository: PlayerRepositoryDep,
+) -> GetPlayerPercentilesUseCase:
+    return GetPlayerPercentilesUseCase(repository)
+
+
+GetPlayerPercentilesUseCaseDep = Annotated[
+    GetPlayerPercentilesUseCase, Depends(get_player_percentiles_use_case)
 ]

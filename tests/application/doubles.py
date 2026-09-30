@@ -8,6 +8,7 @@ from player_scouting.application.ports import (
     AdvancedSeasonRow,
     CompetitionStatisticsResult,
     EnrichmentUnavailableError,
+    LeaderMetric,
     LeaguePlayersPage,
     LeagueSummary,
     MarketValueHistoryResult,
@@ -15,6 +16,7 @@ from player_scouting.application.ports import (
     PlayerSort,
     PlayerSummary,
     SeasonEntry,
+    SeasonLeader,
 )
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
@@ -106,6 +108,30 @@ class InMemoryPlayerRepository:
         if (player_id, season) not in self._season_statistics:
             return None
         return self._merged(player_id, season)
+
+    def list_season_leaders(
+        self,
+        season_label: str,
+        metric: LeaderMetric,
+        limit: int,
+        competition: str | None = None,
+    ) -> list[SeasonLeader]:
+        leaders = [
+            SeasonLeader(
+                self._players[player_id],
+                season,
+                self._teams.get((player_id, season)),
+                self._merged(player_id, season),
+            )
+            for (player_id, season) in self._season_statistics
+            if season.label == season_label
+            and competition in (None, season.competition)
+            and player_id in self._players
+        ]
+        leaders.sort(
+            key=lambda leader: (-getattr(leader.statistics, metric), leader.player.name)
+        )
+        return leaders[:limit]
 
     def list_season_entries(self, season: Season) -> list[SeasonEntry]:
         return [

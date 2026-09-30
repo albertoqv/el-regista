@@ -11,11 +11,31 @@ from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 
 PlayerSort = Literal["recent", "goals", "assists"]
+LeaderMetric = Literal[
+    "goals",
+    "assists",
+    "expected_goals",
+    "expected_assists",
+    "shots",
+    "key_passes",
+    "xg_chain",
+    "dribbles_completed",
+    "tackles_won",
+    "interceptions",
+]
 
 
 @dataclass
 class SeasonEntry:
     player: Player
+    team: str | None
+    statistics: Statistics
+
+
+@dataclass
+class SeasonLeader:
+    player: Player
+    season: Season
     team: str | None
     statistics: Statistics
 
@@ -35,6 +55,14 @@ class PlayerRepository(Protocol):
     def search_player_summaries(
         self, query: str | None, sort: PlayerSort, limit: int
     ) -> list[PlayerSummary]: ...
+
+    def list_season_leaders(
+        self,
+        season_label: str,
+        metric: LeaderMetric,
+        limit: int,
+        competition: str | None = None,
+    ) -> list[SeasonLeader]: ...
 
     def save_player(self, player: Player) -> None: ...
 

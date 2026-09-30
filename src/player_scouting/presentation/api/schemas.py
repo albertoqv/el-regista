@@ -6,9 +6,12 @@ from pydantic import BaseModel
 
 from player_scouting.application.ingestion_result import IngestionResult
 from player_scouting.application.league_ingestion_job import LeagueIngestionJob
-from player_scouting.application.ports import LeagueSummary
+from player_scouting.application.ports import LeagueSummary, SeasonLeader
 from player_scouting.application.use_cases.find_similar_players import (
     SimilarPlayerMatch,
+)
+from player_scouting.application.use_cases.get_player_percentiles import (
+    PercentileReport,
 )
 from player_scouting.application.use_cases.process_league_ingestion_batch import (
     LeagueIngestionBatchSummary,
@@ -58,6 +61,26 @@ class SeasonOut(BaseModel):
     competition: str
     label: str
     team: str | None = None
+
+
+class SeasonLeaderOut(PlayerOut):
+    competition: str
+    season_label: str
+    team: str | None
+
+
+class MetricPercentileOut(BaseModel):
+    per_90: float
+    percentile: int
+
+
+class PercentileReportOut(BaseModel):
+    competition: str
+    season_label: str
+    position: str
+    peer_count: int
+    minimum_minutes: int
+    metrics: dict[str, MetricPercentileOut]
 
 
 class ComparisonOut(BaseModel):
@@ -230,4 +253,29 @@ def league_ingestion_batch_summary_out_from_domain(
     return LeagueIngestionBatchSummaryOut(
         pages_processed=summary.pages_processed,
         players_ingested=summary.players_ingested,
+    )
+
+
+def season_leader_out_from_domain(leader: SeasonLeader) -> SeasonLeaderOut:
+    return SeasonLeaderOut(
+        **player_out_from_domain(leader.player, leader.statistics).model_dump(),
+        competition=leader.season.competition,
+        season_label=leader.season.label,
+        team=leader.team,
+    )
+
+
+def percentile_report_out_from_domain(report: PercentileReport) -> PercentileReportOut:
+    return PercentileReportOut(
+        competition=report.season.competition,
+        season_label=report.season.label,
+        position=report.position,
+        peer_count=report.peer_count,
+        minimum_minutes=report.minimum_minutes,
+        metrics={
+            metric: MetricPercentileOut(
+                per_90=value.per_90, percentile=value.percentile
+            )
+            for metric, value in report.metrics.items()
+        },
     )

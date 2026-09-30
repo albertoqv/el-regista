@@ -410,9 +410,7 @@ def test_season_leaders_are_ranked_by_a_metric_across_competitions(session):
         team="Bayern Munich",
     )
     repository.save_player(Player(3, "Old Star", "Forward", None, birth_year=1980))
-    repository.save_season_statistics(
-        3, Season("La Liga", "2010"), Statistics(40, 10)
-    )
+    repository.save_season_statistics(3, Season("La Liga", "2010"), Statistics(40, 10))
     repository.save_season_advanced(1, LA_LIGA_2026, YAMAL_ADVANCED)
 
     by_goals = repository.list_season_leaders("2026", "goals", 5)

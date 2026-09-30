@@ -15,7 +15,13 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Session
 
-from player_scouting.application.ports import PlayerSort, PlayerSummary, SeasonEntry
+from player_scouting.application.ports import (
+    LeaderMetric,
+    PlayerSort,
+    PlayerSummary,
+    SeasonEntry,
+    SeasonLeader,
+)
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
@@ -231,6 +237,35 @@ class SqlAlchemyPlayerRepository:
                 self._merge(basic, advanced),
             )
             for basic, advanced, player_model in self._season_rows()
+        ]
+
+    def list_season_leaders(
+        self,
+        season_label: str,
+        metric: LeaderMetric,
+        limit: int,
+        competition: str | None = None,
+    ) -> list[SeasonLeader]:
+        filters = [Basic.season_label == season_label]
+        if competition is not None:
+            filters.append(Basic.competition == competition)
+        rows = (
+            self._session.query(Basic, Advanced, PlayerModel)
+            .join(PlayerModel, PlayerModel.player_id == Basic.player_id)
+            .outerjoin(Advanced, _ADVANCED_JOIN)
+            .filter(*filters)
+            .order_by(_merged_column(metric).desc(), PlayerModel.name)
+            .limit(limit)
+            .all()
+        )
+        return [
+            SeasonLeader(
+                self._player_to_domain(player_model),
+                Season(basic.competition, basic.season_label),
+                basic.team,
+                self._merge(basic, advanced),
+            )
+            for basic, advanced, player_model in rows
         ]
 
     def list_season_entries(self, season: Season) -> list[SeasonEntry]:
