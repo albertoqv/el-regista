@@ -3,7 +3,6 @@ from dataclasses import fields
 from player_scouting.domain.statistics import Statistics
 from player_scouting.domain.value_objects import SimilarityScore
 
-
 # Playing time is context, not playing style: two players are not less alike
 # because one of them played more minutes.
 _EXCLUDED_FIELDS = frozenset({"minutes_played"})

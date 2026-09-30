@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Literal, Protocol
 
+from player_scouting.application.player_matching import ExternalPlayer
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
-from player_scouting.application.player_matching import ExternalPlayer
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 
 PlayerSort = Literal["recent", "goals", "assists"]
@@ -155,11 +155,17 @@ class AdvancedSeasonProvider(Protocol):
 class MarketValueHistoryResult:
     preferred_foot: str | None
     points: list[MarketValuePoint]
+    photo_url: str | None = None
+    date_of_birth: date | None = None
+
+
+class EnrichmentUnavailableError(Exception):
+    """The enrichment source is blocking or down; stop instead of skipping players."""
 
 
 class MarketValueProvider(Protocol):
     def get_market_value_history(
-        self, player_name: str
+        self, player_name: str, birth_year: int | None = None
     ) -> MarketValueHistoryResult | None: ...
 
 

@@ -26,6 +26,10 @@ class ExternalPlayer:
     goals: int
 
 
+def name_tokens(text: str) -> frozenset[str]:
+    return _tokens(text)
+
+
 def _tokens(text: str) -> frozenset[str]:
     ascii_text = (
         unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode().lower()
@@ -44,7 +48,9 @@ def _unique(candidates: list[MatchCandidate]) -> MatchCandidate | None:
     return candidates[0] if len(candidates) == 1 else None
 
 
-def _find(external: ExternalPlayer, pool: list[MatchCandidate]) -> MatchCandidate | None:
+def _find(
+    external: ExternalPlayer, pool: list[MatchCandidate]
+) -> MatchCandidate | None:
     name = _tokens(external.name)
     exact = _unique([c for c in pool if _tokens(c.name) == name])
     if exact is not None:

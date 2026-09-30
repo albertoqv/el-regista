@@ -39,7 +39,9 @@ def _validate_non_negative_ints(obj: object, field_names: tuple[str, ...]) -> No
     for field_name in field_names:
         value = getattr(obj, field_name)
         if not isinstance(value, int) or isinstance(value, bool):
-            raise InvalidStatisticsError(f"{_field_label(field_name)} must be an integer")
+            raise InvalidStatisticsError(
+                f"{_field_label(field_name)} must be an integer"
+            )
         if value < 0:
             raise InvalidStatisticsError(
                 f"{_field_label(field_name)} must be equal to or greater than 0"
