@@ -73,3 +73,18 @@ def test_raises_for_a_non_success_response():
 
     with pytest.raises(httpx.HTTPStatusError):
         client.get_profile("/nobody/profil/spieler/0")
+
+
+def test_search_without_results_returns_an_empty_page():
+    # Verified live: no results redirect to /schnellsuche/keinergebnis/...
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            302,
+            headers={
+                "Location": f"{BASE_URL}/schnellsuche/keinergebnis/schnellsuche?query=Lee+Kang%5C-in"
+            },
+        )
+
+    client = _client_with_handler(handler)
+
+    assert client.search_player("Lee Kang-in") == ""
