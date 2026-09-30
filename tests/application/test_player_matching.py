@@ -44,7 +44,9 @@ def test_nickname_is_resolved_by_team_minutes_and_goals():
     matches = match_players(
         [_external(1, "Pepelu", teams=("Valencia",), minutes=580, goals=1)],
         [
-            _candidate(10, "José Luis García Vayá", team="Valencia", minutes=572, goals=1),
+            _candidate(
+                10, "José Luis García Vayá", team="Valencia", minutes=572, goals=1
+            ),
             _candidate(11, "Hugo Duro", team="Valencia", minutes=580, goals=3),
         ],
     )
@@ -55,7 +57,11 @@ def test_nickname_is_resolved_by_team_minutes_and_goals():
 def test_minutes_outside_the_tolerance_do_not_match():
     matches = match_players(
         [_external(1, "Pepelu", teams=("Valencia",), minutes=580, goals=1)],
-        [_candidate(10, "José Luis García Vayá", team="Valencia", minutes=400, goals=1)],
+        [
+            _candidate(
+                10, "José Luis García Vayá", team="Valencia", minutes=400, goals=1
+            )
+        ],
     )
 
     assert matches == {}
@@ -94,7 +100,11 @@ def test_player_listed_with_two_teams_matches_either_team():
                 goals=2,
             )
         ],
-        [_candidate(10, "Real Full Name", team="Deportivo La Coruña", minutes=420, goals=2)],
+        [
+            _candidate(
+                10, "Real Full Name", team="Deportivo La Coruña", minutes=420, goals=2
+            )
+        ],
     )
 
     assert matches == {1: 10}
