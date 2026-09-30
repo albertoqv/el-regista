@@ -9,6 +9,8 @@ from pydantic import BaseModel
 
 from player_scouting.application.ports import MatchStats
 from player_scouting.application.use_cases.match_insights import (
+    Highlights,
+    HighlightsUseCase,
     MatchInsightsUseCase,
     StatBacktest,
     StatsBacktestUseCase,
@@ -32,6 +34,25 @@ router = APIRouter(prefix="/predictions", tags=["predictions"])
 BACKTEST_CACHE_SECONDS = 3600
 _cache: dict[tuple, tuple[float, dict[str, StatBacktest]]] = {}
 _players_cache: dict[tuple, tuple[float, PlayerMarketsBacktest]] = {}
+HIGHLIGHTS_CACHE_SECONDS = 600
+_highlights_cache: dict[int, tuple[float, Highlights]] = {}
+
+
+class PickOut(BaseModel):
+    match_id: int
+    competition: str
+    kickoff: str
+    home_team: str
+    away_team: str
+    category: str
+    label: str
+    probability: float
+
+
+class HighlightsOut(BaseModel):
+    window_start: str
+    window_end: str
+    picks: list[PickOut]
 
 
 class PlayerMarketOut(BaseModel):
@@ -201,6 +222,40 @@ def stats_backtest(
         )
         for stat, result in cached[1].items()
     ]
+
+
+@router.get("/highlights", response_model=HighlightsOut)
+def highlights(
+    teams: TeamRepositoryDep,
+    stats: MatchStatsRepositoryDep,
+    shots: ShotRepositoryDep,
+    per_category: Annotated[int, Query(ge=1, le=20)] = 5,
+) -> HighlightsOut:
+    cached = _highlights_cache.get(per_category)
+    if cached is None or time.monotonic() - cached[0] > HIGHLIGHTS_CACHE_SECONDS:
+        cached = (
+            time.monotonic(),
+            HighlightsUseCase(teams, stats, shots).execute(per_category),
+        )
+        _highlights_cache[per_category] = cached
+    report = cached[1]
+    return HighlightsOut(
+        window_start=report.window_start.isoformat(),
+        window_end=report.window_end.isoformat(),
+        picks=[
+            PickOut(
+                match_id=pick.fixture.match_id,
+                competition=pick.fixture.competition,
+                kickoff=pick.fixture.kickoff.isoformat(),
+                home_team=pick.fixture.home_team,
+                away_team=pick.fixture.away_team,
+                category=pick.category,
+                label=pick.label,
+                probability=round(pick.probability, 4),
+            )
+            for pick in report.picks
+        ],
+    )
 
 
 @router.get("/players-backtest", response_model=PlayerMarketsBacktestOut)
