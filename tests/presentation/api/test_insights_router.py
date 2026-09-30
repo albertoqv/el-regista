@@ -100,3 +100,17 @@ def test_highlights_of_the_next_round():
             "label",
             "probability",
         } <= set(pick)
+
+
+def test_market_benchmark():
+    body = (
+        _client()
+        .get(
+            "/predictions/market-benchmark",
+            params={"season": "2026", "minimum_history": 1},
+        )
+        .json()
+    )
+
+    assert body["matches"] == 4
+    assert {"model_brier", "market_brier", "consensus_brier"} <= set(body)
