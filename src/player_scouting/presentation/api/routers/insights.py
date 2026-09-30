@@ -11,6 +11,8 @@ from player_scouting.application.ports import MatchStats
 from player_scouting.application.use_cases.match_insights import (
     Highlights,
     HighlightsUseCase,
+    MarketBenchmark,
+    MarketBenchmarkUseCase,
     MatchInsightsUseCase,
     StatBacktest,
     StatsBacktestUseCase,
@@ -34,6 +36,7 @@ router = APIRouter(prefix="/predictions", tags=["predictions"])
 BACKTEST_CACHE_SECONDS = 3600
 _cache: dict[tuple, tuple[float, dict[str, StatBacktest]]] = {}
 _players_cache: dict[tuple, tuple[float, PlayerMarketsBacktest]] = {}
+_benchmark_cache: dict[tuple, tuple[float, MarketBenchmark]] = {}
 HIGHLIGHTS_CACHE_SECONDS = 600
 _highlights_cache: dict[int, tuple[float, Highlights]] = {}
 
@@ -223,6 +226,30 @@ def stats_backtest(
         )
         for stat, result in cached[1].items()
     ]
+
+
+@router.get("/market-benchmark")
+def market_benchmark(
+    teams: TeamRepositoryDep,
+    stats: MatchStatsRepositoryDep,
+    season: str,
+    minimum_history: Annotated[int, Query(ge=0)] = 30,
+) -> dict[str, float]:
+    key = (season, minimum_history)
+    cached = _benchmark_cache.get(key)
+    if cached is None or time.monotonic() - cached[0] > BACKTEST_CACHE_SECONDS:
+        report = MarketBenchmarkUseCase(teams, stats, minimum_history).execute(season)
+        cached = (time.monotonic(), report)
+        _benchmark_cache[key] = cached
+    report = cached[1]
+    return {
+        "matches": report.matches,
+        "model_brier": round(report.model_brier, 4),
+        "market_brier": round(report.market_brier, 4),
+        "consensus_brier": round(report.consensus_brier, 4),
+        "model_accuracy": round(report.model_accuracy, 4),
+        "market_accuracy": round(report.market_accuracy, 4),
+    }
 
 
 @router.get("/highlights", response_model=HighlightsOut)
