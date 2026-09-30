@@ -12,10 +12,12 @@ import { SeasonMoments } from "@/app/components/SeasonMoments";
 import {
   findTwins,
   getHighlights,
+  getOverview,
   listPartnerships,
   listSeasonLeaders,
   listShotLeaders,
   type Highlights,
+  type Overview,
   type Partnership,
   type SeasonLeader,
   type ShotLeader,
@@ -25,20 +27,21 @@ import { currentSeasonStartYear, formatMarketValue, seasonDisplay } from "@/lib/
 
 async function loadHome(startYear: number) {
   try {
-    const [scorers, creators, xg, moments, pairs, highlights] = await Promise.all([
+    const [scorers, creators, xg, moments, pairs, highlights, overview] = await Promise.all([
       listSeasonLeaders(startYear, { metric: "goals", limit: 10 }),
       listSeasonLeaders(startYear, { metric: "expected_assists", limit: 2 }),
       listSeasonLeaders(startYear, { metric: "xg_chain", limit: 2 }),
       listShotLeaders(startYear, { metric: "late_goals", limit: 8 }).catch((): ShotLeader[] => []),
       listPartnerships(startYear, { limit: 6 }).catch((): Partnership[] => []),
       getHighlights(3).catch((): Highlights | null => null),
+      getOverview().catch((): Overview | null => null),
     ]);
     // Live twin teaser: a standout attacker of the season and cheaper look-alikes.
     const star = [...xg, ...scorers].find((leader) => leader.photo_url) ?? scorers[0];
     const teaser = star
       ? await findTwins(star.player_id, { limit: 8 }).catch((): TwinReport | null => null)
       : null;
-    return { scorers, creators, xg, teaser, moments, pairs, highlights, error: false };
+    return { scorers, creators, xg, teaser, moments, pairs, highlights, overview, error: false };
   } catch {
     return {
       scorers: [],
@@ -48,6 +51,7 @@ async function loadHome(startYear: number) {
       moments: [] as ShotLeader[],
       pairs: [] as Partnership[],
       highlights: null as Highlights | null,
+      overview: null as Overview | null,
       error: true,
     };
   }
@@ -83,7 +87,7 @@ const FEATURES = [
 
 export default async function HomePage() {
   const startYear = currentSeasonStartYear();
-  const { scorers, creators, xg, teaser, moments, pairs, highlights, error } =
+  const { scorers, creators, xg, teaser, moments, pairs, highlights, overview, error } =
     await loadHome(startYear);
   const duels = [
     duel(scorers, "Duelo de goleadores"),
@@ -127,6 +131,23 @@ export default async function HomePage() {
             o compara dos jugadores directamente →
           </Link>
         </Reveal>
+        {overview && (
+          <Reveal delay={0.35} className="mt-4 grid w-full max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { value: overview.players, label: "jugadores" },
+              { value: overview.competitions, label: "competiciones" },
+              { value: overview.shots, label: "tiros analizados" },
+              { value: overview.match_stats, label: "partidos con estadísticas" },
+            ].map((item) => (
+              <div key={item.label} className="glass rounded-2xl px-3 py-3">
+                <span className="block font-display text-2xl font-bold tabular-nums">
+                  {item.value.toLocaleString("es-ES")}
+                </span>
+                <span className="text-xs text-muted">{item.label}</span>
+              </div>
+            ))}
+          </Reveal>
+        )}
       </section>
 
       {error && (

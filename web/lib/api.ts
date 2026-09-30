@@ -541,3 +541,18 @@ export function getPlayersBacktest(competition: string, season: string): Promise
   const query = new URLSearchParams({ competition, season }).toString();
   return request<PlayersBacktest>(`/predictions/players-backtest?${query}`);
 }
+
+export type Overview = {
+  players: number;
+  players_with_photo: number;
+  player_seasons: number;
+  competitions: number;
+  matches_with_shots: number;
+  shots: number;
+  match_stats: number;
+  fixtures: number;
+};
+
+export function getOverview(): Promise<Overview> {
+  return request<Overview>("/overview");
+}
