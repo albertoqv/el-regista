@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
@@ -7,6 +8,7 @@ import { PlayerPortrait } from "@/app/components/PlayerPortrait";
 import { PlayerStats } from "@/app/components/PlayerStats";
 import { RadarChart } from "@/app/components/RadarChart";
 import { SeasonSelector } from "@/app/components/SeasonSelector";
+import { ShareCard } from "@/app/components/ShareCard";
 import { ShotProfile } from "@/app/components/ShotProfile";
 import { SimilarPlayers } from "@/app/components/SimilarPlayers";
 import {
@@ -49,6 +51,20 @@ function Badge({ label, value }: { label: string; value: string }) {
       <span className="font-display text-base font-semibold">{value}</span>
     </div>
   );
+}
+
+export async function generateMetadata(
+  props: PageProps<"/players/[id]">,
+): Promise<Metadata> {
+  const { id } = await props.params;
+  const player = await getPlayer(Number(id)).catch(() => null);
+  if (!player) return { title: "TalentScope" };
+  return {
+    title: `${player.name} · TalentScope`,
+    description: `Perfil de scouting, gemelos y estadísticas de ${player.name}.`,
+    openGraph: { images: [`/players/${id}/card`] },
+    twitter: { card: "summary_large_image", images: [`/players/${id}/card`] },
+  };
 }
 
 export default async function PlayerDetailPage(props: PageProps<"/players/[id]">) {
@@ -153,6 +169,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
               >
                 Comparar con otro jugador
               </Link>
+              <ShareCard playerId={player.player_id} name={player.name} />
               <a
                 href="#parecidos"
                 className="glass rounded-full px-5 py-2.5 text-sm font-semibold transition hover:border-line-strong"

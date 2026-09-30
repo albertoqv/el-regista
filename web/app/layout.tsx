@@ -20,6 +20,12 @@ const grotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  // Absolute URLs for social previews (Open Graph cards).
+  metadataBase: new URL(
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3000",
+  ),
   title: "TalentScope",
   description:
     "Compara futbolistas, descubre talento parecido y analiza su rendimiento con datos reales de las 5 grandes ligas",
