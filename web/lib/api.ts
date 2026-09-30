@@ -319,3 +319,14 @@ export function getPlayerShots(playerId: number, seasonLabel?: string): Promise<
   const query = seasonLabel ? `?season_label=${encodeURIComponent(seasonLabel)}` : "";
   return request<PlayerShot[]>(`/players/${playerId}/shots${query}`);
 }
+
+export type ExploreRow = SeasonLeader & {
+  market_value_eur: number | null;
+  age: number | null;
+  sort_value: number;
+};
+
+export function explorePlayers(params: URLSearchParams): Promise<ExploreRow[]> {
+  const query = params.toString();
+  return request<ExploreRow[]>(`/players/explore${query ? `?${query}` : ""}`);
+}

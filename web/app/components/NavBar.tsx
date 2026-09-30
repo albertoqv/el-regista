@@ -8,9 +8,9 @@ export function NavBar() {
         <Link href="/" aria-label="TalentScope, inicio">
           <Logo size={22} />
         </Link>
-        <div className="flex items-center gap-1 text-sm font-medium">
+        <div className="flex items-center gap-0.5 text-xs font-medium sm:gap-1 sm:text-sm">
           <Link
-            href="/"
+            href="/explorar"
             className="rounded-full px-3 py-1.5 text-muted transition hover:bg-white/5 hover:text-ink"
           >
             Explorar
