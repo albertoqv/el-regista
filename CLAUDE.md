@@ -147,6 +147,22 @@ Hecho (2026-09-30), además de lo anterior:
   `@vercel/analytics` (activar Analytics en el panel de Vercel). `GET /health` público.
   Coste medido: ~0,11 $/día, casi todo memoria.
 - Explorador con 9 ligas más (solo goles/asistencias/minutos/tarjetas, hasta 25/26).
+- **Dos productos** (`web/lib/products.ts`, fuente única de menú, pestañas, portada y pie):
+  Scout (`/buscar`, `/explorar`, `/gemelos`, `/compare`, `/en-racha`) y Pronósticos
+  (`/predicciones`, `/predicciones/historial`, `/equipos`). El menú móvil va fuera del
+  `<header>` (su backdrop-blur recorta hijos `fixed`).
+- **Historial de aciertos**: `SnapshotPredictionsUseCase` guarda modelo, mercado y +2,5
+  de los próximos 7 días (`POST /ingestion/predictions/snapshot`, tabla
+  `prediction_snapshots`, migración 0016; paso del workflow) y solo toca partidos sin
+  empezar. `GET /predictions/track-record` puntúa lo guardado + la temporada
+  reconstruida con `BacktestUseCase.scored_matches`. 26/27 reconstruida: 49% 1X2, 87%
+  con ≥60%. Parón FIFA unificado sept-oct: sin partidos del 20 sept al 9 oct 2026.
+- **En racha** (`GET /players/hot`, plantillas de Understat): G+A, goles, xG+xA o
+  mejora sobre su media; mínimo 180'. Imagen en `/en-racha/card`.
+- Coste: Dockerfile con `exec uvicorn` y `MALLOC_ARENA_MAX=2`; pool con `pre_ping`;
+  la web reintenta 502/503/504 una vez y cachea 30 min (listo para Serverless de Railway).
+- Auditoría responsive: `scratchpad/audit.py`-style (CDP, 390/768/1024, detectar
+  `scrollX` real; el `overflow: clip` del body esconde culpables).
 
 Ideas siguientes: lesiones/alineaciones (no hay fuente
 gratuita fiable), producto (cuentas, favoritos, alertas, planes).
