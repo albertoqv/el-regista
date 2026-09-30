@@ -136,3 +136,28 @@ def test_adds_other_leagues_creating_players_or_reusing_known_ones():
     assert (
         repository.get_season_statistics(1, Season("Liga Portugal", "2024")).goals == 39
     )
+
+
+def test_falls_back_to_surname_and_birth_year_when_unique():
+    repository = InMemoryPlayerRepository()
+    repository.save_player(
+        Player(1, "Dani Carvajal", "Defender", None, birth_year=1992)
+    )
+    dataset = FakeDataset([_profile(138927, "Daniel Carvajal", date(1992, 1, 11))])
+
+    assert EnrichFromDatasetUseCase(dataset, repository).execute().ingested == 1
+    assert repository.transfermarkt_index() == {138927: 1}
+
+
+def test_two_dataset_players_claiming_the_same_player_are_both_ignored():
+    repository = InMemoryPlayerRepository()
+    repository.save_player(Player(1, "Rodri", "Midfielder", None, birth_year=1996))
+    dataset = FakeDataset(
+        [
+            _profile(357565, "Rodri", date(1996, 6, 22)),
+            _profile(400000, "Rodri", date(1996, 1, 1)),
+        ]
+    )
+
+    assert EnrichFromDatasetUseCase(dataset, repository).execute().ingested == 0
+    assert repository.get_player(1).photo_url is None
