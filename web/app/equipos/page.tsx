@@ -122,6 +122,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
             </Reveal>
           </div>
 
+          <p className="-mb-2 text-right text-[11px] text-muted sm:hidden">Desliza la tabla para ver más →</p>
           <div className="glass overflow-x-auto rounded-3xl">
             <table className="w-full min-w-[860px] text-sm">
               <thead>

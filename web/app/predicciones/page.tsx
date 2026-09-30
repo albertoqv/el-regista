@@ -121,7 +121,7 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
     <div className="flex flex-col gap-8">
       <Reveal>
         <ScoutNote rotate={-2}>números, no corazonadas</ScoutNote>
-        <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Predicciones</h1>
+        <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Próximos partidos</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">
           Probabilidades de cada resultado, goles esperados y marcadores más probables de los próximos
           partidos, calculados con el rendimiento real de cada equipo (xG) y su forma reciente.

@@ -13,7 +13,7 @@ const RESULT_COLOR: Record<string, string> = {
 export function FormPills({ form, size = "sm" }: { form: string[]; size?: "sm" | "md" }) {
   const box = size === "md" ? "h-6 w-6 text-xs" : "h-5 w-5 text-[10px]";
   return (
-    <span className="inline-flex gap-1" title="Últimos resultados, el más reciente primero">
+    <span className="inline-flex flex-wrap gap-1" title="Últimos resultados, el más reciente primero">
       {form.map((result, index) => (
         <span
           key={index}
@@ -92,8 +92,8 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
         </span>
       </div>
 
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-        <Link href={teamHref(forecast.home_team, forecast.competition)} className="flex flex-col gap-1 hover:underline">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
+        <Link href={teamHref(forecast.home_team, forecast.competition)} className="flex min-w-0 flex-col gap-1 hover:underline">
           <span className="font-display text-base font-bold leading-tight">{forecast.home_team}</span>
           <FormPills form={forecast.home_form} />
         </Link>
@@ -105,10 +105,12 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
         </div>
         <Link
           href={teamHref(forecast.away_team, forecast.competition)}
-          className="flex flex-col items-end gap-1 text-right hover:underline"
+          className="flex min-w-0 flex-col items-end gap-1 text-right hover:underline"
         >
           <span className="font-display text-base font-bold leading-tight">{forecast.away_team}</span>
-          <FormPills form={forecast.away_form} />
+          <span className="flex justify-end">
+            <FormPills form={forecast.away_form} />
+          </span>
         </Link>
       </div>
 
