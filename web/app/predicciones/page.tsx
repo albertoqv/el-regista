@@ -91,8 +91,8 @@ function TrustPanel({
           {benchmark.matches.toLocaleString("es-ES")} partidos (Brier, menos es mejor): nuestro modelo{" "}
           <strong>{benchmark.model_brier.toFixed(3)}</strong>, cuotas de cierre{" "}
           <strong>{benchmark.market_brier.toFixed(3)}</strong> y el consenso de ambos{" "}
-          <strong>{benchmark.consensus_brier.toFixed(3)}</strong>. Por eso, cuando hay cuotas, el
-          pronóstico principal es el consenso.
+          <strong>{benchmark.consensus_brier.toFixed(3)}</strong>. Por eso, en el análisis de
+          cada partido con cuotas publicadas mostramos también el consenso.
         </p>
       )}
     </section>
