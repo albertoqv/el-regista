@@ -5,9 +5,9 @@ from datetime import date
 
 from player_scouting.application.league_ingestion_job import LeagueIngestionJob
 from player_scouting.application.ports import (
-    EnrichmentUnavailableError,
     AdvancedSeasonRow,
     CompetitionStatisticsResult,
+    EnrichmentUnavailableError,
     LeaguePlayersPage,
     LeagueSummary,
     MarketValueHistoryResult,
