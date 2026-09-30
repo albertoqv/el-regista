@@ -86,3 +86,21 @@ def test_stores_the_team_of_each_player_season():
 
     [entry] = repository.list_season_entries(LA_LIGA_2026)
     assert entry.team == "Real Madrid"
+
+
+def test_keeps_an_exact_birth_date_added_later_by_enrichment():
+    from datetime import date
+
+    repository = InMemoryPlayerRepository()
+    use_case = IngestSeasonDatasetUseCase(
+        FakeSeasonDatasetProvider({2026: [_result(1, "Jude Bellingham", 3)]}),
+        repository,
+    )
+    use_case.execute(2026)
+    enriched = repository.get_player(1)
+    enriched.date_of_birth = date(2003, 6, 29)
+    repository.save_player(enriched)
+
+    use_case.execute(2026)
+
+    assert repository.get_player(1).date_of_birth == date(2003, 6, 29)

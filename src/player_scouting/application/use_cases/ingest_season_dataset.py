@@ -33,7 +33,7 @@ class IngestSeasonDatasetUseCase:
             result.player_id,
             result.name,
             result.position or UNKNOWN_POSITION,
-            result.date_of_birth,
+            result.date_of_birth or (existing.date_of_birth if existing else None),
             photo_url=result.photo_url or (existing.photo_url if existing else None),
             preferred_foot=existing.preferred_foot if existing else None,
             birth_year=result.birth_year,
