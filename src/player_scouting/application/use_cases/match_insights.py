@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 from player_scouting.application.player_matching import name_tokens
 from player_scouting.application.ports import (
@@ -11,6 +11,8 @@ from player_scouting.application.ports import (
     MatchStats,
     MatchStatsProvider,
     MatchStatsRepository,
+    RosterEntry,
+    ShotRepository,
     TeamRepository,
 )
 from player_scouting.application.use_cases.team_analytics import (
@@ -18,6 +20,7 @@ from player_scouting.application.use_cases.team_analytics import (
     _record,
 )
 from player_scouting.domain.counts import (
+    CountRatings,
     CountRecord,
     StatPrediction,
     count_ratings,
@@ -26,6 +29,7 @@ from player_scouting.domain.counts import (
 )
 from player_scouting.domain.market import implied_probabilities
 from player_scouting.domain.prediction import (
+    LeagueRatings,
     MatchPrediction,
     predict,
     score_matrix,
@@ -192,27 +196,41 @@ def _referee(name: str | None, matches: list[MatchStats]) -> RefereeProfile | No
     )
 
 
+@dataclass(frozen=True)
+class _LeagueContext:
+    """What every fixture of a league-season shares: computed once per request."""
+
+    ratings: LeagueRatings
+    played: list[MatchStats]
+    names: dict[str, str]
+    stat_models: dict[str, tuple[CountRatings, float]]
+    half_time_share: float
+
+
 @dataclass
 class MatchInsightsUseCase:
     teams: TeamRepository
     stats: MatchStatsRepository
     today: Callable[[], date] = field(default=date.today)
+    _contexts: dict[tuple[str, str], _LeagueContext] = field(
+        default_factory=dict, init=False, repr=False
+    )
 
     def execute(self, match_id: int) -> MatchInsights | None:
         fixture = next(
             (f for f in self.teams.list_fixtures() if f.match_id == match_id), None
         )
-        if fixture is None:
-            return None
+        return self.for_fixture(fixture) if fixture else None
+
+    def _context(self, fixture: Fixture) -> _LeagueContext:
+        key = (fixture.competition, fixture.season_label)
+        if key in self._contexts:
+            return self._contexts[key]
         today = self.today()
         labels = _labels_up_to(fixture.season_label)
         history = self.teams.list_team_matches(labels, fixture.competition)
-        result = predict(
-            team_ratings([_record(m) for m in history], today),
-            fixture.home_team,
-            fixture.away_team,
-        )
         league_stats = self.stats.list_match_stats(fixture.competition, labels)
+        played = [m for m in _played(league_stats) if m.played_on <= today]
         names = learn_team_names(
             [
                 f
@@ -221,28 +239,52 @@ class MatchInsightsUseCase:
             ],
             league_stats,
         )
-        home_name = names.get(fixture.home_team, fixture.home_team)
-        away_name = names.get(fixture.away_team, fixture.away_team)
-        played = [
-            m for m in _played(league_stats) if m.played_on < fixture.kickoff.date()
-        ]
+        stat_models = {}
+        for stat, (home_column, away_column, _) in STATS.items():
+            records = _records(played, home_column, away_column)
+            if records:
+                stat_models[stat] = (
+                    count_ratings(records, today),
+                    dispersion([r.value_for for r in records]),
+                )
+        context = _LeagueContext(
+            ratings=team_ratings([_record(m) for m in history], today),
+            played=played,
+            names=names,
+            stat_models=stat_models,
+            half_time_share=half_time_share(played),
+        )
+        self._contexts[key] = context
+        return context
+
+    def for_fixture(self, fixture: Fixture) -> MatchInsights:
+        context = self._context(fixture)
+        result = predict(context.ratings, fixture.home_team, fixture.away_team)
+        home_name = context.names.get(fixture.home_team, fixture.home_team)
+        away_name = context.names.get(fixture.away_team, fixture.away_team)
+        played = [m for m in context.played if m.played_on < fixture.kickoff.date()]
         upcoming = self.stats.find_upcoming(
             fixture.competition, fixture.kickoff.date(), home_name, away_name
         )
 
-        market = None
+        market: tuple[float, float, float] | None = None
         if (
             upcoming
             and upcoming.odds_home
             and upcoming.odds_draw
             and upcoming.odds_away
         ):
-            market = implied_probabilities(
+            home, draw, away = implied_probabilities(
                 upcoming.odds_home, upcoming.odds_draw, upcoming.odds_away
             )
+            market = (home, draw, away)
         model = (result.home_win, result.draw, result.away_win)
         consensus = (
-            tuple((a + b) / 2 for a, b in zip(model, market, strict=True))
+            (
+                (model[0] + market[0]) / 2,
+                (model[1] + market[1]) / 2,
+                (model[2] + market[2]) / 2,
+            )
             if market
             else model
         )
@@ -252,21 +294,24 @@ class MatchInsightsUseCase:
         referee = _referee(upcoming.referee if upcoming else None, played)
 
         stats = {}
-        for stat, (home_column, away_column, lines) in STATS.items():
-            records = _records(played, home_column, away_column)
-            if not records:
-                continue
+        for stat, (ratings, spread) in context.stat_models.items():
             multiplier = referee.multiplier if (stat == "yellows" and referee) else 1.0
             stats[stat] = stat_prediction(
-                count_ratings(records, today),
+                ratings,
                 home_name,
                 away_name,
-                dispersion=dispersion([r.value_for for r in records]),
-                lines=lines,
+                dispersion=spread,
+                lines=STATS[stat][2],
                 multiplier=multiplier,
             )
 
-        half_time = self._half_time(played, result.expected_home, result.expected_away)
+        share = context.half_time_share
+        half = score_matrix(
+            result.expected_home * share, result.expected_away * share, rho=0.0
+        )
+        half_cells = [
+            (h, a, p) for h, row in enumerate(half) for a, p in enumerate(row)
+        ]
         meetings = [
             m
             for m in reversed(played)
@@ -275,14 +320,18 @@ class MatchInsightsUseCase:
         return MatchInsights(
             fixture=fixture,
             result=result,
-            market=market,  # type: ignore[arg-type]
-            consensus=consensus,  # type: ignore[arg-type]
+            market=market,
+            consensus=consensus,
             goals_over={
                 line: sum(p for h, a, p in cells if h + a > line) for line in GOAL_LINES
             },
             home_clean_sheet=sum(p for h, a, p in cells if a == 0),
             away_clean_sheet=sum(p for h, a, p in cells if h == 0),
-            half_time=half_time,
+            half_time=(
+                sum(p for h, a, p in half_cells if h > a),
+                sum(p for h, a, p in half_cells if h == a),
+                sum(p for h, a, p in half_cells if h < a),
+            ),
             stats=stats,
             referee=referee,
             head_to_head=meetings[:HEAD_TO_HEAD],
@@ -290,19 +339,6 @@ class MatchInsightsUseCase:
             away_recent=list(reversed(_involving(played, away_name)))[:RECENT],
             home_name=home_name,
             away_name=away_name,
-        )
-
-    @staticmethod
-    def _half_time(
-        played: list[MatchStats], rate_home: float, rate_away: float
-    ) -> tuple[float, float, float]:
-        share = half_time_share(played)
-        matrix = score_matrix(rate_home * share, rate_away * share, rho=0.0)
-        cells = [(h, a, p) for h, row in enumerate(matrix) for a, p in enumerate(row)]
-        return (
-            sum(p for h, a, p in cells if h > a),
-            sum(p for h, a, p in cells if h == a),
-            sum(p for h, a, p in cells if h < a),
         )
 
 
@@ -373,3 +409,143 @@ class StatsBacktestUseCase:
                     baseline_brier=sum(brier_base) / count,
                 )
         return report
+
+
+@dataclass(frozen=True)
+class Pick:
+    fixture: Fixture
+    category: str
+    label: str
+    probability: float
+
+
+@dataclass(frozen=True)
+class Highlights:
+    window_start: datetime
+    window_end: datetime
+    picks: list[Pick]
+
+
+# The next round: from the first upcoming kick-off, a long weekend.
+ROUND_DAYS = 4
+CATEGORY_LINES = {"corners": (8.5, 9.5, 10.5), "yellows": (3.5, 4.5, 5.5)}
+STAT_WORDS = {"corners": "córners", "yellows": "amarillas"}
+
+
+def _number(value: float) -> str:
+    return str(value).replace(".", ",")
+
+
+@dataclass
+class HighlightsUseCase:
+    """The most likely outcomes of the next round, by category."""
+
+    teams: TeamRepository
+    stats: MatchStatsRepository
+    shots: ShotRepository
+    now: Callable[[], datetime] = field(default=datetime.now)
+
+    def execute(self, per_category: int = 5) -> Highlights:
+        start = self.now()
+        upcoming = [f for f in self.teams.list_fixtures(start=start) if not f.played]
+        if not upcoming:
+            return Highlights(start, start, [])
+        first = upcoming[0].kickoff
+        window_start = datetime.combine(first.date(), datetime.min.time())
+        window_end = window_start + timedelta(days=ROUND_DAYS)
+        fixtures = [f for f in upcoming if f.kickoff < window_end]
+
+        insights_use_case = MatchInsightsUseCase(
+            self.teams, self.stats, lambda: start.date()
+        )
+        rosters: dict[tuple[str, str], list[RosterEntry]] = {}
+        picks: list[Pick] = []
+        for fixture in fixtures:
+            insights = insights_use_case.for_fixture(fixture)
+            picks += self._fixture_picks(insights)
+            key = (fixture.competition, fixture.season_label)
+            if key not in rosters:
+                rosters[key] = self.shots.list_rosters(
+                    fixture.competition, _labels_up_to(fixture.season_label)
+                )
+            picks += self._scorer_picks(insights, rosters[key])
+
+        ranked: list[Pick] = []
+        for category in ("result", "goals", "corners", "cards", "scorers"):
+            best_per_fixture: dict[int, Pick] = {}
+            for pick in picks:
+                if pick.category != category:
+                    continue
+                kept = best_per_fixture.get(pick.fixture.match_id)
+                if kept is None or pick.probability > kept.probability:
+                    best_per_fixture[pick.fixture.match_id] = pick
+            ranked += sorted(best_per_fixture.values(), key=lambda p: -p.probability)[
+                :per_category
+            ]
+        return Highlights(window_start, window_end, ranked)
+
+    @staticmethod
+    def _fixture_picks(insights: MatchInsights) -> list[Pick]:
+        fixture = insights.fixture
+        home, away = fixture.home_team, fixture.away_team
+        p_home, p_draw, p_away = insights.consensus
+        picks = [
+            Pick(fixture, "result", f"Gana {home}", p_home),
+            Pick(fixture, "result", f"Gana {away}", p_away),
+            Pick(fixture, "result", f"{home} no pierde", p_home + p_draw),
+            Pick(fixture, "result", f"{away} no pierde", p_away + p_draw),
+        ]
+        for line in (1.5, 2.5, 3.5):
+            over = insights.goals_over[line]
+            picks += [
+                Pick(fixture, "goals", f"Más de {_number(line)} goles", over),
+                Pick(fixture, "goals", f"Menos de {_number(line)} goles", 1 - over),
+            ]
+        btts = insights.result.both_teams_score
+        picks += [
+            Pick(fixture, "goals", "Marcan ambos", btts),
+            Pick(fixture, "goals", "No marcan ambos", 1 - btts),
+        ]
+        for stat, category in (("corners", "corners"), ("yellows", "cards")):
+            prediction = insights.stats.get(stat)
+            if prediction is None:
+                continue
+            word = STAT_WORDS[stat]
+            for line in CATEGORY_LINES[stat]:
+                stat_over = prediction.over.get(line)
+                if stat_over is None:
+                    continue
+                picks += [
+                    Pick(
+                        fixture, category, f"Más de {_number(line)} {word}", stat_over
+                    ),
+                    Pick(
+                        fixture,
+                        category,
+                        f"Menos de {_number(line)} {word}",
+                        1 - stat_over,
+                    ),
+                ]
+            picks += [
+                Pick(fixture, category, f"{home} con más {word}", prediction.home_more),
+                Pick(fixture, category, f"{away} con más {word}", prediction.away_more),
+            ]
+        return [pick for pick in picks if pick.probability >= 0.5]
+
+    @staticmethod
+    def _scorer_picks(
+        insights: MatchInsights, rosters: list[RosterEntry]
+    ) -> list[Pick]:
+        from player_scouting.application.use_cases.player_markets import _team_lines
+
+        fixture = insights.fixture
+        kickoff = fixture.kickoff.date()
+        lines = _team_lines(
+            fixture.home_team, rosters, kickoff, insights.result.expected_home
+        ) + _team_lines(
+            fixture.away_team, rosters, kickoff, insights.result.expected_away
+        )
+        if not lines:
+            return []
+        best = max(lines, key=lambda line: line.props.goal)
+        return [Pick(fixture, "scorers", f"{best.name} marca", best.props.goal)]
