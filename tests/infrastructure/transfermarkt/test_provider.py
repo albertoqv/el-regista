@@ -148,3 +148,32 @@ def test_raises_when_transfermarkt_is_blocking_us():
 
     with pytest.raises(EnrichmentUnavailableError):
         _provider(client).get_market_value_history("Jude Bellingham", 2003)
+
+
+class SearchByNameClient(FakeTransfermarktClient):
+    """Only the Western name order finds the player (as with 'Kang-in Lee')."""
+
+    def __init__(self, results: dict[str, str]) -> None:
+        super().__init__()
+        self._results = results
+        self.searched: list[str] = []
+
+    def search_player(self, name: str) -> str:
+        self.searched.append(name)
+        return self._results.get(name, "")
+
+
+def test_retries_with_the_name_words_reversed_when_nothing_is_found():
+    client = SearchByNameClient(
+        {
+            "Kang-in Lee": _search_html(
+                ("Kang-in Lee", "/kang-in-lee/profil/spieler/557149", 25)
+            )
+        }
+    )
+    provider = TransfermarktMarketValueProvider(client, current_year=lambda: 2026)
+
+    result = provider.get_market_value_history("Lee Kang-in", 2001)
+
+    assert client.searched == ["Lee Kang-in", "Kang-in Lee"]
+    assert result is not None
