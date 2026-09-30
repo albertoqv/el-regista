@@ -109,6 +109,28 @@ Hecho (2026-09-30), además de lo anterior:
   UTC (la web las muestra en Europe/Madrid).
 - Web: `/equipos`, `/equipos/[team]`, `/predicciones`, `/como-funciona`.
 
-Ideas siguientes: lesiones/alineaciones (no hay fuente gratuita fiable), usar los
-datos de equipo en la ficha del jugador, más ligas con datos avanzados.
+- **Predicciones ampliadas** (2026-09-30):
+  - football-data.co.uk (`infrastructure/football_data/`, tabla `match_stats`,
+    migración 0013): córners, tarjetas, faltas, tiros, descanso y cuotas por partido;
+    `fixtures.csv` trae próximos partidos con árbitro y cuotas. Nombres de equipo
+    distintos a Understat: `learn_team_names` los empareja por fecha ±1 y marcador.
+  - `domain/counts.py`: binomial negativa por equipo (a favor/en contra), encogimiento
+    10 partidos (afinado en 24/25, validado en 25/26). Córners/faltas/tiros mejoran a la
+    media de liga; amarillas ≈ media (árbitro solo en la Premier).
+  - `application/use_cases/match_insights.py`: análisis completo (`/predictions/{id}/insights`),
+    backtest de estadísticas y `HighlightsUseCase` (`/predictions/highlights`: lo más
+    probable de la próxima jornada, mercados de referencia). Caché por liga.
+  - Plantillas Understat por partido (`player_match_stats`, migración 0014; hay
+    jugadores repetidos en alguna plantilla → se deduplica). `domain/player_props.py` +
+    `player_markets.py`: marca/asiste/amarilla/tiros **si juega** + probabilidad de jugar
+    (`/predictions/{id}/players`, `/predictions/players-backtest`).
+  - Web: `/predicciones/[match]` (análisis completo), destacadas en predicciones y
+    portada, cifras reales (`GET /overview`). `Reveal` es CSS puro (nunca oculta
+    contenido sin JS).
+- Workflow semanal reescrito con funciones `post`/`until_done`; lotes de plantillas de 40
+  (con 120 Railway corta la petición).
+
+Ideas siguientes: calibrar el sesgo de "marca" con el backtest completo, mercado vs
+modelo con cuotas de cierre en el backtest 1X2, lesiones/alineaciones (no hay fuente
+gratuita fiable), producto (cuentas, favoritos, alertas, planes).
 No hay fuente gratuita de fotos de cuerpo entero.
