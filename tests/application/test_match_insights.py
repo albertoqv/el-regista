@@ -203,3 +203,34 @@ def test_half_time_goals_are_the_full_time_expectation_scaled_by_the_league():
 
     assert half_time_share(matches) == pytest.approx(0.5)
     assert half_time_share([]) == pytest.approx(0.45)
+
+
+def test_highlights_rank_the_most_likely_outcomes_of_the_next_round():
+    from datetime import datetime
+
+    from player_scouting.application.use_cases.match_insights import HighlightsUseCase
+    from tests.application.test_player_markets import _rosters
+
+    highlights = HighlightsUseCase(
+        team_repository(),
+        _stats_repository(),
+        _rosters(),
+        now=lambda: datetime(2026, 10, 1, 12, 0),
+    ).execute(per_category=3)
+
+    # Only the next round (4 Oct), not the December fixture.
+    assert {pick.fixture.match_id for pick in highlights.picks} == {6}
+    categories = {pick.category for pick in highlights.picks}
+    assert {"result", "goals", "corners", "cards", "scorers"} <= categories
+    for category in categories:
+        probabilities = [
+            p.probability for p in highlights.picks if p.category == category
+        ]
+        assert probabilities == sorted(probabilities, reverse=True)
+        assert len(probabilities) <= 3
+    assert all(
+        0.5 <= pick.probability <= 1
+        for pick in highlights.picks
+        if pick.category != "scorers"
+    )
+    assert highlights.window_start.date().isoformat() == "2026-10-04"
