@@ -21,6 +21,7 @@ from player_scouting.domain.player_props import (
     Appearance,
     PlayerProps,
     expected_minutes,
+    main_position,
     player_props,
 )
 from player_scouting.domain.prediction import predict, team_ratings
@@ -120,7 +121,7 @@ def _team_lines(
             PlayerMarketLine(
                 understat_player_id=player_id,
                 name=latest.player_name,
-                position=latest.position,
+                position=main_position([_appearance(e) for e in entries]),
                 props=player_props(
                     [_appearance(e) for e in entries],
                     minutes=minutes,

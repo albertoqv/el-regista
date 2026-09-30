@@ -73,7 +73,8 @@ def expected_minutes(recent_minutes: list[int]) -> float:
     )
 
 
-def _main_position(history: list[Appearance]) -> str:
+def main_position(history: list[Appearance]) -> str:
+    """Most frequent position when starting ("Sub" only means he came on)."""
     counts: dict[str, int] = {}
     for appearance in history:
         if appearance.position != "Sub":
@@ -92,7 +93,7 @@ def player_props(
     card_factor: float,
 ) -> PlayerProps:
     prior_xg, prior_xa, prior_shots, prior_yellow = _PRIORS[
-        position_group(_main_position(history))
+        position_group(main_position(history))
     ]
     played = sum(a.minutes for a in history)
     share = minutes / 90
