@@ -105,5 +105,6 @@ def test_client_builds_the_season_url_and_follows_the_redirect():
 
     client = FootballDataClient(httpx.Client(transport=httpx.MockTransport(handler)))
 
-    assert client.season_csv("SP1", 2026).startswith("﻿Div")
+    # The byte-order mark is dropped when decoding.
+    assert client.season_csv("SP1", 2026).startswith("Div,")
     assert requested[0] == "https://www.football-data.co.uk/mmz4281/2627/SP1.csv"

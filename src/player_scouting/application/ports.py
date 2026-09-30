@@ -430,3 +430,58 @@ class TeamRepository(Protocol):
         start: datetime | None = None,
         end: datetime | None = None,
     ) -> list[Fixture]: ...
+
+
+@dataclass(frozen=True)
+class MatchStats:
+    """One match as football-data.co.uk records it: stats (once played) and odds."""
+
+    competition: str
+    season_label: str
+    played_on: date
+    home_team: str
+    away_team: str
+    referee: str | None
+    home_goals: int | None = None
+    away_goals: int | None = None
+    home_goals_ht: int | None = None
+    away_goals_ht: int | None = None
+    home_shots: int | None = None
+    away_shots: int | None = None
+    home_shots_on_target: int | None = None
+    away_shots_on_target: int | None = None
+    home_fouls: int | None = None
+    away_fouls: int | None = None
+    home_corners: int | None = None
+    away_corners: int | None = None
+    home_yellows: int | None = None
+    away_yellows: int | None = None
+    home_reds: int | None = None
+    away_reds: int | None = None
+    odds_home: float | None = None
+    odds_draw: float | None = None
+    odds_away: float | None = None
+    odds_over_2_5: float | None = None
+    odds_under_2_5: float | None = None
+
+    @property
+    def played(self) -> bool:
+        return self.home_goals is not None and self.away_goals is not None
+
+
+class MatchStatsProvider(Protocol):
+    def season(self, start_year: int) -> list[MatchStats]: ...
+
+    def upcoming(self) -> list[MatchStats]: ...
+
+
+class MatchStatsRepository(Protocol):
+    def save_match_stats(self, matches: list[MatchStats]) -> None: ...
+
+    def list_match_stats(
+        self, competition: str, season_labels: list[str]
+    ) -> list[MatchStats]: ...
+
+    def find_upcoming(
+        self, competition: str, played_on: date, home_team: str, away_team: str
+    ) -> MatchStats | None: ...
