@@ -138,6 +138,16 @@ Hecho (2026-09-30), además de lo anterior:
   casi perfecta (La Liga 25/26, 10.840 pronósticos, Brier 0,067 vs 0,074; ningún
   factor de corrección la mejora).
 
+- **Panel `/admin`** (2026-09-30): entra con la `INGESTION_API_KEY` (cookie httpOnly).
+  Visitas propias sin cookies ni IP (`POST /metrics/visit` en text/plain, hash diario con
+  sal; bots y `/admin` excluidos; tabla `page_views`, migración 0015), salud de la API en
+  memoria desde el último despliegue, datos y coste de Railway (`infrastructure/railway/`,
+  mismas consultas y precios que `railway usage`; necesita `RAILWAY_API_TOKEN` +
+  `RAILWAY_WORKSPACE_ID` en el servicio `api`, si no muestra "sin conectar"). También
+  `@vercel/analytics` (activar Analytics en el panel de Vercel). `GET /health` público.
+  Coste medido: ~0,11 $/día, casi todo memoria.
+- Explorador con 9 ligas más (solo goles/asistencias/minutos/tarjetas, hasta 25/26).
+
 Ideas siguientes: lesiones/alineaciones (no hay fuente
 gratuita fiable), producto (cuentas, favoritos, alertas, planes).
 No hay fuente gratuita de fotos de cuerpo entero.
