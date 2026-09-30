@@ -556,3 +556,16 @@ export type Overview = {
 export function getOverview(): Promise<Overview> {
   return request<Overview>("/overview");
 }
+
+export type MarketBenchmark = {
+  matches: number;
+  model_brier: number;
+  market_brier: number;
+  consensus_brier: number;
+  model_accuracy: number;
+  market_accuracy: number;
+};
+
+export function getMarketBenchmark(season: string): Promise<MarketBenchmark> {
+  return request<MarketBenchmark>(`/predictions/market-benchmark?season=${season}`);
+}

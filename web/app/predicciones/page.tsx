@@ -7,10 +7,12 @@ import { ScoutNote } from "@/app/components/ScoutNote";
 import {
   getBacktest,
   getHighlights,
+  getMarketBenchmark,
   getPredictions,
   type Backtest,
   type Forecast,
   type Highlights,
+  type MarketBenchmark,
 } from "@/lib/api";
 import { COMPETITIONS, competitionColor, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
@@ -35,7 +37,15 @@ function dayLabel(iso: string): string {
   });
 }
 
-function TrustPanel({ backtest, season }: { backtest: Backtest; season: string }) {
+function TrustPanel({
+  backtest,
+  season,
+  benchmark,
+}: {
+  backtest: Backtest;
+  season: string;
+  benchmark: MarketBenchmark | null;
+}) {
   const edge = backtest.accuracy - backtest.baseline_accuracy;
   return (
     <section className="glass grid grid-cols-2 gap-4 rounded-3xl p-5 sm:grid-cols-4">
@@ -75,6 +85,16 @@ function TrustPanel({ backtest, season }: { backtest: Backtest; season: string }
         </span>
         <span className="text-xs text-muted">desvío medio entre lo que dice y lo que pasa</span>
       </div>
+      {benchmark && benchmark.matches > 0 && (
+        <p className="col-span-2 rounded-2xl bg-white/[0.04] p-3 text-sm sm:col-span-4">
+          <strong>Frente a las casas de apuestas</strong> en los mismos{" "}
+          {benchmark.matches.toLocaleString("es-ES")} partidos (Brier, menos es mejor): nuestro modelo{" "}
+          <strong>{benchmark.model_brier.toFixed(3)}</strong>, cuotas de cierre{" "}
+          <strong>{benchmark.market_brier.toFixed(3)}</strong> y el consenso de ambos{" "}
+          <strong>{benchmark.consensus_brier.toFixed(3)}</strong>. Por eso, cuando hay cuotas, el
+          pronóstico principal es el consenso.
+        </p>
+      )}
     </section>
   );
 }
@@ -83,10 +103,11 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
   const searchParams = await props.searchParams;
   const league = param(searchParams.liga);
   const lastSeason = String(currentSeasonStartYear() - 1);
-  const [forecasts, backtest, highlights] = await Promise.all([
+  const [forecasts, backtest, highlights, benchmark] = await Promise.all([
     getPredictions(WINDOW_DAYS, league).catch((): Forecast[] => []),
     getBacktest(lastSeason).catch((): Backtest | null => null),
     league ? Promise.resolve(null) : getHighlights(5).catch((): Highlights | null => null),
+    getMarketBenchmark(lastSeason).catch((): MarketBenchmark | null => null),
   ]);
 
   const byDay = new Map<string, Forecast[]>();
@@ -114,7 +135,7 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
 
       {backtest && backtest.matches > 0 && (
         <Reveal>
-          <TrustPanel backtest={backtest} season={lastSeason} />
+          <TrustPanel backtest={backtest} season={lastSeason} benchmark={benchmark} />
         </Reveal>
       )}
 
