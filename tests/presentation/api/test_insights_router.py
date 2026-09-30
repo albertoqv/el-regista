@@ -77,3 +77,26 @@ def test_ingest_football_data():
     response = _client(stats, Provider()).post("/ingestion/football-data/seasons/2026")
 
     assert response.json() == {"saved": 1}
+
+
+def test_highlights_of_the_next_round():
+    from tests.application.test_player_markets import _rosters
+
+    app = create_app()
+    teams, stats, shots = team_repository(), _stats_repository(), _rosters()
+    app.dependency_overrides[get_team_repository] = lambda: teams
+    app.dependency_overrides[get_match_stats_repository] = lambda: stats
+    app.dependency_overrides[get_shot_repository] = lambda: shots
+
+    body = TestClient(app).get("/predictions/highlights?per_category=2").json()
+
+    assert "window_start" in body and "picks" in body
+    for pick in body["picks"]:
+        assert {
+            "match_id",
+            "home_team",
+            "away_team",
+            "category",
+            "label",
+            "probability",
+        } <= set(pick)
