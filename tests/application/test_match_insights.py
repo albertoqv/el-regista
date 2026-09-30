@@ -234,3 +234,18 @@ def test_highlights_rank_the_most_likely_outcomes_of_the_next_round():
         if pick.category != "scorers"
     )
     assert highlights.window_start.date().isoformat() == "2026-10-04"
+
+
+def test_market_benchmark_scores_model_market_and_consensus_on_the_same_matches():
+    from player_scouting.application.use_cases.match_insights import (
+        MarketBenchmarkUseCase,
+    )
+
+    report = MarketBenchmarkUseCase(
+        team_repository(), _stats_repository(), minimum_history=1
+    ).execute("2026")
+
+    # Matches 2..5 have earlier data and closing odds in football-data.
+    assert report.matches == 4
+    for brier in (report.model_brier, report.market_brier, report.consensus_brier):
+        assert 0 <= brier <= 2
