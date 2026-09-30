@@ -15,7 +15,8 @@ from dataclasses import dataclass
 from datetime import date
 
 HALF_LIFE_DAYS = 120
-PRIOR_MATCHES = 3.0
+# Tuned by walk-forward backtest on 24/25 (PL + La Liga), validated on 25/26.
+PRIOR_MATCHES = 10.0
 PRIOR_VENUE_MATCHES = 20.0
 ITERATIONS = 8
 MAX_COUNT = 80

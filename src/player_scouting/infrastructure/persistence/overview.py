@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from sqlalchemy import distinct, func, select
+from typing import Any
+
+from sqlalchemy import Select, distinct, func, select
 from sqlalchemy.orm import Session
 
 from player_scouting.infrastructure.persistence.models import (
@@ -16,7 +18,7 @@ from player_scouting.infrastructure.persistence.models import (
 def database_overview(session: Session) -> dict[str, int]:
     """Headline numbers for the product: what the data actually covers."""
 
-    def count(statement) -> int:  # type: ignore[no-untyped-def]
+    def count(statement: Select[Any]) -> int:
         return int(session.execute(statement).scalar() or 0)
 
     return {
