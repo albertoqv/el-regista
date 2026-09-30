@@ -5,8 +5,10 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 
 from player_scouting.application.ports import LeaderMetric, ShotMetric
+from player_scouting.infrastructure.persistence.overview import database_overview
 from player_scouting.presentation.api.dependencies import (
     PlayerRepositoryDep,
+    SessionDep,
     ShotRepositoryDep,
 )
 from player_scouting.presentation.api.schemas import (
@@ -56,3 +58,11 @@ def list_partnerships(
 ) -> list[PartnershipOut]:
     pairs = repository.list_partnerships(str(start_year), limit, competition)
     return [partnership_out_from_domain(pair) for pair in pairs]
+
+
+overview_router = APIRouter(tags=["overview"])
+
+
+@overview_router.get("/overview")
+def overview(session: SessionDep) -> dict[str, int]:
+    return database_overview(session)

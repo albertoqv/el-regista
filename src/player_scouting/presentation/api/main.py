@@ -23,6 +23,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(players.router)
     app.include_router(seasons.router)
+    app.include_router(seasons.overview_router)
     app.include_router(teams.teams_router)
     app.include_router(insights.router)
     app.include_router(teams.predictions_router)
