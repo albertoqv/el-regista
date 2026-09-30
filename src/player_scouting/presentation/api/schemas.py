@@ -6,10 +6,11 @@ from pydantic import BaseModel
 
 from player_scouting.application.ingestion_result import IngestionResult
 from player_scouting.application.league_ingestion_job import LeagueIngestionJob
-from player_scouting.application.ports import LeagueSummary, SeasonLeader
+from player_scouting.application.ports import LeagueSummary, SeasonRecord
 from player_scouting.application.use_cases.find_similar_players import (
     SimilarPlayerMatch,
 )
+from player_scouting.application.use_cases.find_twins import TwinProfile, TwinReport
 from player_scouting.application.use_cases.get_player_percentiles import (
     PercentileReport,
 )
@@ -81,6 +82,25 @@ class PercentileReportOut(BaseModel):
     peer_count: int
     minimum_minutes: int
     metrics: dict[str, MetricPercentileOut]
+
+
+class TwinProfileOut(PlayerSummaryOut):
+    competition: str
+    season_label: str
+    team: str | None
+    market_value_eur: int | None
+    percentiles: dict[str, int]
+
+
+class TwinOut(TwinProfileOut):
+    similarity: int
+    shared_strengths: list[str]
+    differences: list[str]
+
+
+class TwinReportOut(BaseModel):
+    target: TwinProfileOut
+    twins: list[TwinOut]
 
 
 class ComparisonOut(BaseModel):
@@ -256,7 +276,7 @@ def league_ingestion_batch_summary_out_from_domain(
     )
 
 
-def season_leader_out_from_domain(leader: SeasonLeader) -> SeasonLeaderOut:
+def season_leader_out_from_domain(leader: SeasonRecord) -> SeasonLeaderOut:
     return SeasonLeaderOut(
         **player_out_from_domain(leader.player, leader.statistics).model_dump(),
         competition=leader.season.competition,
@@ -278,4 +298,34 @@ def percentile_report_out_from_domain(report: PercentileReport) -> PercentileRep
             )
             for metric, value in report.metrics.items()
         },
+    )
+
+
+def _twin_profile_fields(profile: TwinProfile) -> dict:
+    return {
+        **player_summary_from_domain(profile.player).model_dump(),
+        "competition": profile.season.competition,
+        "season_label": profile.season.label,
+        "team": profile.team,
+        "market_value_eur": (
+            profile.market_value.amount_eur if profile.market_value else None
+        ),
+        "percentiles": {
+            metric: value.percentile for metric, value in profile.percentiles.items()
+        },
+    }
+
+
+def twin_report_out_from_domain(report: TwinReport) -> TwinReportOut:
+    return TwinReportOut(
+        target=TwinProfileOut(**_twin_profile_fields(report.target)),
+        twins=[
+            TwinOut(
+                **_twin_profile_fields(twin),
+                similarity=twin.similarity,
+                shared_strengths=list(twin.shared_strengths),
+                differences=list(twin.differences),
+            )
+            for twin in report.twins
+        ],
     )

@@ -33,7 +33,7 @@ class SeasonEntry:
 
 
 @dataclass
-class SeasonLeader:
+class SeasonRecord:
     player: Player
     season: Season
     team: str | None
@@ -62,7 +62,11 @@ class PlayerRepository(Protocol):
         metric: LeaderMetric,
         limit: int,
         competition: str | None = None,
-    ) -> list[SeasonLeader]: ...
+    ) -> list[SeasonRecord]: ...
+
+    def list_season_records(self, season_labels: list[str]) -> list[SeasonRecord]: ...
+
+    def latest_market_values(self) -> dict[int, MarketValuePoint]: ...
 
     def save_player(self, player: Player) -> None: ...
 

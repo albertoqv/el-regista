@@ -16,7 +16,7 @@ from player_scouting.application.ports import (
     PlayerSort,
     PlayerSummary,
     SeasonEntry,
-    SeasonLeader,
+    SeasonRecord,
 )
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
@@ -115,9 +115,9 @@ class InMemoryPlayerRepository:
         metric: LeaderMetric,
         limit: int,
         competition: str | None = None,
-    ) -> list[SeasonLeader]:
+    ) -> list[SeasonRecord]:
         leaders = [
-            SeasonLeader(
+            SeasonRecord(
                 self._players[player_id],
                 season,
                 self._teams.get((player_id, season)),
@@ -132,6 +132,25 @@ class InMemoryPlayerRepository:
             key=lambda leader: (-getattr(leader.statistics, metric), leader.player.name)
         )
         return leaders[:limit]
+
+    def list_season_records(self, season_labels: list[str]) -> list[SeasonRecord]:
+        return [
+            SeasonRecord(
+                self._players[player_id],
+                season,
+                self._teams.get((player_id, season)),
+                self._merged(player_id, season),
+            )
+            for (player_id, season) in self._season_statistics
+            if season.label in season_labels and player_id in self._players
+        ]
+
+    def latest_market_values(self) -> dict[int, MarketValuePoint]:
+        return {
+            player_id: max(points, key=lambda point: point.as_of)
+            for player_id, points in self._market_value_history.items()
+            if points
+        }
 
     def list_season_entries(self, season: Season) -> list[SeasonEntry]:
         return [

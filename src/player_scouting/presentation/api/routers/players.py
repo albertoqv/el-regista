@@ -6,10 +6,12 @@ from fastapi import APIRouter, HTTPException, Query
 
 from player_scouting.application.exceptions import PlayerNotFoundError
 from player_scouting.application.ports import PlayerSort
+from player_scouting.application.use_cases.find_twins import TwinFilters
 from player_scouting.domain.season import Season
 from player_scouting.presentation.api.dependencies import (
     ComparePlayersUseCaseDep,
     FindSimilarPlayersUseCaseDep,
+    FindTwinsUseCaseDep,
     GetPlayerPercentilesUseCaseDep,
     PlayerRepositoryDep,
 )
@@ -20,12 +22,14 @@ from player_scouting.presentation.api.schemas import (
     PlayerOut,
     SeasonOut,
     SimilarPlayerMatchOut,
+    TwinReportOut,
     comparison_out_from_domain,
     market_value_history_out_from_domain,
     percentile_report_out_from_domain,
     player_out_from_domain,
     season_out_from_domain,
     similar_player_match_out_from_domain,
+    twin_report_out_from_domain,
 )
 
 router = APIRouter(prefix="/players", tags=["players"])
@@ -112,6 +116,30 @@ def get_player_season_percentiles(
     except PlayerNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     return percentile_report_out_from_domain(report)
+
+
+@router.get("/{player_id}/twins", response_model=TwinReportOut)
+def find_twins(
+    player_id: int,
+    use_case: FindTwinsUseCaseDep,
+    competition: str | None = None,
+    label: str | None = None,
+    max_value: Annotated[int | None, Query(ge=0)] = None,
+    max_age: Annotated[int | None, Query(ge=14, le=50)] = None,
+    league: str | None = None,
+    limit: Annotated[int, Query(ge=1, le=50)] = 12,
+) -> TwinReportOut:
+    try:
+        report = use_case.execute(
+            player_id,
+            season=_season_or_none(competition, label),
+            filters=TwinFilters(
+                max_value=max_value, max_age=max_age, competition=league, limit=limit
+            ),
+        )
+    except PlayerNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    return twin_report_out_from_domain(report)
 
 
 @router.get("/{player_id}/market-value", response_model=MarketValueHistoryOut)

@@ -24,6 +24,7 @@ from player_scouting.application.use_cases.enrich_player_market_value import (
 from player_scouting.application.use_cases.find_similar_players import (
     FindSimilarPlayersUseCase,
 )
+from player_scouting.application.use_cases.find_twins import FindTwinsUseCase
 from player_scouting.application.use_cases.get_player_percentiles import (
     GetPlayerPercentilesUseCase,
 )
@@ -371,3 +372,10 @@ def get_player_percentiles_use_case(
 GetPlayerPercentilesUseCaseDep = Annotated[
     GetPlayerPercentilesUseCase, Depends(get_player_percentiles_use_case)
 ]
+
+
+def get_find_twins_use_case(repository: PlayerRepositoryDep) -> FindTwinsUseCase:
+    return FindTwinsUseCase(repository)
+
+
+FindTwinsUseCaseDep = Annotated[FindTwinsUseCase, Depends(get_find_twins_use_case)]

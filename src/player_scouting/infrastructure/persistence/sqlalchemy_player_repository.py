@@ -20,7 +20,7 @@ from player_scouting.application.ports import (
     PlayerSort,
     PlayerSummary,
     SeasonEntry,
-    SeasonLeader,
+    SeasonRecord,
 )
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
@@ -245,7 +245,7 @@ class SqlAlchemyPlayerRepository:
         metric: LeaderMetric,
         limit: int,
         competition: str | None = None,
-    ) -> list[SeasonLeader]:
+    ) -> list[SeasonRecord]:
         filters = [Basic.season_label == season_label]
         if competition is not None:
             filters.append(Basic.competition == competition)
@@ -259,7 +259,7 @@ class SqlAlchemyPlayerRepository:
             .all()
         )
         return [
-            SeasonLeader(
+            SeasonRecord(
                 self._player_to_domain(player_model),
                 Season(basic.competition, basic.season_label),
                 basic.team,
@@ -267,6 +267,40 @@ class SqlAlchemyPlayerRepository:
             )
             for basic, advanced, player_model in rows
         ]
+
+    def list_season_records(self, season_labels: list[str]) -> list[SeasonRecord]:
+        return [
+            SeasonRecord(
+                self._player_to_domain(player_model),
+                Season(basic.competition, basic.season_label),
+                basic.team,
+                self._merge(basic, advanced),
+            )
+            for basic, advanced, player_model in self._season_rows(
+                Basic.season_label.in_(season_labels)
+            )
+        ]
+
+    def latest_market_values(self) -> dict[int, MarketValuePoint]:
+        Value = PlayerMarketValueModel
+        latest = (
+            select(Value.player_id, func.max(Value.as_of_date).label("as_of"))
+            .group_by(Value.player_id)
+            .subquery()
+        )
+        rows = self._session.execute(
+            select(Value).join(
+                latest,
+                and_(
+                    Value.player_id == latest.c.player_id,
+                    Value.as_of_date == latest.c.as_of,
+                ),
+            )
+        ).scalars()
+        return {
+            row.player_id: MarketValuePoint(row.as_of_date, row.amount_eur, row.club)
+            for row in rows
+        }
 
     def list_season_entries(self, season: Season) -> list[SeasonEntry]:
         rows = self._season_rows(
