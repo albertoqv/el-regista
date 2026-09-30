@@ -22,7 +22,7 @@ from player_scouting.application.ports import (
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
-from player_scouting.domain.shots import Shot
+from player_scouting.domain.shots import Shot, ShotTotals
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 
 
@@ -381,3 +381,15 @@ class InMemoryShotRepository:
 
     def shots_of(self, match_id: int) -> list[Shot]:
         return self._shots[match_id]
+
+    def set_totals(self, totals: dict[tuple[int, Season], ShotTotals]) -> None:
+        self._totals = totals
+
+    def list_shot_totals(
+        self, season_labels: list[str]
+    ) -> dict[tuple[int, Season], ShotTotals]:
+        return {
+            key: value
+            for key, value in getattr(self, "_totals", {}).items()
+            if key[1].label in season_labels
+        }

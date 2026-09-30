@@ -8,7 +8,7 @@ from player_scouting.application.player_matching import ExternalPlayer
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
-from player_scouting.domain.shots import Shot
+from player_scouting.domain.shots import Shot, ShotTotals
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 
 PlayerSort = Literal["recent", "goals", "assists"]
@@ -316,3 +316,7 @@ class ShotRepository(Protocol):
     def list_partnerships(
         self, season_label: str, limit: int, competition: str | None = None
     ) -> list[Partnership]: ...
+
+    def list_shot_totals(
+        self, season_labels: list[str]
+    ) -> dict[tuple[int, Season], ShotTotals]: ...

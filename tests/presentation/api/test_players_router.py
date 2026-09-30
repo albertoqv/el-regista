@@ -6,9 +6,12 @@ from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
-from player_scouting.presentation.api.dependencies import get_player_repository
+from player_scouting.presentation.api.dependencies import (
+    get_player_repository,
+    get_shot_repository,
+)
 from player_scouting.presentation.api.main import create_app
-from tests.application.doubles import InMemoryPlayerRepository
+from tests.application.doubles import InMemoryPlayerRepository, InMemoryShotRepository
 
 LA_LIGA_2023 = Season("La Liga", "2023")
 PREMIER_LEAGUE_2023 = Season("Premier League", "2023")
@@ -18,6 +21,7 @@ COPA_DEL_REY_1984 = Season("Copa del Rey", "1983/1984")
 def _client_with_repository(repository: InMemoryPlayerRepository) -> TestClient:
     app = create_app()
     app.dependency_overrides[get_player_repository] = lambda: repository
+    app.dependency_overrides[get_shot_repository] = InMemoryShotRepository
     return TestClient(app)
 
 

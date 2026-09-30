@@ -75,3 +75,33 @@ def mark_decisive_goals(shots: list[Shot]) -> list[Shot]:
                 home_goals += 1
         marked.append(replace(shot, decisive=decisive))
     return marked
+
+
+@dataclass(frozen=True)
+class ShotTotals:
+    """A player's shots in one league season (penalties excluded)."""
+
+    shots: int
+    np_xg: float
+    np_goals: int
+    late_goals: int
+    headed_goals: int
+    outside_box_goals: int
+    set_piece_goals: int
+
+
+def shot_rates(totals: ShotTotals, minutes: int) -> dict[str, float]:
+    """Shot profile as rates: counts per 90 minutes, quality per shot."""
+    if minutes <= 0:
+        return {}
+    per_90 = 90 / minutes
+    rates = {
+        "late_goals": totals.late_goals * per_90,
+        "headed_goals": totals.headed_goals * per_90,
+        "outside_box_goals": totals.outside_box_goals * per_90,
+        "set_piece_goals": totals.set_piece_goals * per_90,
+        "finishing": (totals.np_goals - totals.np_xg) * per_90,
+    }
+    if totals.shots:
+        rates["npxg_per_shot"] = totals.np_xg / totals.shots
+    return rates

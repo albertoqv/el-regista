@@ -13,7 +13,14 @@ from player_scouting.application.ports import (
     ShotMetric,
 )
 from player_scouting.domain.entities import Player
-from player_scouting.domain.shots import GOAL, LATE_MINUTE, Shot, is_outside_box
+from player_scouting.domain.season import Season
+from player_scouting.domain.shots import (
+    GOAL,
+    LATE_MINUTE,
+    Shot,
+    ShotTotals,
+    is_outside_box,
+)
 from player_scouting.infrastructure.persistence.models import (
     PlayerModel,
     ShotModel,
@@ -199,6 +206,52 @@ class SqlAlchemyShotRepository:
             )
             for model, assister, team, league, count in rows
         ]
+
+    def list_shot_totals(
+        self, season_labels: list[str]
+    ) -> dict[tuple[int, Season], ShotTotals]:
+        statement = (
+            select(
+                PlayerModel.player_id,
+                M.competition,
+                M.season_label,
+                _np_shots,
+                _np_xg,
+                _np_goals,
+                _METRICS["late_goals"],
+                _METRICS["headed_goals"],
+                _METRICS["outside_box_goals"],
+                _METRICS["set_piece_goals"],
+            )
+            .select_from(S)
+            .join(M, M.match_id == S.match_id)
+            .join(PlayerModel, PlayerModel.understat_id == S.understat_player_id)
+            .where(M.season_label.in_(season_labels))
+            .group_by(PlayerModel.player_id, M.competition, M.season_label)
+        )
+        return {
+            (player_id, Season(league, label)): ShotTotals(
+                shots=int(shots or 0),
+                np_xg=float(np_xg or 0),
+                np_goals=int(goals or 0),
+                late_goals=int(late or 0),
+                headed_goals=int(headed or 0),
+                outside_box_goals=int(outside or 0),
+                set_piece_goals=int(set_piece or 0),
+            )
+            for (
+                player_id,
+                league,
+                label,
+                shots,
+                np_xg,
+                goals,
+                late,
+                headed,
+                outside,
+                set_piece,
+            ) in self._session.execute(statement)
+        }
 
     def _players_by_name(self, names: set[str]) -> dict[str, Player]:
         """Understat-linked players with exactly that name; ambiguous ones left out."""

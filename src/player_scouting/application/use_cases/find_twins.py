@@ -9,11 +9,16 @@ from player_scouting.application.percentile_pools import (
     group_into_pools,
     pool_percentiles,
 )
-from player_scouting.application.ports import PlayerRepository, SeasonRecord
+from player_scouting.application.ports import (
+    PlayerRepository,
+    SeasonRecord,
+    ShotRepository,
+)
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.percentiles import MetricPercentile
 from player_scouting.domain.season import Season
+from player_scouting.domain.shots import shot_rates
 from player_scouting.domain.twins import style_similarity
 
 # A twin must have played enough for its per-90 profile to mean something.
@@ -72,6 +77,8 @@ def _age(player: Player, today: date) -> int | None:
 class FindTwinsUseCase:
     repository: PlayerRepository
     today: Callable[[], date] = field(default=date.today)
+    # Optional: adds how and when they score (late goals, headers...) to the style.
+    shots: ShotRepository | None = None
 
     def execute(
         self,
@@ -97,7 +104,7 @@ class FindTwinsUseCase:
         pools = group_into_pools(
             ((r.season, r.player.position), self._key(r), r.statistics) for r in records
         )
-        profiles = pool_percentiles(pools, keys)
+        profiles = pool_percentiles(pools, keys, self._shot_rates(records))
         values = self.repository.latest_market_values()
         today = self.today()
 
@@ -136,6 +143,19 @@ class FindTwinsUseCase:
             ),
             twins=twins[: filters.limit],
         )
+
+    def _shot_rates(
+        self, records: list[SeasonRecord]
+    ) -> dict[tuple[int, Season], dict[str, float]]:
+        if self.shots is None:
+            return {}
+        totals = self.shots.list_shot_totals(sorted({r.season.label for r in records}))
+        rates = {}
+        for record in records:
+            key = self._key(record)
+            if key in totals:
+                rates[key] = shot_rates(totals[key], record.statistics.minutes_played)
+        return rates
 
     def _labels_of(self, player_id: int) -> list[str]:
         return [s.label for s in self.repository.list_seasons_for_player(player_id)]

@@ -389,13 +389,6 @@ GetPlayerPercentilesUseCaseDep = Annotated[
 ]
 
 
-def get_find_twins_use_case(repository: PlayerRepositoryDep) -> FindTwinsUseCase:
-    return FindTwinsUseCase(repository)
-
-
-FindTwinsUseCaseDep = Annotated[FindTwinsUseCase, Depends(get_find_twins_use_case)]
-
-
 def get_record_enrichment_use_case(
     repository: PlayerRepositoryDep,
 ) -> RecordEnrichmentUseCase:
@@ -444,3 +437,12 @@ def get_merge_duplicate_players_use_case(
 MergeDuplicatePlayersUseCaseDep = Annotated[
     MergeDuplicatePlayersUseCase, Depends(get_merge_duplicate_players_use_case)
 ]
+
+
+def get_find_twins_use_case(
+    repository: PlayerRepositoryDep, shots: ShotRepositoryDep
+) -> FindTwinsUseCase:
+    return FindTwinsUseCase(repository, shots=shots)
+
+
+FindTwinsUseCaseDep = Annotated[FindTwinsUseCase, Depends(get_find_twins_use_case)]
