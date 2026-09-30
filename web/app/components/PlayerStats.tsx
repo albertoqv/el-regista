@@ -4,6 +4,7 @@ import {
   IconCard,
   IconCreate,
   IconDefense,
+  IconTarget,
 } from "@/app/components/icons";
 import type { Player } from "@/lib/api";
 
@@ -63,6 +64,7 @@ export function PlayerStats({ player }: { player: Player }) {
         icon={IconCreate}
         tiles={[
           { label: "Asistencias", value: player.assists },
+          { label: "xA", value: player.expected_assists.toFixed(2) },
           { label: "Pases de gol", value: player.key_passes },
           {
             label: "Pases completados",
@@ -72,6 +74,15 @@ export function PlayerStats({ player }: { player: Player }) {
             label: "Regates completados",
             value: `${player.dribbles_completed}/${player.dribbles_attempted}`,
           },
+        ]}
+      />
+      <StatGroup
+        title="Influencia"
+        icon={IconTarget}
+        tiles={[
+          { label: "Minutos", value: player.minutes_played },
+          { label: "xGChain", value: player.xg_chain.toFixed(2) },
+          { label: "xGBuildup", value: player.xg_buildup.toFixed(2) },
         ]}
       />
       <StatGroup

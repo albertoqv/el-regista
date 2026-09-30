@@ -58,6 +58,7 @@ function SeasonSelect({
       {seasons.map((season) => (
         <option key={seasonKey(season)} value={seasonKey(season)}>
           {season.competition} {season.label}
+          {season.team ? ` · ${season.team}` : ""}
         </option>
       ))}
     </select>

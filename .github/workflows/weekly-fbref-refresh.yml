@@ -1,4 +1,4 @@
-name: Weekly FBref season refresh
+name: Weekly data refresh
 
 on:
   schedule:
@@ -15,8 +15,12 @@ jobs:
   refresh-season:
     runs-on: ubuntu-latest
 
+    env:
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      INGESTION_API_KEY: ${{ secrets.INGESTION_API_KEY }}
+
     steps:
-      - name: Re-ingest the season
+      - name: Resolve the season
         env:
           START_YEAR: ${{ inputs.start_year }}
         run: |
@@ -25,7 +29,25 @@ jobs:
             YEAR=$(date -u +%Y)
             if [ "$MONTH" -ge 7 ]; then START_YEAR=$YEAR; else START_YEAR=$((YEAR - 1)); fi
           fi
-          echo "Refreshing season starting in $START_YEAR"
-          curl --fail-with-body -sS -X POST \
-            "${{ secrets.API_BASE_URL }}/ingestion/fbref/seasons/$START_YEAR" \
-            -H "X-Ingestion-Key: ${{ secrets.INGESTION_API_KEY }}"
+          echo "START_YEAR=$START_YEAR" >> "$GITHUB_ENV"
+
+      - name: Basic statistics (FBref)
+        run: |
+          curl --fail-with-body -sS --max-time 600 -X POST \
+            "$API_BASE_URL/ingestion/fbref/seasons/$START_YEAR" \
+            -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested, skipped: (.skipped | length)}'
+
+      - name: Advanced metrics (Understat)
+        run: |
+          curl --fail-with-body -sS --max-time 600 -X POST \
+            "$API_BASE_URL/ingestion/understat/seasons/$START_YEAR" \
+            -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested, skipped: (.skipped | length)}'
+
+      - name: Photos, birth dates and market values (Transfermarkt)
+        run: |
+          # 8 batches of 25: the most relevant players not enriched yet.
+          for batch in 1 2 3 4 5 6 7 8; do
+            curl --fail-with-body -sS --max-time 600 -X POST \
+              "$API_BASE_URL/ingestion/transfermarkt/enrich?limit=25" \
+              -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq -c '{ingested, skipped: (.skipped | length)}'
+          done

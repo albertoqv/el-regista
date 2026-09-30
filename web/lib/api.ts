@@ -28,11 +28,16 @@ export type Player = PlayerSummary & {
   fouls_won: number;
   yellow_cards: number;
   red_cards: number;
+  minutes_played: number;
+  expected_assists: number;
+  xg_chain: number;
+  xg_buildup: number;
 };
 
 export type Season = {
   competition: string;
   label: string;
+  team?: string | null;
 };
 
 export type Comparison = {

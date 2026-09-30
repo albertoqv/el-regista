@@ -4,6 +4,7 @@ import {
   IconCard,
   IconCreate,
   IconDefense,
+  IconTarget,
 } from "@/app/components/icons";
 import type { Player } from "@/lib/api";
 
@@ -26,6 +27,10 @@ type MetricKey = keyof Pick<
   | "fouls_won"
   | "yellow_cards"
   | "red_cards"
+  | "minutes_played"
+  | "expected_assists"
+  | "xg_chain"
+  | "xg_buildup"
 >;
 
 type MetricDef = { label: string; key: MetricKey; format?: (value: number) => string };
@@ -50,9 +55,19 @@ const CATEGORIES: {
     icon: IconCreate,
     metrics: [
       { label: "Asistencias", key: "assists" },
+      { label: "xA", key: "expected_assists", format: (v) => v.toFixed(2) },
       { label: "Pases de gol", key: "key_passes" },
       { label: "Pases completados", key: "passes_completed" },
       { label: "Regates completados", key: "dribbles_completed" },
+    ],
+  },
+  {
+    title: "Influencia",
+    icon: IconTarget,
+    metrics: [
+      { label: "Minutos", key: "minutes_played" },
+      { label: "xGChain", key: "xg_chain", format: (v) => v.toFixed(2) },
+      { label: "xGBuildup", key: "xg_buildup", format: (v) => v.toFixed(2) },
     ],
   },
   {

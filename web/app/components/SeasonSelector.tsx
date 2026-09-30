@@ -36,6 +36,7 @@ export function SeasonSelector({
             className={pillClasses(isSelected)}
           >
             {season.competition} {season.label}
+            {season.team ? ` · ${season.team}` : ""}
           </Link>
         );
       })}
