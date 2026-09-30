@@ -397,3 +397,33 @@ def test_pending_enrichment_is_ranked_and_excludes_checked_players(session):
     repository.mark_enrichment_checked(1)
 
     assert [p.player_id for p in repository.list_players_pending_enrichment(5)] == [2]
+
+
+def test_season_leaders_are_ranked_by_a_metric_across_competitions(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_yamal(repository)
+    repository.save_player(Player(2, "Harry Kane", "Forward", None, birth_year=1993))
+    repository.save_season_statistics(
+        2,
+        Season("Bundesliga", "2026"),
+        Statistics(12, 2, minutes_played=630),
+        team="Bayern Munich",
+    )
+    repository.save_player(Player(3, "Old Star", "Forward", None, birth_year=1980))
+    repository.save_season_statistics(
+        3, Season("La Liga", "2010"), Statistics(40, 10)
+    )
+    repository.save_season_advanced(1, LA_LIGA_2026, YAMAL_ADVANCED)
+
+    by_goals = repository.list_season_leaders("2026", "goals", 5)
+    by_xa = repository.list_season_leaders("2026", "expected_assists", 5)
+    in_la_liga = repository.list_season_leaders("2026", "goals", 5, "La Liga")
+
+    assert [leader.player.name for leader in by_goals] == [
+        "Harry Kane",
+        "Lamine Yamal",
+    ]
+    assert by_goals[0].team == "Bayern Munich"
+    assert by_goals[0].season == Season("Bundesliga", "2026")
+    assert by_xa[0].statistics.expected_assists == 4.08
+    assert [leader.player.name for leader in in_la_liga] == ["Lamine Yamal"]
