@@ -15,12 +15,14 @@ from player_scouting.application.ports import (
     PlayerSeasonResult,
     PlayerSort,
     PlayerSummary,
+    MatchRef,
     SeasonEntry,
     SeasonRecord,
 )
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
+from player_scouting.domain.shots import Shot
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 
 
@@ -330,3 +332,37 @@ class FakeAdvancedSeasonProvider:
 
     def get_season(self, start_year: int) -> list[AdvancedSeasonRow]:
         return self._seasons[start_year]
+
+
+class FakeShotProvider:
+    def __init__(self, matches: list[MatchRef], shots: dict[int, list[Shot]]) -> None:
+        self._matches = matches
+        self._shots = shots
+        self.requested: list[int] = []
+
+    def list_played_matches(self, start_year: int) -> list[MatchRef]:
+        return list(self._matches)
+
+    def get_match_shots(self, match: MatchRef) -> list[Shot]:
+        self.requested.append(match.match_id)
+        return list(self._shots[match.match_id])
+
+
+class InMemoryShotRepository:
+    def __init__(self) -> None:
+        self._matches: dict[int, MatchRef] = {}
+        self._shots: dict[int, list[Shot]] = {}
+
+    def known_match_ids(self, season_label: str) -> set[int]:
+        return {
+            match_id
+            for match_id, match in self._matches.items()
+            if match.season_label == season_label
+        }
+
+    def save_match(self, match: MatchRef, shots: list[Shot]) -> None:
+        self._matches[match.match_id] = match
+        self._shots[match.match_id] = list(shots)
+
+    def shots_of(self, match_id: int) -> list[Shot]:
+        return self._shots[match_id]

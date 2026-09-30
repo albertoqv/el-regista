@@ -8,6 +8,7 @@ from player_scouting.application.player_matching import ExternalPlayer
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
+from player_scouting.domain.shots import Shot
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 
 PlayerSort = Literal["recent", "goals", "assists"]
@@ -231,3 +232,83 @@ class LeagueSummary:
 
 class LeagueSearchProvider(Protocol):
     def search_leagues(self, query: str) -> list[LeagueSummary]: ...
+
+
+@dataclass(frozen=True)
+class MatchRef:
+    match_id: int
+    competition: str
+    season_label: str
+    played_on: date
+    home_team: str
+    away_team: str
+
+
+class ShotProvider(Protocol):
+    def list_played_matches(self, start_year: int) -> list[MatchRef]: ...
+
+    def get_match_shots(self, match: MatchRef) -> list[Shot]: ...
+
+
+ShotMetric = Literal[
+    "late_goals",
+    "decisive_goals",
+    "late_decisive_goals",
+    "headed_goals",
+    "outside_box_goals",
+    "set_piece_goals",
+    "finishing",
+    "npxg_per_shot",
+]
+
+
+@dataclass(frozen=True)
+class ShotLeader:
+    player: Player
+    competition: str
+    team: str | None
+    value: float
+    goals: int
+    shots: int
+
+
+@dataclass(frozen=True)
+class PlayerShot:
+    shot: Shot
+    competition: str
+    season_label: str
+    team: str
+    opponent: str
+    played_on: date
+
+
+@dataclass(frozen=True)
+class Partnership:
+    scorer: Player
+    assister_name: str
+    assister: Player | None
+    team: str
+    competition: str
+    goals: int
+
+
+class ShotRepository(Protocol):
+    def known_match_ids(self, season_label: str) -> set[int]: ...
+
+    def save_match(self, match: MatchRef, shots: list[Shot]) -> None: ...
+
+    def list_shot_leaders(
+        self,
+        season_label: str,
+        metric: ShotMetric,
+        limit: int,
+        competition: str | None = None,
+    ) -> list[ShotLeader]: ...
+
+    def list_player_shots(
+        self, player_id: int, season_label: str | None = None
+    ) -> list[PlayerShot]: ...
+
+    def list_partnerships(
+        self, season_label: str, limit: int, competition: str | None = None
+    ) -> list[Partnership]: ...
