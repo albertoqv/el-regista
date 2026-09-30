@@ -49,7 +49,7 @@ function Column({
               <span className="relative flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-semibold">{player.name}</span>
                 <span className="text-[10px] text-muted">
-                  {player.position} · ~{Math.round(player.expected_minutes)}&apos;
+                  {player.position} · juega {percent(player.plays)} · ~{Math.round(player.expected_minutes)}&apos;
                 </span>
               </span>
               <span className="relative font-display text-lg font-bold tabular-nums">{percent(value)}</span>
@@ -80,7 +80,11 @@ export function PlayerMarketsTable({ markets }: { markets: PlayerMarkets }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl font-bold tracking-tight">Jugadores</h2>
-          <p className="text-sm text-muted">{info.help} Minutos esperados según sus últimos partidos.</p>
+          <p className="text-sm text-muted">
+            {info.help} Calculado <strong>si juega</strong> (como en las casas de apuestas, que anulan la
+            apuesta si no sale); &quot;juega&quot; es la probabilidad de que participe según sus últimos
+            partidos.
+          </p>
         </div>
         <div className="glass flex rounded-full p-1 text-xs font-semibold">
           {MARKETS.map((entry) => (

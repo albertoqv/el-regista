@@ -73,6 +73,31 @@ def expected_minutes(recent_minutes: list[int]) -> float:
     )
 
 
+def _weights(count: int) -> list[float]:
+    return [MINUTES_DECAY**index for index in range(count)]
+
+
+def playing_chance(recent_minutes: list[int]) -> float:
+    """Weighted share of the team's recent matches he played (latest first)."""
+    weights = _weights(len(recent_minutes))
+    if not weights:
+        return 0.0
+    played = sum(w for w, m in zip(weights, recent_minutes, strict=True) if m > 0)
+    return played / sum(weights)
+
+
+def minutes_when_playing(recent_minutes: list[int]) -> float:
+    """Weighted average of his minutes in the matches he did play."""
+    pairs = [
+        (w, m)
+        for w, m in zip(_weights(len(recent_minutes)), recent_minutes, strict=True)
+        if m > 0
+    ]
+    if not pairs:
+        return 0.0
+    return sum(w * m for w, m in pairs) / sum(w for w, _ in pairs)
+
+
 def main_position(history: list[Appearance]) -> str:
     """Most frequent position when starting ("Sub" only means he came on)."""
     counts: dict[str, int] = {}

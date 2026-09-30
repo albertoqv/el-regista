@@ -61,6 +61,7 @@ class PlayerMarketOut(BaseModel):
     name: str
     photo_url: str | None
     position: str
+    plays: float
     expected_minutes: float
     goal: float
     assist: float
@@ -308,6 +309,7 @@ def player_markets(
             name=player.name if player else line.name,
             photo_url=player.photo_url if player else None,
             position=line.position,
+            plays=round(line.plays, 4),
             expected_minutes=round(props.expected_minutes, 1),
             goal=round(props.goal, 4),
             assist=round(props.assist, 4),

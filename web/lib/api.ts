@@ -487,6 +487,7 @@ export type PlayerMarket = {
   name: string;
   photo_url: string | null;
   position: string;
+  plays: number;
   expected_minutes: number;
   goal: number;
   assist: number;

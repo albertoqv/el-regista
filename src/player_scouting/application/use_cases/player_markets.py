@@ -22,7 +22,9 @@ from player_scouting.domain.player_props import (
     PlayerProps,
     expected_minutes,
     main_position,
+    minutes_when_playing,
     player_props,
+    playing_chance,
 )
 from player_scouting.domain.prediction import predict, team_ratings
 
@@ -62,9 +64,13 @@ class IngestRostersUseCase:
 
 @dataclass(frozen=True)
 class PlayerMarketLine:
+    """Markets are priced *if he plays* (bookmakers void bets on non-starters);
+    `plays` is the separate chance that he features at all."""
+
     understat_player_id: int
     name: str
     position: str
+    plays: float
     props: PlayerProps
 
 
@@ -113,15 +119,16 @@ def _team_lines(
     lines = []
     for player_id, entries in history.items():
         recent = [minutes_by_match[m].get(player_id, 0) for m in recent_ids]
-        minutes = expected_minutes(recent)
-        if minutes < MINIMUM_EXPECTED_MINUTES:
+        if expected_minutes(recent) < MINIMUM_EXPECTED_MINUTES:
             continue
+        minutes = minutes_when_playing(recent)
         latest = max(entries, key=lambda e: e.played_on)
         lines.append(
             PlayerMarketLine(
                 understat_player_id=player_id,
                 name=latest.player_name,
                 position=main_position([_appearance(e) for e in entries]),
+                plays=playing_chance(recent),
                 props=player_props(
                     [_appearance(e) for e in entries],
                     minutes=minutes,
