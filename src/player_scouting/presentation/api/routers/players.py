@@ -70,7 +70,7 @@ def list_player_seasons(
             status_code=404, detail=f"No player found with id {player_id}"
         )
     return [
-        season_out_from_domain(season)
+        season_out_from_domain(season, repository.get_season_team(player_id, season))
         for season in repository.list_seasons_for_player(player_id)
     ]
 

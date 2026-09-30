@@ -450,6 +450,7 @@ def test_find_similar_players_returns_ranked_matches_with_their_season():
     assert body[0]["candidate_season"] == {
         "competition": "Premier League",
         "label": "2023",
+        "team": None,
     }
 
 

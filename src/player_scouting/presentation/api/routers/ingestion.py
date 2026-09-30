@@ -1,10 +1,14 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Query
 
 from player_scouting.presentation.api.dependencies import (
     EnqueueLeagueIngestionUseCaseDep,
+    EnrichPendingPlayersUseCaseDep,
     EnrichPlayerMarketValueUseCaseDep,
+    IngestAdvancedSeasonUseCaseDep,
     IngestCompetitionUseCaseDep,
     IngestPlayerSeasonUseCaseDep,
     IngestSeasonDatasetUseCaseDep,
@@ -60,6 +64,24 @@ def ingest_fbref_season(
     use_case: IngestSeasonDatasetUseCaseDep,
 ) -> IngestionResultOut:
     result = use_case.execute(start_year)
+    return ingestion_result_out_from_domain(result)
+
+
+@router.post("/understat/seasons/{start_year}", response_model=IngestionResultOut)
+def ingest_understat_season(
+    start_year: int,
+    use_case: IngestAdvancedSeasonUseCaseDep,
+) -> IngestionResultOut:
+    result = use_case.execute(start_year)
+    return ingestion_result_out_from_domain(result)
+
+
+@router.post("/transfermarkt/enrich", response_model=IngestionResultOut)
+def enrich_pending_players(
+    use_case: EnrichPendingPlayersUseCaseDep,
+    limit: Annotated[int, Query(ge=1, le=50)] = 25,
+) -> IngestionResultOut:
+    result = use_case.execute(limit)
     return ingestion_result_out_from_domain(result)
 
 

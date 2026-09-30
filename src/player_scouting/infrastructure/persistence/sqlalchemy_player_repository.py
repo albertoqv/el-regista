@@ -208,6 +208,10 @@ class SqlAlchemyPlayerRepository:
         models = self._session.query(Basic).filter_by(player_id=player_id).all()
         return [Season(model.competition, model.season_label) for model in models]
 
+    def get_season_team(self, player_id: int, season: Season) -> str | None:
+        model = self._basic_model(player_id, season)
+        return model.team if model else None
+
     def get_career_statistics(self, player_id: int) -> Statistics:
         rows = (
             self._session.query(Basic, Advanced)

@@ -19,8 +19,8 @@ from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 from player_scouting.presentation.api.dependencies import (
     get_advanced_season_provider,
-    get_enrichment_pause,
     get_birth_date_provider,
+    get_enrichment_pause,
     get_league_ingestion_job_repository,
     get_league_players_provider,
     get_league_search_provider,
@@ -304,7 +304,9 @@ def test_ingest_understat_season_stores_advanced_metrics():
             2026: [
                 AdvancedSeasonRow(
                     competition="La Liga",
-                    player=ExternalPlayer(11500, "Lamine Yamal", ("Barcelona",), 598, 7),
+                    player=ExternalPlayer(
+                        11500, "Lamine Yamal", ("Barcelona",), 598, 7
+                    ),
                     advanced=AdvancedStatistics(6.08, 4.08, 27, 9.5, 2.1),
                 )
             ]
@@ -340,7 +342,7 @@ def test_enrich_pending_players_enriches_up_to_the_limit():
     app = create_app()
     app.dependency_overrides[get_market_value_provider] = lambda: provider
     app.dependency_overrides[get_player_repository] = lambda: repository
-    app.dependency_overrides[get_enrichment_pause] = lambda: (lambda seconds: None)
+    app.dependency_overrides[get_enrichment_pause] = lambda: lambda seconds: None
     client = TestClient(app)
 
     response = client.post("/ingestion/transfermarkt/enrich?limit=5")

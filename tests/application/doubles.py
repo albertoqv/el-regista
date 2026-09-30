@@ -139,6 +139,9 @@ class InMemoryPlayerRepository:
     def is_enrichment_checked(self, player_id: int) -> bool:
         return player_id in self._enrichment_checked
 
+    def get_season_team(self, player_id: int, season: Season) -> str | None:
+        return self._teams.get((player_id, season))
+
     def list_seasons_for_player(self, player_id: int) -> list[Season]:
         return [season for (pid, season) in self._season_statistics if pid == player_id]
 

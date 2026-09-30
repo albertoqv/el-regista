@@ -48,11 +48,16 @@ class PlayerOut(PlayerSummaryOut):
     fouls_won: int
     yellow_cards: int
     red_cards: int
+    minutes_played: int
+    expected_assists: float
+    xg_chain: float
+    xg_buildup: float
 
 
 class SeasonOut(BaseModel):
     competition: str
     label: str
+    team: str | None = None
 
 
 class ComparisonOut(BaseModel):
@@ -145,11 +150,15 @@ def player_out_from_domain(
         fouls_won=statistics.fouls_won,
         yellow_cards=statistics.yellow_cards,
         red_cards=statistics.red_cards,
+        minutes_played=statistics.minutes_played,
+        expected_assists=statistics.expected_assists,
+        xg_chain=statistics.xg_chain,
+        xg_buildup=statistics.xg_buildup,
     )
 
 
-def season_out_from_domain(season: Season) -> SeasonOut:
-    return SeasonOut(competition=season.competition, label=season.label)
+def season_out_from_domain(season: Season, team: str | None = None) -> SeasonOut:
+    return SeasonOut(competition=season.competition, label=season.label, team=team)
 
 
 def comparison_out_from_domain(comparison: Comparison) -> ComparisonOut:

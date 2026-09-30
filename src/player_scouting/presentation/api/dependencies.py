@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+from collections.abc import Callable
 from typing import Annotated
 
 import httpx
@@ -13,11 +15,17 @@ from player_scouting.application.use_cases.compare_players import ComparePlayers
 from player_scouting.application.use_cases.enqueue_league_ingestion import (
     EnqueueLeagueIngestionUseCase,
 )
+from player_scouting.application.use_cases.enrich_pending_players import (
+    EnrichPendingPlayersUseCase,
+)
 from player_scouting.application.use_cases.enrich_player_market_value import (
     EnrichPlayerMarketValueUseCase,
 )
 from player_scouting.application.use_cases.find_similar_players import (
     FindSimilarPlayersUseCase,
+)
+from player_scouting.application.use_cases.ingest_advanced_season import (
+    IngestAdvancedSeasonUseCase,
 )
 from player_scouting.application.use_cases.ingest_competition import (
     IngestCompetitionUseCase,
@@ -65,6 +73,10 @@ from player_scouting.infrastructure.statsbomb.competition_statistics_provider im
 from player_scouting.infrastructure.transfermarkt.client import TransfermarktClient
 from player_scouting.infrastructure.transfermarkt.provider import (
     TransfermarktMarketValueProvider,
+)
+from player_scouting.infrastructure.understat.client import UnderstatClient
+from player_scouting.infrastructure.understat.provider import (
+    UnderstatSeasonProvider,
 )
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -306,4 +318,42 @@ def get_ingest_season_dataset_use_case(
 
 IngestSeasonDatasetUseCaseDep = Annotated[
     IngestSeasonDatasetUseCase, Depends(get_ingest_season_dataset_use_case)
+]
+
+
+def get_advanced_season_provider() -> UnderstatSeasonProvider:
+    return UnderstatSeasonProvider(UnderstatClient(httpx.Client()))
+
+
+AdvancedSeasonProviderDep = Annotated[
+    UnderstatSeasonProvider, Depends(get_advanced_season_provider)
+]
+
+
+def get_ingest_advanced_season_use_case(
+    provider: AdvancedSeasonProviderDep,
+    repository: PlayerRepositoryDep,
+) -> IngestAdvancedSeasonUseCase:
+    return IngestAdvancedSeasonUseCase(provider, repository)
+
+
+IngestAdvancedSeasonUseCaseDep = Annotated[
+    IngestAdvancedSeasonUseCase, Depends(get_ingest_advanced_season_use_case)
+]
+
+
+def get_enrichment_pause() -> Callable[[float], None]:
+    return time.sleep
+
+
+def get_enrich_pending_players_use_case(
+    provider: MarketValueProviderDep,
+    repository: PlayerRepositoryDep,
+    pause: Annotated[Callable[[float], None], Depends(get_enrichment_pause)],
+) -> EnrichPendingPlayersUseCase:
+    return EnrichPendingPlayersUseCase(provider, repository, pause)
+
+
+EnrichPendingPlayersUseCaseDep = Annotated[
+    EnrichPendingPlayersUseCase, Depends(get_enrich_pending_players_use_case)
 ]
