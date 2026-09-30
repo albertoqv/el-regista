@@ -261,3 +261,24 @@ class PageViewModel(Base):
     path: Mapped[str] = mapped_column(String, nullable=False)
     visitor: Mapped[str] = mapped_column(String, nullable=False)
     referrer: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+class PredictionSnapshotModel(Base):
+    __tablename__ = "prediction_snapshots"
+
+    match_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=False
+    )
+    competition: Mapped[str] = mapped_column(String, nullable=False)
+    season_label: Mapped[str] = mapped_column(String, nullable=False)
+    kickoff: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    home_team: Mapped[str] = mapped_column(String, nullable=False)
+    away_team: Mapped[str] = mapped_column(String, nullable=False)
+    made_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    model_home: Mapped[float] = mapped_column(Float, nullable=False)
+    model_draw: Mapped[float] = mapped_column(Float, nullable=False)
+    model_away: Mapped[float] = mapped_column(Float, nullable=False)
+    market_home: Mapped[float | None] = mapped_column(Float, nullable=True)
+    market_draw: Mapped[float | None] = mapped_column(Float, nullable=True)
+    market_away: Mapped[float | None] = mapped_column(Float, nullable=True)
+    over_2_5: Mapped[float] = mapped_column(Float, nullable=False)
