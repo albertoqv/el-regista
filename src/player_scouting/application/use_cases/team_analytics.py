@@ -204,6 +204,14 @@ class BacktestReport:
     calibration: list[CalibrationBucket]
 
 
+@dataclass(frozen=True)
+class ScoredMatch:
+    fixture: Fixture
+    model: tuple[float, float, float]
+    baseline: tuple[float, float, float]
+    outcome: int  # 0 home win, 1 draw, 2 away win
+
+
 def _outcome(fixture: Fixture) -> int:
     assert fixture.home_goals is not None and fixture.away_goals is not None
     if fixture.home_goals > fixture.away_goals:
@@ -227,6 +235,16 @@ class BacktestUseCase:
     def execute(
         self, season_labels: list[str], competition: str | None = None
     ) -> BacktestReport:
+        return self._report(
+            [
+                (m.model, m.baseline, m.outcome)
+                for m in self.scored_matches(season_labels, competition)
+            ]
+        )
+
+    def scored_matches(
+        self, season_labels: list[str], competition: str | None = None
+    ) -> list[ScoredMatch]:
         newest = max(season_labels, key=int)
         labels = sorted(
             set(season_labels) | set(_labels_up_to(min(season_labels, key=int)))
@@ -237,9 +255,7 @@ class BacktestUseCase:
             for f in self.repository.list_fixtures(competition)
             if f.played and f.season_label in season_labels
         ]
-        scored: list[
-            tuple[tuple[float, float, float], tuple[float, float, float], int]
-        ] = []
+        scored: list[ScoredMatch] = []
         by_league: dict[str, list[Fixture]] = defaultdict(list)
         for fixture in played:
             by_league[fixture.competition].append(fixture)
@@ -269,8 +285,8 @@ class BacktestUseCase:
                     sum(m.result == "l" for m in home) / total,
                 )
                 model = (prediction.home_win, prediction.draw, prediction.away_win)
-                scored.append((model, baseline, _outcome(fixture)))
-        return self._report(scored)
+                scored.append(ScoredMatch(fixture, model, baseline, _outcome(fixture)))
+        return scored
 
     @staticmethod
     def _report(

@@ -573,3 +573,27 @@ class HostingUsage:
 
 class HostingUsageProvider(Protocol):
     def current_usage(self) -> HostingUsage: ...
+
+
+@dataclass(frozen=True)
+class PredictionSnapshot:
+    """A forecast as published before kickoff, kept to be scored afterwards."""
+
+    match_id: int
+    competition: str
+    season_label: str
+    kickoff: datetime
+    home_team: str
+    away_team: str
+    made_at: datetime
+    model: tuple[float, float, float]
+    market: tuple[float, float, float] | None
+    over_2_5: float
+
+
+class PredictionLogRepository(Protocol):
+    def save_snapshot(self, snapshot: PredictionSnapshot) -> None:
+        """Insert or replace the snapshot of that match."""
+        ...
+
+    def list_snapshots(self) -> list[PredictionSnapshot]: ...
