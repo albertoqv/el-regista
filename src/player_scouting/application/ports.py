@@ -485,3 +485,29 @@ class MatchStatsRepository(Protocol):
     def find_upcoming(
         self, competition: str, played_on: date, home_team: str, away_team: str
     ) -> MatchStats | None: ...
+
+
+@dataclass(frozen=True)
+class RosterEntry:
+    """One player's line in one match (Understat roster)."""
+
+    match_id: int
+    competition: str
+    season_label: str
+    played_on: date
+    team: str
+    opponent: str
+    home: bool
+    understat_player_id: int
+    player_name: str
+    position: str
+    minutes: int
+    goals: int
+    own_goals: int
+    assists: int
+    shots: int
+    key_passes: int
+    xg: float
+    xa: float
+    yellow: int
+    red: int

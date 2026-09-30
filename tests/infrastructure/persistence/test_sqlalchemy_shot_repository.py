@@ -259,3 +259,42 @@ def test_team_players_ranked_by_goals_then_xg(session):
         ("Lamine Yamal", 0),
     ]
     assert players[1].value == pytest.approx(0.9)
+
+
+def test_rosters_are_saved_and_listed_and_pending_matches_found(session):
+    from player_scouting.application.ports import RosterEntry
+
+    repository = SqlAlchemyShotRepository(session)
+    repository.save_match(MATCH, [])
+    repository.save_match(OTHER_LEAGUE, [])
+    entry = RosterEntry(
+        1,
+        "La Liga",
+        "2026",
+        date(2026, 8, 15),
+        "Barcelona",
+        "Getafe",
+        True,
+        101,
+        "Raphinha",
+        "AML",
+        90,
+        1,
+        0,
+        0,
+        4,
+        2,
+        0.8,
+        0.3,
+        1,
+        0,
+    )
+
+    assert [m.match_id for m in repository.matches_without_rosters("2026", 10)] == [
+        1,
+        2,
+    ]
+    repository.save_rosters(1, [entry])
+
+    assert repository.list_rosters("La Liga", ["2026"]) == [entry]
+    assert [m.match_id for m in repository.matches_without_rosters("2026", 10)] == [2]

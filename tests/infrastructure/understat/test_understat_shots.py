@@ -121,3 +121,45 @@ def test_client_lists_league_matches():
     client = UnderstatClient(httpx.Client(transport=httpx.MockTransport(handler)))
 
     assert client.get_league_matches("La_liga", 2026) == [PLAYED_MATCH_RAW]
+
+
+ROSTER_ROW = {
+    "id": "794334",
+    "goals": "1",
+    "own_goals": "0",
+    "shots": "3",
+    "xG": "0.61",
+    "time": "90",
+    "player_id": "10364",
+    "team_id": "158",
+    "position": "FW",
+    "player": "Nahuel Tenaglia",
+    "h_a": "h",
+    "yellow_card": "1",
+    "red_card": "0",
+    "roster_in": "0",
+    "roster_out": "0",
+    "key_passes": "2",
+    "assists": "0",
+    "xA": "0.12",
+    "xGChain": "0.9",
+    "xGBuildup": "0.1",
+    "positionOrder": "15",
+}
+
+
+def test_maps_roster_lines_with_the_match_context():
+    from player_scouting.infrastructure.understat.mapper import to_roster_entries
+
+    match = to_match_ref(PLAYED_MATCH_RAW, competition="La Liga", season_label="2026")
+
+    [entry] = to_roster_entries({"h": {"794334": ROSTER_ROW}, "a": {}}, match)
+
+    assert (entry.team, entry.opponent, entry.home) == ("Alaves", "Getafe", True)
+    assert (entry.understat_player_id, entry.player_name, entry.position) == (
+        10364,
+        "Nahuel Tenaglia",
+        "FW",
+    )
+    assert (entry.minutes, entry.goals, entry.shots, entry.yellow) == (90, 1, 3, 1)
+    assert (entry.xg, entry.xa, entry.key_passes) == (0.61, 0.12, 2)
