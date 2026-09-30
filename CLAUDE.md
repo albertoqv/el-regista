@@ -134,7 +134,10 @@ Hecho (2026-09-30), además de lo anterior:
   en 25/26 cuotas de cierre 0,582 < modelo 0,594 y toda mezcla empeora al mercado →
   con cuotas, el 1X2 principal es el del mercado.
 
-Ideas siguientes: calibrar el sesgo de "marca" con el backtest completo, mercado vs
-modelo con cuotas de cierre en el backtest 1X2, lesiones/alineaciones (no hay fuente
+- **Marca/asiste/amarilla son "si juega"** + `plays`: así la calibración de "marca" es
+  casi perfecta (La Liga 25/26, 10.840 pronósticos, Brier 0,067 vs 0,074; ningún
+  factor de corrección la mejora).
+
+Ideas siguientes: lesiones/alineaciones (no hay fuente
 gratuita fiable), producto (cuentas, favoritos, alertas, planes).
 No hay fuente gratuita de fotos de cuerpo entero.
