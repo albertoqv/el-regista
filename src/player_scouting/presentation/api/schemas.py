@@ -103,6 +103,26 @@ class TwinReportOut(BaseModel):
     twins: list[TwinOut]
 
 
+class PendingEnrichmentOut(BaseModel):
+    player_id: int
+    name: str
+    birth_year: int | None
+
+
+class MarketValuePointIn(BaseModel):
+    as_of: date
+    amount_eur: int
+    club: str
+
+
+class EnrichmentIn(BaseModel):
+    found: bool
+    photo_url: str | None = None
+    date_of_birth: date | None = None
+    preferred_foot: str | None = None
+    market_values: list[MarketValuePointIn] = []
+
+
 class ComparisonOut(BaseModel):
     player1: PlayerSummaryOut
     player2: PlayerSummaryOut

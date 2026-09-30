@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
+from player_scouting.application.exceptions import PlayerNotFoundError
+from player_scouting.application.ports import MarketValueHistoryResult
+from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.presentation.api.dependencies import (
     EnqueueLeagueIngestionUseCaseDep,
     EnrichPendingPlayersUseCaseDep,
@@ -14,13 +17,17 @@ from player_scouting.presentation.api.dependencies import (
     IngestSeasonDatasetUseCaseDep,
     LeagueIngestionJobRepositoryDep,
     LeagueSearchProviderDep,
+    PlayerRepositoryDep,
     ProcessLeagueIngestionBatchUseCaseDep,
+    RecordEnrichmentUseCaseDep,
 )
 from player_scouting.presentation.api.schemas import (
+    EnrichmentIn,
     IngestionResultOut,
     LeagueIngestionBatchSummaryOut,
     LeagueIngestionJobOut,
     LeagueSummaryOut,
+    PendingEnrichmentOut,
     ingestion_result_out_from_domain,
     league_ingestion_batch_summary_out_from_domain,
     league_ingestion_job_out_from_domain,
@@ -83,6 +90,43 @@ def enrich_pending_players(
 ) -> IngestionResultOut:
     result = use_case.execute(limit)
     return ingestion_result_out_from_domain(result)
+
+
+@router.get("/enrichment/pending", response_model=list[PendingEnrichmentOut])
+def list_pending_enrichment(
+    repository: PlayerRepositoryDep,
+    limit: Annotated[int, Query(ge=1, le=500)] = 50,
+) -> list[PendingEnrichmentOut]:
+    return [
+        PendingEnrichmentOut(
+            player_id=player.player_id, name=player.name, birth_year=player.birth_year
+        )
+        for player in repository.list_players_pending_enrichment(limit)
+    ]
+
+
+@router.post("/enrichment/{player_id}", status_code=204)
+def record_enrichment(
+    player_id: int, body: EnrichmentIn, use_case: RecordEnrichmentUseCaseDep
+) -> Response:
+    result = (
+        MarketValueHistoryResult(
+            preferred_foot=body.preferred_foot,
+            points=[
+                MarketValuePoint(point.as_of, point.amount_eur, point.club)
+                for point in body.market_values
+            ],
+            photo_url=body.photo_url,
+            date_of_birth=body.date_of_birth,
+        )
+        if body.found
+        else None
+    )
+    try:
+        use_case.execute(player_id, result)
+    except PlayerNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    return Response(status_code=204)
 
 
 @router.post("/transfermarkt/players", response_model=IngestionResultOut)

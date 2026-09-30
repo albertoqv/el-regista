@@ -43,12 +43,9 @@ jobs:
             "$API_BASE_URL/ingestion/understat/seasons/$START_YEAR" \
             -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested, skipped: (.skipped | length)}'
 
+      # Transfermarkt throttles Railway's IP, so the lookups run on this runner
+      # (a different IP each run) and only the results go to the API.
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
       - name: Photos, birth dates and market values (Transfermarkt)
-        run: |
-          # 5 batches of 25: the most relevant players not enriched yet. Transfermarkt
-          # throttles the Railway IP after ~130 players in a row.
-          for batch in 1 2 3 4 5; do
-            curl --fail-with-body -sS --max-time 600 -X POST \
-              "$API_BASE_URL/ingestion/transfermarkt/enrich?limit=25" \
-              -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq -c '{ingested, skipped: (.skipped | length)}'
-          done
+        run: uv run python scripts/enrich_remote.py --limit 400

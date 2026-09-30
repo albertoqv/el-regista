@@ -43,6 +43,9 @@ from player_scouting.application.use_cases.ingest_season_dataset import (
 from player_scouting.application.use_cases.process_league_ingestion_batch import (
     ProcessLeagueIngestionBatchUseCase,
 )
+from player_scouting.application.use_cases.record_enrichment import (
+    RecordEnrichmentUseCase,
+)
 from player_scouting.domain.similarity_calculator import SimilarityCalculator
 from player_scouting.infrastructure.api_football.league_provider import (
     ApiFootballLeaguePlayersProvider,
@@ -379,3 +382,14 @@ def get_find_twins_use_case(repository: PlayerRepositoryDep) -> FindTwinsUseCase
 
 
 FindTwinsUseCaseDep = Annotated[FindTwinsUseCase, Depends(get_find_twins_use_case)]
+
+
+def get_record_enrichment_use_case(
+    repository: PlayerRepositoryDep,
+) -> RecordEnrichmentUseCase:
+    return RecordEnrichmentUseCase(repository)
+
+
+RecordEnrichmentUseCaseDep = Annotated[
+    RecordEnrichmentUseCase, Depends(get_record_enrichment_use_case)
+]
