@@ -12,7 +12,9 @@ from player_scouting.application.ports import (
     LeaguePlayersPage,
     LeagueSummary,
     MarketValueHistoryResult,
+    Fixture,
     MatchRef,
+    TeamMatch,
     PlayerSeasonResult,
     PlayerSort,
     PlayerSummary,
@@ -400,3 +402,42 @@ class InMemoryShotRepository:
             for key, value in getattr(self, "_totals", {}).items()
             if key[1].label in season_labels
         }
+
+
+class InMemoryTeamRepository:
+    def __init__(self) -> None:
+        self._fixtures: dict[int, Fixture] = {}
+        self._matches: dict[tuple[int, str], TeamMatch] = {}
+
+    def save_team_season(
+        self, fixtures: list[Fixture], team_matches: list[TeamMatch]
+    ) -> None:
+        for fixture in fixtures:
+            self._fixtures[fixture.match_id] = fixture
+        for match in team_matches:
+            self._matches[(match.match_id, match.team)] = match
+
+    def list_team_matches(
+        self, season_labels: list[str], competition: str | None = None
+    ) -> list[TeamMatch]:
+        return sorted(
+            (
+                m
+                for m in self._matches.values()
+                if m.season_label in season_labels
+                and competition in (None, m.competition)
+            ),
+            key=lambda m: (m.played_on, m.match_id),
+        )
+
+    def list_fixtures(self, competition=None, start=None, end=None) -> list[Fixture]:
+        return sorted(
+            (
+                f
+                for f in self._fixtures.values()
+                if competition in (None, f.competition)
+                and (start is None or f.kickoff >= start)
+                and (end is None or f.kickoff <= end)
+            ),
+            key=lambda f: (f.kickoff, f.match_id),
+        )
