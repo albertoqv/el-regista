@@ -20,7 +20,12 @@ reales de las 5 grandes ligas. Proyecto personal: **todo debe ser 100% gratis**
     exige cabecera `X-Ingestion-Key` si `INGESTION_API_KEY` está configurada).
 - Web: `web/` Next.js 16 (App Router, lee `web/AGENTS.md`: APIs cambiadas respecto
   a lo conocido), Tailwind, iconos SVG propios en `web/app/components/icons.tsx`,
-  color de marca `#2a78d6`. No hay pantalla de ingesta (es solo API).
+  estética oscura (tokens en `globals.css`: `brand`, `side-a` azul, `side-b` naranja),
+  animaciones con `motion` (`motion/react`), fotos grandes vía `bigPhoto()`
+  (Transfermarkt `/portrait/big/`). Métricas y textos explicativos en `web/lib/metrics.ts`.
+  No hay pantalla de ingesta (es solo API).
+  Trampas: SVG calculado en servidor → redondear coordenadas (hidratación); `<title>`
+  de SVG con un único string; headless Chrome en Windows no baja de ~500px de ancho.
 
 ## Comandos
 
@@ -87,12 +92,11 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 
 ## Trabajo en curso
 
-Completado (2026-09-30): fotos, fecha exacta y valor de mercado desde Transfermarkt
-(`POST /ingestion/transfermarkt/enrich?limit=25`, más relevantes primero, marca
-`enrichment_checked_at`) y métricas avanzadas desde Understat
-(`POST /ingestion/understat/seasons/{año}`, cruce ~96%). El workflow semanal hace
-FBref → Understat → 5 lotes de Transfermarkt.
+Hecho (2026-09-30): Transfermarkt (fotos, fecha, valor) + Understat (xG, xA,
+xGChain…), `GET /seasons/{año}/leaders`, `GET /players/{id}/seasons/{c}/{l}/percentiles`
+(por 90' frente a su puesto y liga) y rediseño completo de la web (podio de la
+temporada, cara a cara con veredicto, radar, fotos grandes).
 
-Siguiente (fase 2, secundaria): métricas por 90', mapas de tiro y pie con
-`getPlayerData/{understat_id}`, rediseño visual con animaciones y pantalla de
-enfrentamiento en el comparador (no hay imágenes gratuitas de cuerpo entero).
+Ideas siguientes: mapas de tiro con `getPlayerData/{understat_id}`, equipo en
+`candidate_season` de parecidos, filtros por posición/edad/valor en el explorador.
+No hay fuente gratuita de fotos de cuerpo entero.
