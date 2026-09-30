@@ -147,3 +147,46 @@ class ShotModel(Base):
     assisted_by: Mapped[str | None] = mapped_column(String, nullable=True)
     decisive: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     outside_box: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+
+class FixtureModel(Base):
+    __tablename__ = "fixtures"
+
+    match_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=False
+    )
+    competition: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    season_label: Mapped[str] = mapped_column(String, nullable=False)
+    kickoff: Mapped[datetime] = mapped_column(DateTime, nullable=False, index=True)
+    home_team: Mapped[str] = mapped_column(String, nullable=False)
+    away_team: Mapped[str] = mapped_column(String, nullable=False)
+    home_goals: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    away_goals: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    home_xg: Mapped[float | None] = mapped_column(Float, nullable=True)
+    away_xg: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
+class TeamMatchModel(Base):
+    __tablename__ = "team_matches"
+
+    match_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=False
+    )
+    team: Mapped[str] = mapped_column(String, primary_key=True)
+    competition: Mapped[str] = mapped_column(String, nullable=False)
+    season_label: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    played_on: Mapped[date] = mapped_column(Date, nullable=False)
+    opponent: Mapped[str] = mapped_column(String, nullable=False)
+    home: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    goals_for: Mapped[int] = mapped_column(Integer, nullable=False)
+    goals_against: Mapped[int] = mapped_column(Integer, nullable=False)
+    xg_for: Mapped[float] = mapped_column(Float, nullable=False)
+    xg_against: Mapped[float] = mapped_column(Float, nullable=False)
+    npxg_for: Mapped[float] = mapped_column(Float, nullable=False)
+    npxg_against: Mapped[float] = mapped_column(Float, nullable=False)
+    ppda: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ppda_allowed: Mapped[float | None] = mapped_column(Float, nullable=True)
+    deep: Mapped[int] = mapped_column(Integer, nullable=False)
+    deep_allowed: Mapped[int] = mapped_column(Integer, nullable=False)
+    xpts: Mapped[float] = mapped_column(Float, nullable=False)
+    result: Mapped[str] = mapped_column(String, nullable=False)

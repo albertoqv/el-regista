@@ -19,6 +19,9 @@ class UnderstatClient:
     def get_league_players(self, league: str, season: int) -> list[dict]:
         return self._league_data(league, season).get("players", [])
 
+    def get_league_data(self, league: str, season: int) -> dict:
+        return self._league_data(league, season)
+
     def get_league_matches(self, league: str, season: int) -> list[dict]:
         return self._league_data(league, season).get("dates", [])
 
