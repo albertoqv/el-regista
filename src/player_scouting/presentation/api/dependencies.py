@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from player_scouting.application.league_ingestion_job import (
     LeagueIngestionJobRepository,
 )
+from player_scouting.application.ports import HostingUsageProvider, VisitRepository
 from player_scouting.application.use_cases.compare_players import ComparePlayersUseCase
 from player_scouting.application.use_cases.enqueue_league_ingestion import (
     EnqueueLeagueIngestionUseCase,
@@ -91,6 +92,7 @@ from player_scouting.infrastructure.football_data.provider import (
     FootballDataProvider,
 )
 from player_scouting.infrastructure.persistence.database import get_session
+from player_scouting.infrastructure.persistence.overview import database_overview
 from player_scouting.infrastructure.persistence.sqlalchemy_league_ingestion_job_repository import (  # noqa: E501
     SqlAlchemyLeagueIngestionJobRepository,
 )
@@ -106,6 +108,10 @@ from player_scouting.infrastructure.persistence.sqlalchemy_shot_repository impor
 from player_scouting.infrastructure.persistence.sqlalchemy_team_repository import (
     SqlAlchemyTeamRepository,
 )
+from player_scouting.infrastructure.persistence.sqlalchemy_visit_repository import (
+    SqlAlchemyVisitRepository,
+)
+from player_scouting.infrastructure.railway.provider import RailwayUsageProvider
 from player_scouting.infrastructure.statsbomb.client import StatsBombClient
 from player_scouting.infrastructure.statsbomb.competition_statistics_provider import (
     StatsBombCompetitionStatisticsProvider,
@@ -130,6 +136,7 @@ from player_scouting.infrastructure.understat.shot_provider import (
 from player_scouting.infrastructure.understat.team_provider import (
     UnderstatTeamProvider,
 )
+from player_scouting.presentation.api.settings import ApiSettings, get_api_settings
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
@@ -580,3 +587,21 @@ def get_ingest_rosters_use_case(
 IngestRostersUseCaseDep = Annotated[
     IngestRostersUseCase, Depends(get_ingest_rosters_use_case)
 ]
+
+
+def get_visit_repository(session: SessionDep) -> VisitRepository:
+    return SqlAlchemyVisitRepository(session)
+
+
+def get_database_overview(session: SessionDep) -> dict[str, int]:
+    return database_overview(session)
+
+
+def get_hosting_usage_provider(
+    settings: Annotated[ApiSettings, Depends(get_api_settings)],
+) -> HostingUsageProvider | None:
+    if not (settings.railway_api_token and settings.railway_workspace_id):
+        return None
+    return RailwayUsageProvider(
+        httpx.Client(), settings.railway_api_token, settings.railway_workspace_id
+    )

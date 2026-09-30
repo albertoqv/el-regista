@@ -69,7 +69,9 @@ class RecordVisitUseCase:
             f"{self._salt}|{day.isoformat()}|{ip}|{user_agent}".encode()
         ).hexdigest()[:16]
         self._repository.save_page_view(
-            PageView(day, clean_path, visitor, _referrer_host(referrer, self._own_hosts))
+            PageView(
+                day, clean_path, visitor, _referrer_host(referrer, self._own_hosts)
+            )
         )
         return True
 

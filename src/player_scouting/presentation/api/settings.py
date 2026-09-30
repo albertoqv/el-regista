@@ -10,6 +10,11 @@ class ApiSettings(BaseSettings):
 
     cors_origins: str = "http://localhost:3000"
     ingestion_api_key: str = ""
+    # Secret mixed into the daily visitor hash (falls back to the ingestion key).
+    visit_salt: str = ""
+    # Optional: show the server bill in the admin panel (Railway workspace token).
+    railway_api_token: str = ""
+    railway_workspace_id: str = ""
 
     @property
     def cors_origins_list(self) -> list[str]:

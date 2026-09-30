@@ -102,15 +102,15 @@ class RailwayUsageProvider:
         try:
             estimated_values = {
                 row["measurement"]: float(row["estimatedValue"])
-                for row in self._query(
-                    _ESTIMATED, {"measurements": list(PRICES)}
-                )["estimatedUsage"]
+                for row in self._query(_ESTIMATED, {"measurements": list(PRICES)})[
+                    "estimatedUsage"
+                ]
             }
             # Like the CLI: projected metered usage plus any non-metered charges.
             estimated: float | None = sum(_cost(estimated_values).values()) + max(
                 current - metered, 0.0
             )
-        except (RuntimeError, httpx.HTTPError):
+        except RuntimeError, httpx.HTTPError:
             estimated = None
         limit = customer.get("usageLimit") or {}
         return HostingUsage(

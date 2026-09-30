@@ -3,7 +3,12 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from player_scouting.presentation.api.metrics import (
+    RequestMetrics,
+    metrics_middleware,
+)
 from player_scouting.presentation.api.routers import (
+    admin,
     ingestion,
     insights,
     players,
@@ -15,6 +20,8 @@ from player_scouting.presentation.api.settings import get_api_settings
 
 def create_app() -> FastAPI:
     app = FastAPI(title="TalentScope API")
+    app.state.metrics = RequestMetrics()
+    app.middleware("http")(metrics_middleware(app.state.metrics))
     app.add_middleware(
         CORSMiddleware,
         allow_origins=get_api_settings().cors_origins_list,
@@ -28,6 +35,8 @@ def create_app() -> FastAPI:
     app.include_router(insights.router)
     app.include_router(teams.predictions_router)
     app.include_router(ingestion.router)
+    app.include_router(admin.public_router)
+    app.include_router(admin.router)
     return app
 
 
