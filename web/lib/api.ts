@@ -330,3 +330,99 @@ export function explorePlayers(params: URLSearchParams): Promise<ExploreRow[]> {
   const query = params.toString();
   return request<ExploreRow[]>(`/players/explore${query ? `?${query}` : ""}`);
 }
+
+export type TableRow = {
+  position: number;
+  team: string;
+  competition: string;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goals_for: number;
+  goals_against: number;
+  points: number;
+  xg_for: number;
+  xg_against: number;
+  npxg_difference: number;
+  xpts: number;
+  ppda: number | null;
+  ppda_allowed: number | null;
+  deep: number;
+  deep_allowed: number;
+  form: string[];
+};
+
+export function getLeagueTable(season: string, competition: string): Promise<TableRow[]> {
+  const query = new URLSearchParams({ season, competition }).toString();
+  return request<TableRow[]>(`/teams/table?${query}`);
+}
+
+export type TeamMatch = {
+  match_id: number;
+  competition: string;
+  season_label: string;
+  played_on: string;
+  team: string;
+  opponent: string;
+  home: boolean;
+  goals_for: number;
+  goals_against: number;
+  xg_for: number;
+  xg_against: number;
+  ppda: number | null;
+  deep: number;
+  deep_allowed: number;
+  xpts: number;
+  result: string;
+};
+
+export function getTeamMatches(team: string, season: string): Promise<TeamMatch[]> {
+  const query = new URLSearchParams({ team, season }).toString();
+  return request<TeamMatch[]>(`/teams/matches?${query}`);
+}
+
+export function getTeamPlayers(team: string, season: string): Promise<ShotLeader[]> {
+  const query = new URLSearchParams({ team, season }).toString();
+  return request<ShotLeader[]>(`/teams/players?${query}`);
+}
+
+export type Forecast = {
+  match_id: number;
+  competition: string;
+  kickoff: string;
+  home_team: string;
+  away_team: string;
+  home_win: number;
+  draw: number;
+  away_win: number;
+  expected_home: number;
+  expected_away: number;
+  scorelines: { home: number; away: number; probability: number }[];
+  over_2_5: number;
+  both_teams_score: number;
+  home_form: string[];
+  away_form: string[];
+};
+
+export function getPredictions(days: number, competition?: string): Promise<Forecast[]> {
+  const params = new URLSearchParams({ days: String(days) });
+  if (competition) params.set("competition", competition);
+  return request<Forecast[]>(`/predictions?${params.toString()}`);
+}
+
+export type Backtest = {
+  matches: number;
+  accuracy: number;
+  brier: number;
+  log_loss: number;
+  baseline_accuracy: number;
+  baseline_brier: number;
+  calibration: { predicted: number; observed: number; count: number }[];
+};
+
+export function getBacktest(season: string, competition?: string): Promise<Backtest> {
+  const params = new URLSearchParams({ season });
+  if (competition) params.set("competition", competition);
+  return request<Backtest>(`/predictions/backtest?${params.toString()}`);
+}

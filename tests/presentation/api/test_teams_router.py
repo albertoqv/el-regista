@@ -40,7 +40,9 @@ def test_predictions_for_the_coming_days():
     body = app_client.get("/predictions?days=4000").json()
 
     assert body[0]["home_team"] == "Barcelona"
-    assert abs(body[0]["home_win"] + body[0]["draw"] + body[0]["away_win"] - 1) < 1e-6
+    assert (
+        abs(body[0]["home_win"] + body[0]["draw"] + body[0]["away_win"] - 1) < 1e-3
+    )  # rounded to 4 decimals
     assert len(body[0]["scorelines"]) == 5
     assert "kickoff" in body[0]
 
