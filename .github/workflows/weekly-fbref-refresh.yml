@@ -45,8 +45,9 @@ jobs:
 
       - name: Photos, birth dates and market values (Transfermarkt)
         run: |
-          # 8 batches of 25: the most relevant players not enriched yet.
-          for batch in 1 2 3 4 5 6 7 8; do
+          # 5 batches of 25: the most relevant players not enriched yet. Transfermarkt
+          # throttles the Railway IP after ~130 players in a row.
+          for batch in 1 2 3 4 5; do
             curl --fail-with-body -sS --max-time 600 -X POST \
               "$API_BASE_URL/ingestion/transfermarkt/enrich?limit=25" \
               -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq -c '{ingested, skipped: (.skipped | length)}'

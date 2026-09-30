@@ -72,7 +72,8 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 - Secretos solo como variables de entorno (Railway / GitHub secrets
   `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo.
 - `.github/workflows/weekly-fbref-refresh.yml`: martes, FBref + Understat de la
-  temporada en curso y 200 jugadores de Transfermarkt.
+  temporada en curso y 125 jugadores de Transfermarkt (más bloquea la IP de Railway;
+  los no procesados siguen en cola).
 
 ## Trampas del entorno (Windows)
 
@@ -90,7 +91,7 @@ Completado (2026-09-30): fotos, fecha exacta y valor de mercado desde Transferma
 (`POST /ingestion/transfermarkt/enrich?limit=25`, más relevantes primero, marca
 `enrichment_checked_at`) y métricas avanzadas desde Understat
 (`POST /ingestion/understat/seasons/{año}`, cruce ~96%). El workflow semanal hace
-FBref → Understat → 8 lotes de Transfermarkt.
+FBref → Understat → 5 lotes de Transfermarkt.
 
 Siguiente (fase 2, secundaria): métricas por 90', mapas de tiro y pie con
 `getPlayerData/{understat_id}`, rediseño visual con animaciones y pantalla de
