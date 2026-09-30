@@ -453,3 +453,42 @@ def test_latest_market_value_of_every_player(session):
     latest = repository.latest_market_values()
 
     assert latest == {1: MarketValuePoint(date(2026, 6, 1), 200_000_000, "Barcelona")}
+
+
+def test_groups_players_that_share_an_understat_id(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Che Adams", "Forward", None, birth_year=1996))
+    repository.save_player(Player(2, "Ché Adams", "Forward", None, birth_year=1996))
+    repository.save_player(Player(3, "Other", "Forward", None, birth_year=1996))
+    for player_id in (1, 2):
+        repository.set_understat_id(player_id, 555)
+    repository.set_understat_id(3, 777)
+
+    assert repository.list_duplicate_groups() == [[1, 2]]
+
+
+def test_merging_moves_seasons_and_values_to_the_kept_player(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Che Adams", "Forward", None, birth_year=1996))
+    repository.save_player(
+        Player(2, "Ché Adams", "Forward", date(1996, 7, 13), birth_year=1996)
+    )
+    repository.save_season_statistics(1, Season("Serie A", "2024"), Statistics(9, 1))
+    repository.save_season_statistics(1, Season("Serie A", "2026"), Statistics(1, 0))
+    repository.save_season_statistics(2, Season("Serie A", "2026"), Statistics(2, 0))
+    repository.save_season_advanced(1, Season("Serie A", "2024"), YAMAL_ADVANCED)
+    repository.save_market_value_history(
+        1, [MarketValuePoint(date(2025, 1, 1), 5_000_000, "Torino")]
+    )
+
+    repository.merge_players(keep=2, remove=1)
+
+    assert repository.get_player(1) is None
+    seasons = {s.label for s in repository.list_seasons_for_player(2)}
+    assert seasons == {"2024", "2026"}
+    # The kept player's own row wins when both have the same season.
+    assert repository.get_season_statistics(2, Season("Serie A", "2026")).goals == 2
+    assert (
+        repository.get_season_statistics(2, Season("Serie A", "2024")).xg_chain == 9.5
+    )
+    assert repository.list_market_value_history(2)[0].amount_eur == 5_000_000
