@@ -48,7 +48,16 @@ class _PlayerIndex:
             for p in same_year
             if name_tokens(p.name) <= wanted or wanted <= name_tokens(p.name)
         ]
-        return partial[0] if len(partial) == 1 else None
+        if partial:
+            return partial[0] if len(partial) == 1 else None
+        # "Dani Carvajal" vs "Daniel Carvajal": same surname, only one that year.
+        surname = profile.name.split()[-1]
+        by_surname = [
+            p
+            for p in same_year
+            if name_tokens(p.name.split()[-1]) == name_tokens(surname)
+        ]
+        return by_surname[0] if len(by_surname) == 1 else None
 
 
 @dataclass
@@ -60,22 +69,31 @@ class EnrichFromDatasetUseCase:
 
     def execute(self) -> IngestionResult:
         known = self.repository.transfermarkt_index()
-        index = _PlayerIndex(self.repository.list_players())
-        matched = 0
+        linked = set(known.values())
+        players = {p.player_id: p for p in self.repository.list_players()}
+        index = _PlayerIndex(
+            [p for player_id, p in players.items() if player_id not in linked]
+        )
+        claims: dict[int, list[DatasetProfile]] = defaultdict(list)
         for profile in self.provider.profiles():
             player_id = known.get(profile.transfermarkt_id)
-            player = (
-                self.repository.get_player(player_id)
-                if player_id is not None
-                else index.find(profile)
-            )
-            if player is None:
-                continue
             if player_id is None:
+                found = index.find(profile)
+                player_id = found.player_id if found else None
+            if player_id is not None and player_id in players:
+                claims[player_id].append(profile)
+
+        matched = 0
+        for player_id, profiles in claims.items():
+            # Two dataset players claiming one of ours: homonyms, trust neither.
+            if len(profiles) > 1:
+                continue
+            [profile] = profiles
+            if known.get(profile.transfermarkt_id) != player_id:
                 self.repository.set_transfermarkt_id(
-                    player.player_id, profile.transfermarkt_id
+                    player_id, profile.transfermarkt_id
                 )
-            self._apply(player, profile)
+            self._apply(players[player_id], profile)
             matched += 1
         return IngestionResult(ingested=matched, skipped=[])
 

@@ -431,3 +431,66 @@ def test_merges_duplicate_players():
     assert response.json() == {"merged": 1}
     assert repository.get_player(1) is None
     assert {s.label for s in repository.list_seasons_for_player(2)} == {"2024", "2025"}
+
+
+def test_dataset_endpoints_enrich_players_and_add_league_seasons():
+    from player_scouting.application.ports import DatasetProfile, DatasetSeasonRow
+    from player_scouting.presentation.api.dependencies import (
+        get_transfermarkt_dataset_provider,
+    )
+
+    profile = DatasetProfile(
+        transfermarkt_id=937958,
+        name="Lamine Yamal",
+        date_of_birth=date(2007, 7, 13),
+        position="Forward",
+        detailed_position="Right Winger",
+        foot="left",
+        height_cm=183,
+        photo_url="https://img.a.transfermarkt.technology/portrait/header/937958.jpg",
+        club="FC Barcelona",
+        valuations=(),
+    )
+
+    class Dataset:
+        def profiles(self):
+            return [profile]
+
+        def season_rows(self, start_year):
+            return [
+                DatasetSeasonRow(937958, "Eredivisie", "2025", "PSV", Statistics(3, 1))
+            ]
+
+    repository = InMemoryPlayerRepository()
+    repository.save_player(Player(1, "Lamine Yamal", "Forward", None, birth_year=2007))
+    app = create_app()
+    app.dependency_overrides[get_player_repository] = lambda: repository
+    app.dependency_overrides[get_transfermarkt_dataset_provider] = Dataset
+    client = TestClient(app)
+
+    enriched = client.post("/ingestion/transfermarkt-dataset/profiles")
+    seasons = client.post("/ingestion/transfermarkt-dataset/seasons/2025")
+
+    assert enriched.json()["ingested"] == 1
+    assert repository.get_player(1).height_cm == 183
+    assert seasons.json()["ingested"] == 1
+    assert repository.get_season_statistics(1, Season("Eredivisie", "2025")).goals == 3
+
+
+def test_player_summary_exposes_height_and_detailed_position():
+    repository = InMemoryPlayerRepository()
+    repository.save_player(
+        Player(
+            1,
+            "Lamine Yamal",
+            "Forward",
+            None,
+            height_cm=183,
+            detailed_position="Right Winger",
+        )
+    )
+    app = create_app()
+    app.dependency_overrides[get_player_repository] = lambda: repository
+    body = TestClient(app).get("/players/1").json()
+
+    assert (body["height_cm"], body["detailed_position"]) == (183, "Right Winger")
