@@ -76,9 +76,8 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 - Web: Vercel (https://web-seven-tan-39.vercel.app). `cd web && npx vercel --prod --yes`.
 - Secretos solo como variables de entorno (Railway / GitHub secrets
   `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo.
-- `.github/workflows/weekly-fbref-refresh.yml`: martes, FBref + Understat de la
-  temporada en curso y 125 jugadores de Transfermarkt (más bloquea la IP de Railway;
-  los no procesados siguen en cola).
+- `.github/workflows/weekly-fbref-refresh.yml`: martes, FBref + Understat + fusión de
+  duplicados + tiros nuevos + 400 jugadores de Transfermarkt desde el runner.
 
 ## Trampas del entorno (Windows)
 
@@ -92,11 +91,22 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 
 ## Trabajo en curso
 
-Hecho (2026-09-30): Transfermarkt (fotos, fecha, valor) + Understat (xG, xA,
-xGChain…), `GET /seasons/{año}/leaders`, `GET /players/{id}/seasons/{c}/{l}/percentiles`
-(por 90' frente a su puesto y liga) y rediseño completo de la web (podio de la
-temporada, cara a cara con veredicto, radar, fotos grandes).
+Hecho (2026-09-30):
+- **Gemelos** (`GET /players/{id}/twins`, web `/gemelos`): estilo = percentiles por 90'
+  frente a su puesto y liga; similitud = 100 − brecha media de percentiles; precio y
+  ahorro; filtros presupuesto/edad/liga; solo temporadas recientes con ≥900'.
+- **Tiros** (Understat `getMatchData`, tablas `understat_matches`/`shots`, migración
+  0010): tramo final, goles decisivos (marcador reconstruido; autogol va en el lado de
+  quien lo marca y suma al rival), cabeza, fuera del área, balón parado, definición,
+  xG/tiro, parejas asistente→goleador, mapa de tiros por jugador.
+  `POST /ingestion/understat/shots/{año}?limit=120` es incremental.
+- **Transfermarkt fuera de Railway**: `scripts/enrich_remote.py` (local o runner de
+  GitHub) + `GET/POST /ingestion/enrichment/...`. El "bloqueo" de ~130 era un bug:
+  búsqueda sin resultados = redirección a `keinergebnis` (ahora "no encontrado").
+- **Duplicados** FBref (misma persona, distinta grafía) → `POST
+  /ingestion/maintenance/merge-duplicates` por `understat_id` compartido.
+- Web con estética de pizarra táctica (tiza, jugadas animadas, grano, notas a mano).
 
-Ideas siguientes: mapas de tiro con `getPlayerData/{understat_id}`, equipo en
-`candidate_season` de parecidos, filtros por posición/edad/valor en el explorador.
+Ideas siguientes: más ligas (FBref/Kaggle y Understat solo cubren las 5 grandes;
+buscar otra fuente gratuita), usar el perfil de tiro en la similitud de gemelos.
 No hay fuente gratuita de fotos de cuerpo entero.
