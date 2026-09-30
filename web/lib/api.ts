@@ -513,3 +513,30 @@ export type Highlights = { window_start: string; window_end: string; picks: Pick
 export function getHighlights(perCategory = 5): Promise<Highlights> {
   return request<Highlights>(`/predictions/highlights?per_category=${perCategory}`);
 }
+
+export type StatBacktest = {
+  stat: string;
+  matches: number;
+  model_mae: number;
+  baseline_mae: number;
+  line: number;
+  model_brier: number;
+  baseline_brier: number;
+};
+
+export function getStatsBacktest(competition: string, season: string): Promise<StatBacktest[]> {
+  const query = new URLSearchParams({ competition, season }).toString();
+  return request<StatBacktest[]>(`/predictions/stats-backtest?${query}`);
+}
+
+export type PlayersBacktest = {
+  predictions: number;
+  brier: number;
+  baseline_brier: number;
+  calibration: { predicted: number; observed: number; count: number }[];
+};
+
+export function getPlayersBacktest(competition: string, season: string): Promise<PlayersBacktest> {
+  const query = new URLSearchParams({ competition, season }).toString();
+  return request<PlayersBacktest>(`/predictions/players-backtest?${query}`);
+}

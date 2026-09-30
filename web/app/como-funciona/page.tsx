@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Reveal } from "@/app/components/motion";
 import { Marker, ScoutNote } from "@/app/components/ScoutNote";
-import { getBacktest, type Backtest } from "@/lib/api";
+import {
+  getBacktest,
+  getPlayersBacktest,
+  getStatsBacktest,
+  type Backtest,
+  type PlayersBacktest,
+  type StatBacktest,
+} from "@/lib/api";
 import { currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -62,7 +69,11 @@ function Section({ id, title, note, children }: { id: string; title: string; not
 
 export default async function HowItWorksPage() {
   const season = String(currentSeasonStartYear() - 1);
-  const backtest = await getBacktest(season).catch((): Backtest | null => null);
+  const [backtest, statsBacktest, playersBacktest] = await Promise.all([
+    getBacktest(season).catch((): Backtest | null => null),
+    getStatsBacktest("La Liga", season).catch((): StatBacktest[] => []),
+    getPlayersBacktest("La Liga", season).catch((): PlayersBacktest | null => null),
+  ]);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8">
@@ -84,6 +95,8 @@ export default async function HowItWorksPage() {
             ["momentos", "Momentos"],
             ["equipos", "Equipos"],
             ["predicciones", "Predicciones"],
+            ["estadisticas", "Córners y tarjetas"],
+            ["jugadores", "Goleadores"],
           ].map(([id, label]) => (
             <a key={id} href={`#${id}`} className="rounded-full border border-line px-3 py-1 text-muted hover:text-ink">
               {label}
@@ -254,6 +267,112 @@ export default async function HowItWorksPage() {
           </Link>
         </p>
       </Section>
+
+      <Section id="estadisticas" title="Córners, tarjetas, faltas y tiros" note="con sus límites a la vista">
+        <p>
+          Los datos de cada partido salen de <strong>football-data.co.uk</strong>: córners, tarjetas,
+          faltas, tiros y tiros a puerta de cada equipo, y las cuotas de las casas de apuestas. Para cada
+          estadística, cada equipo tiene una tendencia <strong>a favor</strong> (cuántos saca) y{" "}
+          <strong>en contra</strong> (cuántos concede), calculadas igual que la fuerza en goles: más peso a
+          lo reciente, ajuste por rival y por campo, y prudencia con pocos partidos.
+        </p>
+        <p>
+          Como estas cifras varían más de lo que predice una distribución de Poisson, cada equipo se
+          modela con una <strong>binomial negativa</strong> cuya dispersión se mide en cada liga. De ahí
+          salen el total esperado, quién saca más y cada línea de más/menos. En tarjetas, si se conoce el{" "}
+          <strong>árbitro</strong> (hoy solo en la Premier), se ajusta por su media de amarillas.
+        </p>
+        <p>
+          En el <strong>resultado</strong> mostramos también la probabilidad de las casas de apuestas
+          (sus cuotas sin el margen) y un <strong>consenso</strong> que promedia ambas: el mercado sabe
+          de lesiones y alineaciones que nosotros no vemos.
+        </p>
+        {statsBacktest.length > 0 && (
+          <div className="overflow-x-auto rounded-2xl bg-white/[0.03] p-4">
+            <p className="mb-2 text-sm">
+              <strong>Examen real</strong> en La Liga {seasonDisplay(season)}: error medio del total del
+              partido, frente a usar siempre la media de la liga (menos es mejor).
+            </p>
+            <table className="w-full min-w-[420px] text-sm">
+              <thead>
+                <tr className="text-left text-[11px] uppercase tracking-[0.12em] text-muted">
+                  <th className="py-1">Estadística</th>
+                  <th className="text-right">Modelo</th>
+                  <th className="text-right">Media de la liga</th>
+                  <th className="text-right">Veredicto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {statsBacktest.map((row) => {
+                  const gain = (row.baseline_mae - row.model_mae) / row.baseline_mae;
+                  return (
+                    <tr key={row.stat} className="border-t border-line/60">
+                      <td className="py-1.5">{STAT_NAMES[row.stat] ?? row.stat}</td>
+                      <td className="text-right tabular-nums">{row.model_mae.toFixed(2)}</td>
+                      <td className="text-right tabular-nums text-muted">{row.baseline_mae.toFixed(2)}</td>
+                      <td
+                        className={`text-right text-xs ${gain > 0.02 ? "text-emerald-300" : gain > 0 ? "text-ink/80" : "text-rose-300"}`}
+                      >
+                        {gain > 0.02 ? "mejor" : gain > 0 ? "algo mejor" : "igual o peor"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <p className="mt-2 text-xs text-muted">
+              Las tarjetas dependen mucho del árbitro y del contexto (derbis, lo que se juega cada uno), y
+              ahí el modelo apenas mejora a la media: tómalas con más cautela que el resto.
+            </p>
+          </div>
+        )}
+      </Section>
+
+      <Section id="jugadores" title="Goleadores, asistentes y amonestados" note="jugador a jugador">
+        <p>
+          Con la alineación de cada partido (minutos, tiros, xG, xA y tarjetas de cada jugador, de
+          Understat) se calcula para cada futbolista:
+        </p>
+        <ol className="ml-5 list-decimal space-y-1">
+          <li>
+            <strong>Minutos esperados</strong>: la media de sus minutos en los últimos 6 partidos de su
+            equipo, dando más peso a los más recientes (si no jugó, cuenta 0). Si lleva semanas sin jugar,
+            baja solo.
+          </li>
+          <li>
+            <strong>Ritmos por 90 minutos</strong> de xG, xA, tiros y amarillas, acercados a la media de su
+            posición cuando ha jugado poco: un gol afortunado no convierte a un central en goleador.
+          </li>
+          <li>
+            <strong>El partido</strong>: si el modelo espera que su equipo marque más de lo habitual ante
+            ese rival, todos sus atacantes suben en proporción.
+          </li>
+        </ol>
+        <p>
+          Probabilidad de marcar = 1 − e<sup>−λ</sup>, con λ = ritmo × minutos/90 × ajuste del partido
+          (igual para asistencia, tarjeta y tiros).
+        </p>
+        {playersBacktest && playersBacktest.predictions > 0 && (
+          <p className="rounded-2xl bg-white/[0.03] p-4 text-sm">
+            <strong>Examen real</strong> en La Liga {seasonDisplay(season)}:{" "}
+            {playersBacktest.predictions.toLocaleString("es-ES")} pronósticos de &quot;marca&quot; hechos
+            solo con datos anteriores. Brier <strong>{playersBacktest.brier.toFixed(3)}</strong> frente a{" "}
+            {playersBacktest.baseline_brier.toFixed(3)} de dar a todos la misma probabilidad.
+          </p>
+        )}
+        <p className="text-sm text-muted">
+          Límite: sin alineaciones confirmadas, un titular que descansa ese día sigue apareciendo con sus
+          minutos habituales.
+        </p>
+      </Section>
     </div>
   );
 }
+
+const STAT_NAMES: Record<string, string> = {
+  corners: "Córners",
+  yellows: "Amarillas",
+  fouls: "Faltas",
+  shots: "Tiros",
+  shots_on_target: "Tiros a puerta",
+};
