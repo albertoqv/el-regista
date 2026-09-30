@@ -163,3 +163,17 @@ def test_maps_roster_lines_with_the_match_context():
     )
     assert (entry.minutes, entry.goals, entry.shots, entry.yellow) == (90, 1, 3, 1)
     assert (entry.xg, entry.xa, entry.key_passes) == (0.61, 0.12, 2)
+
+
+def test_a_player_listed_twice_in_a_roster_is_kept_once():
+    # Seen live in getMatchData/30804 (Villarreal - Deportivo, player 11383).
+    from player_scouting.infrastructure.understat.mapper import to_roster_entries
+
+    match = to_match_ref(PLAYED_MATCH_RAW, competition="La Liga", season_label="2026")
+    duplicate = dict(ROSTER_ROW, id="794335", time="12")
+
+    entries = to_roster_entries(
+        {"h": {"1": ROSTER_ROW, "2": duplicate}, "a": {}}, match
+    )
+
+    assert [e.minutes for e in entries] == [90]
