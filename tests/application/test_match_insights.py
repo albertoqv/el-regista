@@ -160,7 +160,9 @@ def test_match_insights_cover_result_goals_and_every_stat():
     assert insights.result.home_win > insights.result.away_win
     home, draw, away = insights.market
     assert home > 0.7 and home + draw + away == pytest.approx(1.0)
-    assert insights.consensus[0] == pytest.approx((insights.result.home_win + home) / 2)
+    # Closing odds beat our model and any blend with it in the backtest (25/26):
+    # when the market has a price, the headline forecast is the market's.
+    assert insights.consensus == insights.market
     assert set(insights.goals_over) == {0.5, 1.5, 2.5, 3.5, 4.5}
     assert insights.goals_over[0.5] > insights.goals_over[2.5]
     assert sum(insights.half_time) == pytest.approx(1.0)
