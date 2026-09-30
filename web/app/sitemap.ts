@@ -7,6 +7,9 @@ const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL
 const PAGES: { path: string; changeFrequency: "daily" | "weekly" | "monthly"; priority: number }[] = [
   { path: "", changeFrequency: "daily", priority: 1 },
   { path: "/predicciones", changeFrequency: "daily", priority: 0.9 },
+  { path: "/predicciones/historial", changeFrequency: "weekly", priority: 0.8 },
+  { path: "/en-racha", changeFrequency: "daily", priority: 0.8 },
+  { path: "/buscar", changeFrequency: "weekly", priority: 0.7 },
   { path: "/gemelos", changeFrequency: "weekly", priority: 0.9 },
   { path: "/equipos", changeFrequency: "daily", priority: 0.8 },
   { path: "/explorar", changeFrequency: "weekly", priority: 0.7 },

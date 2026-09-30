@@ -115,3 +115,87 @@ export function IconTarget(props: IconProps) {
     </IconBase>
   );
 }
+
+/** En racha: llama. */
+export function IconFlame(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 21c-3.6 0-6-2.4-6-5.6 0-3.1 2.2-4.9 3.4-7.4.5 1.6 1.4 2.6 2.4 3 .2-2.8 1.3-5.3 3.4-7 .2 2.6 1.4 4.3 2.4 5.9.9 1.4 1.4 2.6 1.4 4 0 4-3 7.1-7 7.1Z" />
+      <path d="M12 21c-1.5 0-2.6-1.1-2.6-2.6 0-1.6 1.3-2.4 2-3.8.6 1 1.3 1.5 1.9 1.7.4.6.7 1.2.7 2 0 1.5-.9 2.7-2 2.7Z" />
+    </IconBase>
+  );
+}
+
+/** Gemelos: dos siluetas. */
+export function IconTwins(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <circle cx="8.5" cy="8" r="3" />
+      <circle cx="15.5" cy="8" r="3" />
+      <path d="M3.5 19c.5-3 2.5-4.8 5-4.8s4.5 1.8 5 4.8M10.5 19c.5-3 2.5-4.8 5-4.8s4.5 1.8 5 4.8" />
+    </IconBase>
+  );
+}
+
+/** Explorador: filtros. */
+export function IconFilter(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M4 6h16M7 12h10M10 18h4" />
+    </IconBase>
+  );
+}
+
+/** Comparar: balanza. */
+export function IconScale(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M12 4v16M8 20h8M5 7h14" />
+      <path d="M5 7l-2.5 6a2.5 2.5 0 0 0 5 0Z M19 7l-2.5 6a2.5 2.5 0 0 0 5 0Z" />
+    </IconBase>
+  );
+}
+
+/** Próximos partidos: calendario. */
+export function IconCalendar(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <rect x="4" y="5.5" width="16" height="14.5" rx="2" />
+      <path d="M4 10h16M8.5 3.5v4M15.5 3.5v4" />
+    </IconBase>
+  );
+}
+
+/** Historial de aciertos: check en gráfico. */
+export function IconChecks(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M4 20V4M4 20h16" />
+      <path d="M8 13l3 3 7-8" />
+    </IconBase>
+  );
+}
+
+export function IconMenu(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </IconBase>
+  );
+}
+
+export function IconClose(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M6 6l12 12M18 6L6 18" />
+    </IconBase>
+  );
+}
+
+export function IconChevron(props: IconProps) {
+  return (
+    <IconBase {...props}>
+      <path d="M7 10l5 5 5-5" />
+    </IconBase>
+  );
+}
