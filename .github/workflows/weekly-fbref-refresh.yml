@@ -21,6 +21,10 @@ jobs:
       API_BASE_URL: ${{ secrets.API_BASE_URL }}
       INGESTION_API_KEY: ${{ secrets.INGESTION_API_KEY }}
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: Resolve the season
         env:
@@ -32,54 +36,56 @@ jobs:
             if [ "$MONTH" -ge 7 ]; then START_YEAR=$YEAR; else START_YEAR=$((YEAR - 1)); fi
           fi
           echo "START_YEAR=$START_YEAR" >> "$GITHUB_ENV"
+          # post PATH: authenticated POST to the ingestion API, fails the step on errors.
+          cat > "$RUNNER_TEMP/post.sh" <<'EOF'
+          post() {
+            curl --fail-with-body -sS --max-time 900 -X POST \
+              "$API_BASE_URL$1" \
+              -H "X-Ingestion-Key: $INGESTION_API_KEY"
+            echo
+          }
+          # until_done PATH: repeat a batched ingestion until nothing is left.
+          until_done() {
+            for batch in $(seq 1 15); do
+              result=$(post "$1")
+              echo "$result"
+              [ "$(echo "$result" | jq .remaining)" = "0" ] && return 0
+            done
+          }
+          EOF
 
       - name: Basic statistics (FBref)
         run: |
-          curl --fail-with-body -sS --max-time 600 -X POST \
-            "$API_BASE_URL/ingestion/fbref/seasons/$START_YEAR" \
-            -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested, skipped: (.skipped | length)}'
+          source "$RUNNER_TEMP/post.sh"
+          post "/ingestion/fbref/seasons/$START_YEAR" | jq -c '{ingested, skipped: (.skipped | length)}'
 
       - name: Advanced metrics (Understat)
         run: |
-          curl --fail-with-body -sS --max-time 600 -X POST \
-            "$API_BASE_URL/ingestion/understat/seasons/$START_YEAR" \
-            -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested, skipped: (.skipped | length)}'
+          source "$RUNNER_TEMP/post.sh"
+          post "/ingestion/understat/seasons/$START_YEAR" | jq -c '{ingested, skipped: (.skipped | length)}'
 
       - name: Photos, height, roles and other leagues (Transfermarkt dataset)
         run: |
-          curl --fail-with-body -sS --max-time 900 -X POST             "$API_BASE_URL/ingestion/transfermarkt-dataset/profiles"             -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested}'
+          source "$RUNNER_TEMP/post.sh"
+          post "/ingestion/transfermarkt-dataset/profiles" | jq -c '{ingested}'
           for YEAR in $START_YEAR $((START_YEAR - 1)); do
-            curl --fail-with-body -sS --max-time 900 -X POST               "$API_BASE_URL/ingestion/transfermarkt-dataset/seasons/$YEAR"               -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested, skipped: (.skipped | length)}'
+            post "/ingestion/transfermarkt-dataset/seasons/$YEAR" | jq -c '{ingested, skipped: (.skipped | length)}'
           done
 
       - name: Merge players FBref spelled in two ways
-        run: |
-          curl --fail-with-body -sS --max-time 600 -X POST             "$API_BASE_URL/ingestion/maintenance/merge-duplicates"             -H "X-Ingestion-Key: $INGESTION_API_KEY"
+        run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/maintenance/merge-duplicates"
 
       - name: Calendar, results and team metrics (Understat)
-        run: |
-          curl --fail-with-body -sS --max-time 600 -X POST             "$API_BASE_URL/ingestion/understat/teams/$START_YEAR"             -H "X-Ingestion-Key: $INGESTION_API_KEY"
+        run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/understat/teams/$START_YEAR"
 
       - name: Corners, cards, fouls, shots and odds (football-data.co.uk)
-        run: |
-          curl --fail-with-body -sS --max-time 600 -X POST             "$API_BASE_URL/ingestion/football-data/seasons/$START_YEAR"             -H "X-Ingestion-Key: $INGESTION_API_KEY"
+        run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/football-data/seasons/$START_YEAR"
 
       - name: Shots of the new matches (Understat)
-        run: |
-          # Only matches not stored yet; loop in batches until none is left.
-          for batch in $(seq 1 10); do
-            RESULT=$(curl --fail-with-body -sS --max-time 600 -X POST               "$API_BASE_URL/ingestion/understat/shots/$START_YEAR?limit=120"               -H "X-Ingestion-Key: $INGESTION_API_KEY")
-            echo "$RESULT"
-            [ "$(echo "$RESULT" | jq .remaining)" = "0" ] && break
-          done
+        run: source "$RUNNER_TEMP/post.sh" && until_done "/ingestion/understat/shots/$START_YEAR?limit=60"
 
       - name: Player lines of the new matches (Understat rosters)
-        run: |
-          for batch in $(seq 1 10); do
-            RESULT=$(curl --fail-with-body -sS --max-time 600 -X POST               "$API_BASE_URL/ingestion/understat/rosters/$START_YEAR?limit=40"               -H "X-Ingestion-Key: $INGESTION_API_KEY")
-            echo "$RESULT"
-            [ "$(echo "$RESULT" | jq .remaining)" = "0" ] && break
-          done
+        run: source "$RUNNER_TEMP/post.sh" && until_done "/ingestion/understat/rosters/$START_YEAR?limit=40"
 
       # Transfermarkt throttles Railway's IP, so the lookups run on this runner
       # (a different IP each run) and only the results go to the API.
