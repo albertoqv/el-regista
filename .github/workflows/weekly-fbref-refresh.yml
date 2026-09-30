@@ -60,6 +60,10 @@ jobs:
         run: |
           curl --fail-with-body -sS --max-time 600 -X POST             "$API_BASE_URL/ingestion/understat/teams/$START_YEAR"             -H "X-Ingestion-Key: $INGESTION_API_KEY"
 
+      - name: Corners, cards, fouls, shots and odds (football-data.co.uk)
+        run: |
+          curl --fail-with-body -sS --max-time 600 -X POST             "$API_BASE_URL/ingestion/football-data/seasons/$START_YEAR"             -H "X-Ingestion-Key: $INGESTION_API_KEY"
+
       - name: Shots of the new matches (Understat)
         run: |
           # Only matches not stored yet; loop in batches until none is left.
