@@ -77,8 +77,6 @@ def _current_season_label() -> str:
 def explore_players(
     use_case: ExplorePlayersUseCaseDep,
     season: str | None = None,
-        date.today().year if date.today().month >= 7 else date.today().year - 1
-    ),
     competition: str | None = None,
     position: str | None = None,
     min_age: Annotated[int | None, Query(ge=14, le=50)] = None,
