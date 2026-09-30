@@ -492,3 +492,23 @@ def test_merging_moves_seasons_and_values_to_the_kept_player(session):
         repository.get_season_statistics(2, Season("Serie A", "2024")).xg_chain == 9.5
     )
     assert repository.list_market_value_history(2)[0].amount_eur == 5_000_000
+
+
+def test_stores_height_detailed_position_and_transfermarkt_id(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(
+        Player(
+            1,
+            "Lamine Yamal",
+            "Forward",
+            date(2007, 7, 13),
+            height_cm=183,
+            detailed_position="Right Winger",
+        )
+    )
+    repository.set_transfermarkt_id(1, 937958)
+
+    player = repository.get_player(1)
+
+    assert (player.height_cm, player.detailed_position) == (183, "Right Winger")
+    assert repository.transfermarkt_index() == {937958: 1}
