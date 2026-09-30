@@ -71,3 +71,32 @@ def test_own_goals_count_for_the_score_but_are_never_decisive_for_the_shooter():
     marked = mark_decisive_goals(shots)
 
     assert [s.decisive for s in marked] == [False, True]
+
+
+def test_shot_rates_are_per_90_except_quality_per_shot():
+    from player_scouting.domain.shots import ShotTotals, shot_rates
+
+    totals = ShotTotals(
+        shots=20,
+        np_xg=4.0,
+        np_goals=6,
+        late_goals=2,
+        headed_goals=1,
+        outside_box_goals=3,
+        set_piece_goals=0,
+    )
+
+    rates = shot_rates(totals, minutes=900)
+
+    assert rates["late_goals"] == pytest.approx(0.2)
+    assert rates["headed_goals"] == pytest.approx(0.1)
+    assert rates["outside_box_goals"] == pytest.approx(0.3)
+    assert rates["set_piece_goals"] == 0
+    assert rates["finishing"] == pytest.approx(0.2)  # (6 - 4) per 90
+    assert rates["npxg_per_shot"] == pytest.approx(0.2)
+
+
+def test_no_minutes_means_no_rates():
+    from player_scouting.domain.shots import ShotTotals, shot_rates
+
+    assert shot_rates(ShotTotals(3, 1.0, 1, 0, 0, 0, 0), minutes=0) == {}

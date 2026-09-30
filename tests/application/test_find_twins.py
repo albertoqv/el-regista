@@ -149,3 +149,33 @@ def test_filters_by_budget_age_and_league():
 def test_unknown_player_raises():
     with pytest.raises(PlayerNotFoundError):
         _use_case(_repository()).execute(999)
+
+
+def test_shot_profile_separates_headers_from_long_range_shooters():
+    from player_scouting.domain.shots import ShotTotals
+    from tests.application.doubles import InMemoryShotRepository
+
+    repository = InMemoryPlayerRepository()
+    same = _stats(15, 5, 80, 10)
+    _add(repository, 1, "Target heading forward", LA_LIGA_2025, same)
+    _add(repository, 2, "Header twin", LA_LIGA_2025, same)
+    _add(repository, 3, "Long range twin", LA_LIGA_2025, same)
+    _add(repository, 4, "Filler", LA_LIGA_2025, _stats(3, 1, 20, 40))
+    shots = InMemoryShotRepository()
+    header = ShotTotals(80, 10.0, 12, 3, 8, 0, 4)
+    long_range = ShotTotals(80, 6.0, 12, 3, 0, 7, 0)
+    filler = ShotTotals(20, 2.0, 3, 0, 0, 0, 0)
+    shots.set_totals(
+        {
+            (1, LA_LIGA_2025): header,
+            (2, LA_LIGA_2025): header,
+            (3, LA_LIGA_2025): long_range,
+            (4, LA_LIGA_2025): filler,
+        }
+    )
+
+    report = FindTwinsUseCase(repository, today=lambda: TODAY, shots=shots).execute(1)
+
+    names = [twin.player.name for twin in report.twins]
+    assert names.index("Header twin") < names.index("Long range twin")
+    assert "headed_goals" in report.target.percentiles

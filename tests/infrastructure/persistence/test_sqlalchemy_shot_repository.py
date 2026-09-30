@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from player_scouting.application.ports import MatchRef
 from player_scouting.domain.entities import Player
+from player_scouting.domain.season import Season
 from player_scouting.domain.shots import Shot
 from player_scouting.infrastructure.persistence.models import Base
 from player_scouting.infrastructure.persistence.sqlalchemy_player_repository import (
@@ -214,3 +215,26 @@ def test_partnerships_count_assisted_goals(session):
     assert best.assister is not None and best.assister.player_id == 2
     assert best.team == "Barcelona"
     assert second.assister is None
+
+
+def test_shot_totals_per_player_and_season(session):
+    _seed_players(session)
+    repository = SqlAlchemyShotRepository(session)
+    repository.save_match(
+        MATCH,
+        [
+            _shot(1, 101, 80, shot_type="Head", xg=0.4),
+            _shot(2, 101, 20, result="MissedShot", xg=0.1),
+            _shot(3, 101, 30, situation="Penalty", xg=0.76),
+            _shot(4, 101, 40, x=0.75, xg=0.05),
+        ],
+    )
+
+    totals = repository.list_shot_totals(["2026"])
+
+    raphinha = totals[(1, Season("La Liga", "2026"))]
+    assert raphinha.shots == 3
+    assert raphinha.np_xg == pytest.approx(0.55)
+    assert raphinha.np_goals == 2
+    assert (raphinha.late_goals, raphinha.headed_goals) == (1, 1)
+    assert (raphinha.outside_box_goals, raphinha.set_piece_goals) == (1, 0)

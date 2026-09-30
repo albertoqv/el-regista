@@ -47,3 +47,15 @@ def test_metrics_nobody_has_recorded_are_left_out():
 
     assert "dribbles_completed" not in profile
     assert "goals" in profile
+
+
+def test_rank_rates_ignores_peers_without_that_metric():
+    from player_scouting.domain.percentiles import rank_rates
+
+    target = {"goals": 1.0, "late_goals": 0.3}
+    peers = [target, {"goals": 0.5, "late_goals": 0.1}, {"goals": 0.2}]
+
+    profile = rank_rates(target, peers)
+
+    assert profile["goals"].percentile == 83  # (2 + 0.5) / 3
+    assert profile["late_goals"].percentile == 75  # (1 + 0.5) / 2
