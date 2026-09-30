@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from sqlalchemy import (
+    Boolean,
     Date,
     DateTime,
     Float,
@@ -104,3 +105,40 @@ class LeagueIngestionJobModel(Base):
     season_year: Mapped[int] = mapped_column(Integer, nullable=False)
     next_page: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     total_pages: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+
+class UnderstatMatchModel(Base):
+    __tablename__ = "understat_matches"
+
+    match_id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, autoincrement=False
+    )
+    competition: Mapped[str] = mapped_column(String, nullable=False)
+    season_label: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    played_on: Mapped[date] = mapped_column(Date, nullable=False)
+    home_team: Mapped[str] = mapped_column(String, nullable=False)
+    away_team: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class ShotModel(Base):
+    __tablename__ = "shots"
+
+    shot_id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=False)
+    match_id: Mapped[int] = mapped_column(
+        ForeignKey("understat_matches.match_id"), nullable=False, index=True
+    )
+    understat_player_id: Mapped[int] = mapped_column(
+        Integer, nullable=False, index=True
+    )
+    player_name: Mapped[str] = mapped_column(String, nullable=False)
+    minute: Mapped[int] = mapped_column(Integer, nullable=False)
+    result: Mapped[str] = mapped_column(String, nullable=False)
+    x: Mapped[float] = mapped_column(Float, nullable=False)
+    y: Mapped[float] = mapped_column(Float, nullable=False)
+    xg: Mapped[float] = mapped_column(Float, nullable=False)
+    situation: Mapped[str] = mapped_column(String, nullable=False)
+    shot_type: Mapped[str] = mapped_column(String, nullable=False)
+    home: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    assisted_by: Mapped[str | None] = mapped_column(String, nullable=True)
+    decisive: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    outside_box: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)

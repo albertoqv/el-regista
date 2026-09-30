@@ -101,15 +101,21 @@ def test_late_and_decisive_goal_leaders(session):
     late_decisive = repository.list_shot_leaders("2026", "late_decisive_goals", 5)
     in_serie_a = repository.list_shot_leaders("2026", "late_goals", 5, "Serie A")
 
-    assert [(l.player.name, l.value) for l in late] == [
+    assert [(leader.player.name, leader.value) for leader in late] == [
         ("Raphinha", 2),
         ("Lamine Yamal", 1),
         ("Lautaro Martínez", 1),
     ]
     assert late[0].team == "Barcelona"
-    assert [(l.player.name, l.value) for l in decisive][0] == ("Lamine Yamal", 2)
-    assert [l.player.name for l in late_decisive] == ["Lamine Yamal", "Raphinha"]
-    assert [l.player.name for l in in_serie_a] == ["Lautaro Martínez"]
+    assert [(leader.player.name, leader.value) for leader in decisive][0] == (
+        "Lamine Yamal",
+        2,
+    )
+    assert [leader.player.name for leader in late_decisive] == [
+        "Lamine Yamal",
+        "Raphinha",
+    ]
+    assert [leader.player.name for leader in in_serie_a] == ["Lautaro Martínez"]
 
 
 def test_headers_outside_the_box_and_set_pieces(session):
@@ -128,9 +134,11 @@ def test_headers_outside_the_box_and_set_pieces(session):
     long_range = repository.list_shot_leaders("2026", "outside_box_goals", 5)
     set_piece = repository.list_shot_leaders("2026", "set_piece_goals", 5)
 
-    assert [l.player.name for l in headed] == ["Raphinha"]
-    assert [(l.player.name, l.value) for l in long_range] == [("Lamine Yamal", 2)]
-    assert [l.player.name for l in set_piece] == ["Lamine Yamal"]
+    assert [leader.player.name for leader in headed] == ["Raphinha"]
+    assert [(leader.player.name, leader.value) for leader in long_range] == [
+        ("Lamine Yamal", 2)
+    ]
+    assert [leader.player.name for leader in set_piece] == ["Lamine Yamal"]
 
 
 def test_finishing_is_non_penalty_goals_minus_expected_goals(session):
@@ -163,7 +171,9 @@ def test_rates_need_a_minimum_number_of_shots(session):
 
     leaders = repository.list_shot_leaders("2026", "npxg_per_shot", 5)
 
-    assert [(l.player.name, round(l.value, 2)) for l in leaders] == [("Raphinha", 0.2)]
+    assert [(leader.player.name, round(leader.value, 2)) for leader in leaders] == [
+        ("Raphinha", 0.2)
+    ]
 
 
 def test_player_shots_carry_match_context(session):

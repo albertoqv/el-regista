@@ -12,10 +12,10 @@ from player_scouting.application.ports import (
     LeaguePlayersPage,
     LeagueSummary,
     MarketValueHistoryResult,
+    MatchRef,
     PlayerSeasonResult,
     PlayerSort,
     PlayerSummary,
-    MatchRef,
     SeasonEntry,
     SeasonRecord,
 )
