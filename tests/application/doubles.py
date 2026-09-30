@@ -147,6 +147,21 @@ class InMemoryPlayerRepository:
             if season.label in season_labels and player_id in self._players
         ]
 
+    def list_duplicate_groups(self) -> list[list[int]]:
+        groups: dict[int, list[int]] = {}
+        for player_id, understat_id in sorted(self._understat_ids.items()):
+            groups.setdefault(understat_id, []).append(player_id)
+        return [ids for ids in groups.values() if len(ids) > 1]
+
+    def merge_players(self, keep: int, remove: int) -> None:
+        for (player_id, season), statistics in list(self._season_statistics.items()):
+            if player_id != remove:
+                continue
+            del self._season_statistics[(player_id, season)]
+            self._season_statistics.setdefault((keep, season), statistics)
+        self._players.pop(remove, None)
+        self._understat_ids.pop(remove, None)
+
     def latest_market_values(self) -> dict[int, MarketValuePoint]:
         return {
             player_id: max(points, key=lambda point: point.as_of)

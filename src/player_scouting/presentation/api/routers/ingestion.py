@@ -18,6 +18,7 @@ from player_scouting.presentation.api.dependencies import (
     IngestSeasonShotsUseCaseDep,
     LeagueIngestionJobRepositoryDep,
     LeagueSearchProviderDep,
+    MergeDuplicatePlayersUseCaseDep,
     PlayerRepositoryDep,
     ProcessLeagueIngestionBatchUseCaseDep,
     RecordEnrichmentUseCaseDep,
@@ -95,6 +96,13 @@ def ingest_understat_shots(
     return ShotIngestionSummaryOut(
         matches=summary.matches, shots=summary.shots, remaining=summary.remaining
     )
+
+
+@router.post("/maintenance/merge-duplicates")
+def merge_duplicate_players(
+    use_case: MergeDuplicatePlayersUseCaseDep,
+) -> dict[str, int]:
+    return {"merged": use_case.execute()}
 
 
 @router.post("/transfermarkt/enrich", response_model=IngestionResultOut)

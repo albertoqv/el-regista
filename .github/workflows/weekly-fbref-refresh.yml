@@ -43,6 +43,10 @@ jobs:
             "$API_BASE_URL/ingestion/understat/seasons/$START_YEAR" \
             -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested, skipped: (.skipped | length)}'
 
+      - name: Merge players FBref spelled in two ways
+        run: |
+          curl --fail-with-body -sS --max-time 600 -X POST             "$API_BASE_URL/ingestion/maintenance/merge-duplicates"             -H "X-Ingestion-Key: $INGESTION_API_KEY"
+
       - name: Shots of the new matches (Understat)
         run: |
           # Only matches not stored yet; loop in batches until none is left.

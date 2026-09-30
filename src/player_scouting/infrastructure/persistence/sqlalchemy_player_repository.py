@@ -281,6 +281,61 @@ class SqlAlchemyPlayerRepository:
             )
         ]
 
+    def list_duplicate_groups(self) -> list[list[int]]:
+        """Players that are the same person: FBref spelled them differently."""
+        shared = (
+            select(PlayerModel.understat_id)
+            .where(PlayerModel.understat_id.is_not(None))
+            .group_by(PlayerModel.understat_id)
+            .having(func.count() > 1)
+        )
+        groups: dict[int, list[int]] = {}
+        for player_id, understat_id in self._session.execute(
+            select(PlayerModel.player_id, PlayerModel.understat_id)
+            .where(PlayerModel.understat_id.in_(shared))
+            .order_by(PlayerModel.player_id)
+        ):
+            if understat_id is not None:
+                groups.setdefault(understat_id, []).append(player_id)
+        return sorted(groups.values())
+
+    def merge_players(self, keep: int, remove: int) -> None:
+        self._move_season_rows(Basic, keep, remove)
+        self._move_season_rows(Advanced, keep, remove)
+        values = self._session.query(PlayerMarketValueModel)
+        if values.filter_by(player_id=keep).count():
+            values.filter_by(player_id=remove).delete()
+        else:
+            values.filter_by(player_id=remove).update({"player_id": keep})
+        kept = self._session.get(PlayerModel, keep)
+        removed = self._session.get(PlayerModel, remove)
+        if kept is not None and removed is not None:
+            for field in (
+                "photo_url",
+                "date_of_birth",
+                "preferred_foot",
+                "understat_id",
+            ):
+                if getattr(kept, field) is None:
+                    setattr(kept, field, getattr(removed, field))
+            self._session.flush()
+            self._session.delete(removed)
+        self._session.flush()
+
+    def _move_season_rows[Row: (Basic, Advanced)](
+        self, model: type[Row], keep: int, remove: int
+    ) -> None:
+        """Hands the removed player's seasons over; the kept player's rows win."""
+        kept_seasons = {
+            (row.competition, row.season_label)
+            for row in self._session.query(model).filter_by(player_id=keep)
+        }
+        for row in self._session.query(model).filter_by(player_id=remove).all():
+            if (row.competition, row.season_label) in kept_seasons:
+                self._session.delete(row)
+            else:
+                row.player_id = keep
+
     def latest_market_values(self) -> dict[int, MarketValuePoint]:
         Value = PlayerMarketValueModel
         latest = (

@@ -3,6 +3,7 @@ import { ComparePicker } from "@/app/components/ComparePicker";
 import { DuelCard } from "@/app/components/DuelCard";
 import { FaceOff } from "@/app/components/FaceOff";
 import { HeadToHead } from "@/app/components/HeadToHead";
+import { KeyMoments } from "@/app/components/KeyMoments";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
 import { Reveal } from "@/app/components/motion";
 import { PercentileLegend } from "@/app/components/PercentileBars";
@@ -13,11 +14,13 @@ import {
   getMarketValue,
   getPlayer,
   getPlayerPercentiles,
+  getPlayerShots,
   getPlayerSeason,
   listPlayerSeasons,
   listSeasonLeaders,
   type MarketValueHistory,
   type PercentileReport,
+  type PlayerShot,
   type Season,
 } from "@/lib/api";
 import { currentSeasonStartYear, seasonDisplay } from "@/lib/format";
@@ -66,7 +69,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
 
   if (idA && idB && summaryA && summaryB) {
     try {
-      const [comparison, playerA, playerB, valueA, valueB, percentilesA, percentilesB] =
+      const [comparison, playerA, playerB, valueA, valueB, percentilesA, percentilesB, shotsA, shotsB] =
         await Promise.all([
           comparePlayers(idA, idB, {
             seasonA: seasonA ?? undefined,
@@ -78,6 +81,8 @@ export default async function ComparePage(props: PageProps<"/compare">) {
           getMarketValue(idB).catch(() => EMPTY_VALUE),
           seasonA ? getPlayerPercentiles(idA, seasonA).catch(() => null) : null,
           seasonB ? getPlayerPercentiles(idB, seasonB).catch(() => null) : null,
+          getPlayerShots(idA, seasonA?.label).catch((): PlayerShot[] => []),
+          getPlayerShots(idB, seasonB?.label).catch((): PlayerShot[] => []),
         ]);
       content = {
         comparison,
@@ -87,6 +92,8 @@ export default async function ComparePage(props: PageProps<"/compare">) {
         valueB,
         percentilesA: percentilesA as PercentileReport | null,
         percentilesB: percentilesB as PercentileReport | null,
+        shotsA,
+        shotsB,
       };
     } catch (thrown) {
       error =
@@ -177,6 +184,15 @@ export default async function ComparePage(props: PageProps<"/compare">) {
 
           <Reveal>
             <HeadToHead playerA={content.playerA} playerB={content.playerB} />
+          </Reveal>
+
+          <Reveal>
+            <KeyMoments
+              nameA={content.playerA.name}
+              nameB={content.playerB.name}
+              shotsA={content.shotsA}
+              shotsB={content.shotsB}
+            />
           </Reveal>
 
           {(content.valueA.history.length > 0 || content.valueB.history.length > 0) && (

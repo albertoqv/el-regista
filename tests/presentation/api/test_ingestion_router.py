@@ -412,3 +412,22 @@ def test_records_that_a_player_was_not_found():
 
     assert response.status_code == 204
     assert repository.is_enrichment_checked(1)
+
+
+def test_merges_duplicate_players():
+    repository = InMemoryPlayerRepository()
+    for player_id, name in ((1, "Che Adams"), (2, "Ché Adams")):
+        repository.add(
+            Player(player_id, name, "Forward", None, birth_year=1996),
+            Season("Serie A", str(2023 + player_id)),
+            Statistics(1, 0),
+        )
+        repository.set_understat_id(player_id, 555)
+
+    response = _enrichment_client(repository).post(
+        "/ingestion/maintenance/merge-duplicates"
+    )
+
+    assert response.json() == {"merged": 1}
+    assert repository.get_player(1) is None
+    assert {s.label for s in repository.list_seasons_for_player(2)} == {"2024", "2025"}

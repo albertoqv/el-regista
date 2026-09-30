@@ -43,6 +43,9 @@ from player_scouting.application.use_cases.ingest_season_dataset import (
 from player_scouting.application.use_cases.ingest_season_shots import (
     IngestSeasonShotsUseCase,
 )
+from player_scouting.application.use_cases.merge_duplicate_players import (
+    MergeDuplicatePlayersUseCase,
+)
 from player_scouting.application.use_cases.process_league_ingestion_batch import (
     ProcessLeagueIngestionBatchUseCase,
 )
@@ -429,4 +432,15 @@ def get_ingest_season_shots_use_case(
 
 IngestSeasonShotsUseCaseDep = Annotated[
     IngestSeasonShotsUseCase, Depends(get_ingest_season_shots_use_case)
+]
+
+
+def get_merge_duplicate_players_use_case(
+    repository: PlayerRepositoryDep,
+) -> MergeDuplicatePlayersUseCase:
+    return MergeDuplicatePlayersUseCase(repository)
+
+
+MergeDuplicatePlayersUseCaseDep = Annotated[
+    MergeDuplicatePlayersUseCase, Depends(get_merge_duplicate_players_use_case)
 ]

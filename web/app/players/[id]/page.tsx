@@ -7,6 +7,7 @@ import { PlayerPortrait } from "@/app/components/PlayerPortrait";
 import { PlayerStats } from "@/app/components/PlayerStats";
 import { RadarChart } from "@/app/components/RadarChart";
 import { SeasonSelector } from "@/app/components/SeasonSelector";
+import { ShotProfile } from "@/app/components/ShotProfile";
 import { SimilarPlayers } from "@/app/components/SimilarPlayers";
 import {
   ApiError,
@@ -14,10 +15,12 @@ import {
   getMarketValue,
   getPlayer,
   getPlayerPercentiles,
+  getPlayerShots,
   getPlayerSeason,
   listPlayerSeasons,
   type MarketValueHistory,
   type PercentileReport,
+  type PlayerShot,
   type Season,
   type TwinReport,
 } from "@/lib/api";
@@ -69,7 +72,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     throw error;
   }
 
-  const [twins, marketValue, percentiles] = await Promise.all([
+  const [twins, marketValue, percentiles, shots] = await Promise.all([
     findTwins(playerId, { limit: 6 }).catch((): TwinReport | null => null),
     getMarketValue(playerId).catch(
       (): MarketValueHistory => ({ current: null, history: [] }),
@@ -77,6 +80,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     season
       ? getPlayerPercentiles(playerId, season).catch(() => null)
       : Promise.resolve<PercentileReport | null>(null),
+    getPlayerShots(playerId, season?.label).catch((): PlayerShot[] => []),
   ]);
 
   const age = formatAge(player);
@@ -194,6 +198,12 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
             </div>
             <PercentileBars report={percentiles} />
           </section>
+        </Reveal>
+      )}
+
+      {shots.length > 0 && (
+        <Reveal>
+          <ShotProfile shots={shots} color={accent} />
         </Reveal>
       )}
 

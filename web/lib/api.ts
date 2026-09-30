@@ -247,3 +247,75 @@ export function findTwins(playerId: number, query: TwinQuery = {}): Promise<Twin
   const search = params.toString();
   return request<TwinReport>(`/players/${playerId}/twins${search ? `?${search}` : ""}`);
 }
+
+export type ShotMetric =
+  | "late_goals"
+  | "decisive_goals"
+  | "late_decisive_goals"
+  | "headed_goals"
+  | "outside_box_goals"
+  | "set_piece_goals"
+  | "finishing"
+  | "npxg_per_shot";
+
+export type ShotLeader = PlayerSummary & {
+  competition: string;
+  team: string | null;
+  value: number;
+  goals: number;
+  shots: number;
+};
+
+export function listShotLeaders(
+  startYear: number,
+  options?: { metric?: ShotMetric; limit?: number; competition?: string },
+): Promise<ShotLeader[]> {
+  const params = new URLSearchParams();
+  if (options?.metric) params.set("metric", options.metric);
+  if (options?.limit) params.set("limit", String(options.limit));
+  if (options?.competition) params.set("competition", options.competition);
+  const query = params.toString();
+  return request<ShotLeader[]>(`/seasons/${startYear}/shot-leaders${query ? `?${query}` : ""}`);
+}
+
+export type Partnership = {
+  scorer: PlayerSummary;
+  assister_name: string;
+  assister: PlayerSummary | null;
+  team: string;
+  competition: string;
+  goals: number;
+};
+
+export function listPartnerships(
+  startYear: number,
+  options?: { limit?: number; competition?: string },
+): Promise<Partnership[]> {
+  const params = new URLSearchParams();
+  if (options?.limit) params.set("limit", String(options.limit));
+  if (options?.competition) params.set("competition", options.competition);
+  const query = params.toString();
+  return request<Partnership[]>(`/seasons/${startYear}/partnerships${query ? `?${query}` : ""}`);
+}
+
+export type PlayerShot = {
+  minute: number;
+  result: string;
+  x: number;
+  y: number;
+  xg: number;
+  situation: string;
+  shot_type: string;
+  decisive: boolean;
+  assisted_by: string | null;
+  competition: string;
+  season_label: string;
+  team: string;
+  opponent: string;
+  played_on: string;
+};
+
+export function getPlayerShots(playerId: number, seasonLabel?: string): Promise<PlayerShot[]> {
+  const query = seasonLabel ? `?season_label=${encodeURIComponent(seasonLabel)}` : "";
+  return request<PlayerShot[]>(`/players/${playerId}/shots${query}`);
+}
