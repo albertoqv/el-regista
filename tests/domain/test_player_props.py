@@ -61,3 +61,14 @@ def test_playing_less_lowers_every_probability():
     assert sub.goal < starter.goal
     assert sub.assist < starter.assist
     assert sub.card < starter.card
+
+
+def test_playing_chance_and_minutes_when_he_plays_are_separate():
+    from player_scouting.domain.player_props import minutes_when_playing, playing_chance
+
+    rotated = [90, 0, 90, 0, 90, 0]  # latest first
+
+    assert minutes_when_playing(rotated) == pytest.approx(90)
+    assert 0.5 < playing_chance(rotated) < 0.7
+    assert playing_chance([0, 0, 0]) == 0
+    assert minutes_when_playing([0, 0]) == 0
