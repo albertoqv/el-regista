@@ -52,6 +52,7 @@ from player_scouting.application.use_cases.match_insights import (
 from player_scouting.application.use_cases.merge_duplicate_players import (
     MergeDuplicatePlayersUseCase,
 )
+from player_scouting.application.use_cases.player_markets import IngestRostersUseCase
 from player_scouting.application.use_cases.process_league_ingestion_batch import (
     ProcessLeagueIngestionBatchUseCase,
 )
@@ -565,4 +566,17 @@ def get_ingest_match_stats_use_case(
 
 IngestMatchStatsUseCaseDep = Annotated[
     IngestMatchStatsUseCase, Depends(get_ingest_match_stats_use_case)
+]
+
+
+def get_ingest_rosters_use_case(
+    provider: Annotated[UnderstatShotProvider, Depends(get_shot_provider)],
+    repository: ShotRepositoryDep,
+    pause: Annotated[Callable[[float], None], Depends(get_shot_pause)],
+) -> IngestRostersUseCase:
+    return IngestRostersUseCase(provider, repository, pause)
+
+
+IngestRostersUseCaseDep = Annotated[
+    IngestRostersUseCase, Depends(get_ingest_rosters_use_case)
 ]

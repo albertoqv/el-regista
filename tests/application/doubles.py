@@ -157,6 +157,13 @@ class InMemoryPlayerRepository:
     def transfermarkt_index(self) -> dict[int, int]:
         return dict(self._transfermarkt_ids)
 
+    def find_by_understat_ids(self, understat_ids: list[int]) -> dict[int, Player]:
+        return {
+            understat_id: self._players[player_id]
+            for player_id, understat_id in self._understat_ids.items()
+            if understat_id in understat_ids and player_id in self._players
+        }
+
     def list_duplicate_groups(self) -> list[list[int]]:
         groups: dict[int, list[int]] = {}
         for player_id, understat_id in sorted(self._understat_ids.items()):

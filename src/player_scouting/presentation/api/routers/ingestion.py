@@ -17,6 +17,7 @@ from player_scouting.presentation.api.dependencies import (
     IngestDatasetLeaguesUseCaseDep,
     IngestMatchStatsUseCaseDep,
     IngestPlayerSeasonUseCaseDep,
+    IngestRostersUseCaseDep,
     IngestSeasonDatasetUseCaseDep,
     IngestSeasonShotsUseCaseDep,
     IngestTeamSeasonUseCaseDep,
@@ -141,6 +142,20 @@ def ingest_football_data(
     start_year: int, use_case: IngestMatchStatsUseCaseDep
 ) -> dict[str, int]:
     return {"saved": use_case.execute(start_year)}
+
+
+@router.post("/understat/rosters/{start_year}")
+def ingest_understat_rosters(
+    start_year: int,
+    use_case: IngestRostersUseCaseDep,
+    limit: Annotated[int, Query(ge=1, le=400)] = 120,
+) -> dict[str, int]:
+    summary = use_case.execute(start_year, limit)
+    return {
+        "matches": summary.matches,
+        "players": summary.players,
+        "remaining": summary.remaining,
+    }
 
 
 @router.post("/transfermarkt/enrich", response_model=IngestionResultOut)

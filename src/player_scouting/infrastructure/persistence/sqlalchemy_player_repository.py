@@ -297,6 +297,16 @@ class SqlAlchemyPlayerRepository:
         )
         return {tm_id: player_id for tm_id, player_id in rows if tm_id is not None}
 
+    def find_by_understat_ids(self, understat_ids: list[int]) -> dict[int, Player]:
+        models = self._session.scalars(
+            select(PlayerModel).where(PlayerModel.understat_id.in_(understat_ids))
+        )
+        return {
+            model.understat_id: self._player_to_domain(model)
+            for model in models
+            if model.understat_id is not None
+        }
+
     def list_duplicate_groups(self) -> list[list[int]]:
         """Players that are the same person: FBref spelled them differently."""
         shared = (

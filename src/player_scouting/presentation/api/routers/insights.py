@@ -13,9 +13,17 @@ from player_scouting.application.use_cases.match_insights import (
     StatBacktest,
     StatsBacktestUseCase,
 )
+from player_scouting.application.use_cases.player_markets import (
+    PlayerMarketLine,
+    PlayerMarketsBacktest,
+    PlayerMarketsBacktestUseCase,
+    PlayerMarketsUseCase,
+)
 from player_scouting.domain.counts import StatPrediction
 from player_scouting.presentation.api.dependencies import (
     MatchStatsRepositoryDep,
+    PlayerRepositoryDep,
+    ShotRepositoryDep,
     TeamRepositoryDep,
 )
 
@@ -23,6 +31,36 @@ router = APIRouter(prefix="/predictions", tags=["predictions"])
 
 BACKTEST_CACHE_SECONDS = 3600
 _cache: dict[tuple, tuple[float, dict[str, StatBacktest]]] = {}
+_players_cache: dict[tuple, tuple[float, PlayerMarketsBacktest]] = {}
+
+
+class PlayerMarketOut(BaseModel):
+    understat_player_id: int
+    player_id: int | None
+    name: str
+    photo_url: str | None
+    position: str
+    expected_minutes: float
+    goal: float
+    assist: float
+    card: float
+    shots_1: float
+    shots_2: float
+
+
+class PlayerMarketsOut(BaseModel):
+    match_id: int
+    home_team: str
+    away_team: str
+    home: list[PlayerMarketOut]
+    away: list[PlayerMarketOut]
+
+
+class PlayerMarketsBacktestOut(BaseModel):
+    predictions: int
+    brier: float
+    baseline_brier: float
+    calibration: list[dict[str, float]]
 
 
 class OutcomeOut(BaseModel):
@@ -163,6 +201,73 @@ def stats_backtest(
         )
         for stat, result in cached[1].items()
     ]
+
+
+@router.get("/players-backtest", response_model=PlayerMarketsBacktestOut)
+def players_backtest(
+    shots: ShotRepositoryDep,
+    competition: str,
+    season: str,
+    minimum_matches: Annotated[int, Query(ge=0)] = 30,
+) -> PlayerMarketsBacktestOut:
+    key = (competition, season, minimum_matches)
+    cached = _players_cache.get(key)
+    if cached is None or time.monotonic() - cached[0] > BACKTEST_CACHE_SECONDS:
+        report = PlayerMarketsBacktestUseCase(shots, minimum_matches).execute(
+            competition, season
+        )
+        cached = (time.monotonic(), report)
+        _players_cache[key] = cached
+    report = cached[1]
+    return PlayerMarketsBacktestOut(
+        predictions=report.predictions,
+        brier=round(report.brier, 4),
+        baseline_brier=round(report.baseline_brier, 4),
+        calibration=[
+            {"predicted": round(p, 4), "observed": round(o, 4), "count": n}
+            for p, o, n in report.calibration
+        ],
+    )
+
+
+@router.get("/{match_id}/players", response_model=PlayerMarketsOut)
+def player_markets(
+    match_id: int,
+    teams: TeamRepositoryDep,
+    shots: ShotRepositoryDep,
+    players: PlayerRepositoryDep,
+) -> PlayerMarketsOut:
+    markets = PlayerMarketsUseCase(teams, shots).execute(match_id)
+    if markets is None:
+        raise HTTPException(status_code=404, detail=f"No fixture {match_id}")
+    known = players.find_by_understat_ids(
+        [line.understat_player_id for line in markets.home + markets.away]
+    )
+
+    def out(line: PlayerMarketLine) -> PlayerMarketOut:
+        player = known.get(line.understat_player_id)
+        props = line.props
+        return PlayerMarketOut(
+            understat_player_id=line.understat_player_id,
+            player_id=player.player_id if player else None,
+            name=player.name if player else line.name,
+            photo_url=player.photo_url if player else None,
+            position=line.position,
+            expected_minutes=round(props.expected_minutes, 1),
+            goal=round(props.goal, 4),
+            assist=round(props.assist, 4),
+            card=round(props.card, 4),
+            shots_1=round(props.shots_1, 4),
+            shots_2=round(props.shots_2, 4),
+        )
+
+    return PlayerMarketsOut(
+        match_id=markets.fixture.match_id,
+        home_team=markets.fixture.home_team,
+        away_team=markets.fixture.away_team,
+        home=[out(line) for line in markets.home],
+        away=[out(line) for line in markets.away],
+    )
 
 
 @router.get("/{match_id}/insights", response_model=InsightsOut)
