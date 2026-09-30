@@ -152,3 +152,21 @@ def test_backtest_of_the_anytime_scorer_market():
 
     assert report.predictions > 0
     assert 0 <= report.brier <= 1 and 0 <= report.baseline_brier <= 1
+
+
+def test_a_player_coming_off_the_bench_keeps_his_usual_position():
+    shots = _rosters()
+    shots.save_rosters(
+        5,
+        [
+            _line(5, 29, "Barcelona", "Getafe", 1, "Striker", "Sub", 20, xg=0.1),
+            _line(5, 29, "Getafe", "Barcelona", 9, "Rival", "FW", 90, xg=0.3),
+        ],
+    )
+
+    markets = PlayerMarketsUseCase(
+        team_repository(), shots, today=lambda: date(2026, 10, 1)
+    ).execute(6)
+
+    striker = next(line for line in markets.home if line.name == "Striker")
+    assert striker.position == "FW"
