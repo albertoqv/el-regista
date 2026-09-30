@@ -20,6 +20,7 @@ from player_scouting.application.ports import (
     PlayerSeasonResult,
     PlayerSort,
     PlayerSummary,
+    PredictionSnapshot,
     RankedCount,
     SeasonEntry,
     SeasonRecord,
@@ -540,3 +541,14 @@ class InMemoryVisitRepository:
 
     def top_referrers(self, since: date, limit: int) -> list[RankedCount]:
         return self._ranked(since, lambda v: v.referrer, limit)
+
+
+class InMemoryPredictionLog:
+    def __init__(self) -> None:
+        self._snapshots: dict[int, PredictionSnapshot] = {}
+
+    def save_snapshot(self, snapshot: PredictionSnapshot) -> None:
+        self._snapshots[snapshot.match_id] = snapshot
+
+    def list_snapshots(self) -> list[PredictionSnapshot]:
+        return sorted(self._snapshots.values(), key=lambda s: (s.kickoff, s.match_id))
