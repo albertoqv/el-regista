@@ -8,8 +8,8 @@ from sqlalchemy.orm import Session
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
-from player_scouting.domain.statistics import Statistics
-from player_scouting.infrastructure.persistence.models import Base
+from player_scouting.domain.statistics import AdvancedStatistics, Statistics
+from player_scouting.infrastructure.persistence.models import Base, PlayerModel
 from player_scouting.infrastructure.persistence.sqlalchemy_player_repository import (
     SqlAlchemyPlayerRepository,
 )
@@ -300,3 +300,92 @@ def test_summaries_filter_by_name_case_insensitively(session):
     summaries = repository.search_player_summaries("current", "recent", 10)
 
     assert {s.player.player_id for s in summaries} == {2, 3}
+
+
+YAMAL_ADVANCED = AdvancedStatistics(
+    expected_goals=6.08,
+    expected_assists=4.08,
+    key_passes=27,
+    xg_chain=9.5,
+    xg_buildup=2.1,
+)
+LA_LIGA_2026 = Season("La Liga", "2026")
+
+
+def _seed_yamal(repository: SqlAlchemyPlayerRepository) -> None:
+    repository.save_player(Player(1, "Lamine Yamal", "Forward", None, birth_year=2007))
+    repository.save_season_statistics(
+        1,
+        LA_LIGA_2026,
+        Statistics(7, 4, key_passes=0, minutes_played=598),
+        team="Barcelona",
+    )
+
+
+def test_season_entries_include_team_and_minutes(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_yamal(repository)
+
+    [entry] = repository.list_season_entries(LA_LIGA_2026)
+
+    assert entry.player.player_id == 1
+    assert entry.team == "Barcelona"
+    assert entry.statistics.minutes_played == 598
+
+
+def test_advanced_metrics_are_merged_into_every_statistics_read(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_yamal(repository)
+
+    repository.save_season_advanced(1, LA_LIGA_2026, YAMAL_ADVANCED)
+
+    season = repository.get_season_statistics(1, LA_LIGA_2026)
+    career = repository.get_career_statistics(1)
+    [(_, _, listed)] = repository.list_all_season_statistics()
+    [summary] = repository.search_player_summaries(None, "recent", 5)
+    for stats in (season, career, listed, summary.career):
+        assert stats.expected_goals == 6.08
+        assert stats.expected_assists == 4.08
+        assert stats.key_passes == 27
+        assert stats.xg_chain == 9.5
+        assert stats.goals == 7
+
+
+def test_a_later_basic_refresh_keeps_the_advanced_metrics(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_yamal(repository)
+    repository.save_season_advanced(1, LA_LIGA_2026, YAMAL_ADVANCED)
+
+    repository.save_season_statistics(
+        1, LA_LIGA_2026, Statistics(8, 4, minutes_played=688), team="Barcelona"
+    )
+
+    stats = repository.get_season_statistics(1, LA_LIGA_2026)
+    assert stats.goals == 8
+    assert stats.expected_goals == 6.08
+
+
+def test_stores_the_understat_id(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_yamal(repository)
+
+    repository.set_understat_id(1, 11500)
+
+    stored = session.get(PlayerModel, 1)
+    assert stored.understat_id == 11500
+
+
+def test_pending_enrichment_is_ranked_and_excludes_checked_players(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_yamal(repository)
+    repository.save_player(Player(2, "Bench Player", "Defender", None, birth_year=2001))
+    repository.save_season_statistics(2, LA_LIGA_2026, Statistics(0, 0))
+
+    assert [p.player_id for p in repository.list_players_pending_enrichment(5)] == [
+        1,
+        2,
+    ]
+
+    repository.mark_enrichment_checked(1)
+
+    assert [p.player_id for p in repository.list_players_pending_enrichment(5)] == [2]
