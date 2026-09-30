@@ -3,6 +3,7 @@ from __future__ import annotations
 import httpx
 
 DEFAULT_BASE_URL = "https://www.transfermarkt.com"
+NO_RESULTS = "/schnellsuche/keinergebnis/"
 USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/120.0 Safari/537.36"
@@ -19,10 +20,15 @@ class TransfermarktClient:
         self._base_url = base_url
 
     def search_player(self, name: str) -> str:
-        response = self._get(
+        response = self._http_client.get(
             f"{self._base_url}/schnellsuche/ergebnis/schnellsuche",
             params={"query": name},
+            headers={"User-Agent": USER_AGENT},
         )
+        # No results: Transfermarkt redirects to a "keinergebnis" page.
+        if response.is_redirect and NO_RESULTS in response.headers.get("Location", ""):
+            return ""
+        response.raise_for_status()
         return response.text
 
     def get_profile(self, profile_path: str) -> str:

@@ -209,3 +209,41 @@ export function getPlayerPercentiles(
     `/players/${playerId}/seasons/${encodeURIComponent(season.competition)}/${encodeURIComponent(season.label)}/percentiles`,
   );
 }
+
+export type TwinProfile = PlayerSummary & {
+  competition: string;
+  season_label: string;
+  team: string | null;
+  market_value_eur: number | null;
+  percentiles: Record<string, number>;
+};
+
+export type Twin = TwinProfile & {
+  similarity: number;
+  shared_strengths: string[];
+  differences: string[];
+};
+
+export type TwinReport = { target: TwinProfile; twins: Twin[] };
+
+export type TwinQuery = {
+  season?: Season;
+  maxValue?: number;
+  maxAge?: number;
+  league?: string;
+  limit?: number;
+};
+
+export function findTwins(playerId: number, query: TwinQuery = {}): Promise<TwinReport> {
+  const params = new URLSearchParams();
+  if (query.season) {
+    params.set("competition", query.season.competition);
+    params.set("label", query.season.label);
+  }
+  if (query.maxValue) params.set("max_value", String(query.maxValue));
+  if (query.maxAge) params.set("max_age", String(query.maxAge));
+  if (query.league) params.set("league", query.league);
+  if (query.limit) params.set("limit", String(query.limit));
+  const search = params.toString();
+  return request<TwinReport>(`/players/${playerId}/twins${search ? `?${search}` : ""}`);
+}

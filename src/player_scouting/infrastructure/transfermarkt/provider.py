@@ -76,6 +76,13 @@ class TransfermarktMarketValueProvider:
         self, player_name: str, birth_year: int | None
     ) -> MarketValueHistoryResult | None:
         candidates = extract_search_candidates(self._client.search_player(player_name))
+        words = player_name.split()
+        if not candidates and len(words) > 1:
+            # East Asian names often come family name first; Transfermarkt does not.
+            reversed_name = " ".join(reversed(words))
+            candidates = extract_search_candidates(
+                self._client.search_player(reversed_name)
+            )
         candidate = _choose_candidate(
             candidates, player_name, birth_year, self._current_year()
         )

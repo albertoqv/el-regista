@@ -81,7 +81,8 @@ def test_search_without_results_returns_an_empty_page():
         return httpx.Response(
             302,
             headers={
-                "Location": f"{BASE_URL}/schnellsuche/keinergebnis/schnellsuche?query=Lee+Kang%5C-in"
+                "Location": f"{BASE_URL}/schnellsuche/keinergebnis/schnellsuche"
+                "?query=Lee+Kang%5C-in"
             },
         )
 
