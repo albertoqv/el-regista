@@ -1,108 +1,142 @@
 import Link from "next/link";
-import { Avatar } from "@/app/components/Avatar";
-import { IconTarget, IconTrophy } from "@/app/components/icons";
-import { Leaderboard } from "@/app/components/Leaderboard";
+import { DuelCard } from "@/app/components/DuelCard";
+import { IconCreate, IconSearch, IconTarget } from "@/app/components/icons";
+import { Reveal } from "@/app/components/motion";
 import { PlayerSearchForm } from "@/app/components/PlayerSearchForm";
-import { listPlayers, type Player } from "@/lib/api";
+import { SeasonLeaders } from "@/app/components/SeasonLeaders";
+import { listSeasonLeaders, type SeasonLeader } from "@/lib/api";
+import { currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
-const LEADERBOARD_SIZE = 8;
-const RECENT_LIST_SIZE = 50;
-
-async function loadHome(): Promise<{
-  recent: Player[];
-  topScorers: Player[];
-  topAssisters: Player[];
-  error: string | null;
-}> {
+async function loadHome(startYear: number) {
   try {
-    const [recent, topScorers, topAssisters] = await Promise.all([
-      listPlayers({ sort: "recent", limit: RECENT_LIST_SIZE }),
-      listPlayers({ sort: "goals", limit: LEADERBOARD_SIZE }),
-      listPlayers({ sort: "assists", limit: LEADERBOARD_SIZE }),
+    const [scorers, creators, xg] = await Promise.all([
+      listSeasonLeaders(startYear, { metric: "goals", limit: 10 }),
+      listSeasonLeaders(startYear, { metric: "expected_assists", limit: 2 }),
+      listSeasonLeaders(startYear, { metric: "xg_chain", limit: 2 }),
     ]);
-    return { recent, topScorers, topAssisters, error: null };
+    return { scorers, creators, xg, error: false };
   } catch {
-    return {
-      recent: [],
-      topScorers: [],
-      topAssisters: [],
-      error:
-        "No se ha podido conectar con la API. Comprueba que esté arrancada en NEXT_PUBLIC_API_URL.",
-    };
+    return { scorers: [], creators: [], xg: [], error: true };
   }
 }
 
+function duel(
+  pair: SeasonLeader[],
+  title: string,
+): { title: string; a: SeasonLeader; b: SeasonLeader } | null {
+  return pair.length >= 2 ? { title, a: pair[0], b: pair[1] } : null;
+}
+
+const FEATURES = [
+  {
+    icon: IconTarget,
+    title: "Cara a cara",
+    text: "Dos jugadores enfrentados: quién gana en cada faceta, por 90 minutos y con veredicto.",
+  },
+  {
+    icon: IconCreate,
+    title: "Radar de percentiles",
+    text: "Cada jugador frente a los de su puesto y su liga, como en los informes de scouting profesionales.",
+  },
+  {
+    icon: IconSearch,
+    title: "Encuentra al gemelo",
+    text: "Busca jugadores con un perfil estadístico parecido: el recambio ideal, en cualquier liga.",
+  },
+];
+
 export default async function HomePage() {
-  const { recent, topScorers, topAssisters, error } = await loadHome();
+  const startYear = currentSeasonStartYear();
+  const { scorers, creators, xg, error } = await loadHome(startYear);
+  const duels = [
+    duel(scorers, "Duelo de goleadores"),
+    duel(creators, "Duelo de creadores"),
+    duel(xg, "Los que más pesan en ataque"),
+  ].filter((entry) => entry !== null);
 
   return (
-    <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">Jugadores</h1>
-        <PlayerSearchForm />
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          Las 5 grandes ligas europeas, actualizadas cada semana.
-        </p>
+    <div className="flex flex-col gap-20">
+      <section className="relative flex flex-col items-center gap-7 pt-10 text-center sm:pt-16">
+        <Reveal>
+          <span className="glass inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium text-ink/80">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            Temporada {seasonDisplay(String(startYear))} · 5 grandes ligas · actualizado cada semana
+          </span>
+        </Reveal>
+        <Reveal delay={0.08}>
+          <h1 className="font-display text-5xl font-bold leading-[1.02] tracking-tight sm:text-7xl">
+            Scouting de élite,
+            <br />
+            <span className="text-gradient">al alcance de todos.</span>
+          </h1>
+        </Reveal>
+        <Reveal delay={0.16}>
+          <p className="max-w-2xl text-base text-muted sm:text-lg">
+            Compara futbolistas cara a cara, mira dónde destacan frente a los de su
+            puesto y encuentra jugadores con su mismo perfil. Con datos reales.
+          </p>
+        </Reveal>
+        <Reveal delay={0.24} className="w-full max-w-2xl">
+          <PlayerSearchForm />
+        </Reveal>
+        <Reveal delay={0.3}>
+          <Link
+            href="/compare"
+            className="text-sm font-medium text-brand-2 underline-offset-4 hover:underline"
+          >
+            o compara dos jugadores directamente →
+          </Link>
+        </Reveal>
       </section>
 
       {error && (
-        <p className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-          {error}
+        <p className="glass rounded-2xl border-red-500/30 p-5 text-center text-sm text-red-300">
+          No se ha podido conectar con los datos ahora mismo. Inténtalo en unos minutos.
         </p>
       )}
 
-      {!error && recent.length === 0 && (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          Todavía no hay jugadores disponibles. Vuelve pronto.
-        </p>
+      {!error && (
+        <Reveal>
+          <SeasonLeaders startYear={startYear} initialLeaders={scorers} />
+        </Reveal>
       )}
 
-      {recent.length > 0 && (
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
-          <Leaderboard
-            title="Top goleadores"
-            icon={IconTrophy}
-            players={topScorers}
-            metricKey="goals"
-          />
-          <Leaderboard
-            title="Top asistentes"
-            icon={IconTarget}
-            players={topAssisters}
-            metricKey="assists"
-          />
-        </div>
-      )}
-
-      {recent.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold tracking-tight">
-            Destacados de la temporada más reciente
-          </h2>
-          <ul className="divide-y divide-zinc-200 rounded-md border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
-            {recent.map((player) => (
-              <li key={player.player_id}>
-                <Link
-                  href={`/players/${player.player_id}`}
-                  className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                >
-                  <span className="flex items-center gap-3">
-                    <Avatar
-                      name={player.name}
-                      photoUrl={player.photo_url}
-                      size={40}
-                    />
-                    <span className="font-medium">{player.name}</span>
-                  </span>
-                  <span className="text-sm text-zinc-500 dark:text-zinc-400">
-                    {player.position} · {player.goals}G {player.assists}A
-                  </span>
-                </Link>
-              </li>
+      {duels.length > 0 && (
+        <section className="flex flex-col gap-6">
+          <Reveal>
+            <p className="text-xs font-semibold uppercase tracking-[0.25em] text-side-b">
+              Cara a cara
+            </p>
+            <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+              Duelos del momento
+            </h2>
+          </Reveal>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {duels.map((entry, index) => (
+              <Reveal key={entry.title} delay={index * 0.08}>
+                <DuelCard title={entry.title} a={entry.a} b={entry.b} />
+              </Reveal>
             ))}
-          </ul>
+          </div>
         </section>
       )}
+
+      <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {FEATURES.map((feature, index) => (
+          <Reveal key={feature.title} delay={index * 0.08}>
+            <div className="glass glass-hover h-full rounded-3xl p-6">
+              <span className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-brand/15">
+                <feature.icon size={22} color="#9cc3ff" />
+              </span>
+              <h3 className="font-display text-lg font-semibold">{feature.title}</h3>
+              <p className="mt-1 text-sm text-muted">{feature.text}</p>
+            </div>
+          </Reveal>
+        ))}
+      </section>
     </div>
   );
 }

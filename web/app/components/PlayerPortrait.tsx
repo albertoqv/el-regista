@@ -1,0 +1,98 @@
+"use client";
+
+import { useState } from "react";
+import { bigPhoto } from "@/lib/format";
+
+/** Generic player silhouette used when there is no photo yet. */
+function Silhouette({ color }: { color: string }) {
+  const id = `sil-${color.replace(/[^a-z0-9]/gi, "")}`;
+  return (
+    <svg viewBox="0 0 120 150" className="h-full w-full" aria-hidden="true">
+      <defs>
+        <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.55" />
+          <stop offset="100%" stopColor={color} stopOpacity="0.05" />
+        </linearGradient>
+      </defs>
+      <circle cx="60" cy="48" r="22" fill={`url(#${id})`} />
+      <path
+        d="M18 150c2-34 18-56 42-56s40 22 42 56z"
+        fill={`url(#${id})`}
+      />
+    </svg>
+  );
+}
+
+/**
+ * Large trading-card style portrait. The photo fades into the card at the
+ * bottom so names and numbers can sit on top of it.
+ */
+export function PlayerPortrait({
+  name,
+  photoUrl,
+  accent = "#3d8bff",
+  mirrored = false,
+  className = "",
+  rounded = "rounded-3xl",
+}: {
+  name: string;
+  photoUrl: string | null | undefined;
+  accent?: string;
+  mirrored?: boolean;
+  className?: string;
+  rounded?: string;
+}) {
+  // Try the sharp portrait first, then the original one, then the silhouette.
+  const sources = [bigPhoto(photoUrl), photoUrl].filter(
+    (url, index, all): url is string => !!url && all.indexOf(url) === index,
+  );
+  const [attempt, setAttempt] = useState(0);
+  const source = sources[attempt] ?? null;
+  const failed = source === null;
+  const next = () => setAttempt((current) => current + 1);
+
+  return (
+    <div
+      className={`relative overflow-hidden ${rounded} ${className}`}
+      style={{
+        background: `radial-gradient(120% 90% at 50% 0%, ${accent}55, transparent 60%), linear-gradient(180deg, #0d1426, #070a14)`,
+        boxShadow: `0 0 0 1px rgba(255,255,255,0.08), 0 30px 80px -30px ${accent}88`,
+      }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 2px, transparent 2px 12px)",
+        }}
+      />
+      {!failed ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          key={source}
+          src={source}
+          alt={name}
+          onError={next}
+          ref={(node) => {
+            // The error may fire before hydration, when onError is not attached yet.
+            if (node && node.complete && node.naturalWidth === 0) next();
+          }}
+          className="absolute inset-0 h-full w-full object-cover object-top"
+          style={{
+            transform: mirrored ? "scaleX(-1)" : undefined,
+            maskImage: "linear-gradient(180deg, black 55%, transparent 98%)",
+            WebkitMaskImage: "linear-gradient(180deg, black 55%, transparent 98%)",
+          }}
+        />
+      ) : (
+        <div className="absolute inset-x-0 bottom-0 top-[8%]">
+          <Silhouette color={accent} />
+        </div>
+      )}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3"
+        style={{ background: "linear-gradient(0deg, #05070dee, transparent)" }}
+      />
+    </div>
+  );
+}

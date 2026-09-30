@@ -1,108 +1,72 @@
-import type { ComponentType } from "react";
-import {
-  IconAttack,
-  IconCard,
-  IconCreate,
-  IconDefense,
-  IconTarget,
-} from "@/app/components/icons";
+"use client";
+
+import { useState } from "react";
+import { CountUp, Reveal } from "@/app/components/motion";
 import type { Player } from "@/lib/api";
-
-const ACCENT_COLOR = "#2a78d6";
-
-function StatTile({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div
-      className="flex flex-col gap-1 rounded-md border border-t-4 border-zinc-200 px-4 py-3 dark:border-zinc-800"
-      style={{ borderTopColor: ACCENT_COLOR }}
-    >
-      <span className="text-xs text-zinc-500 dark:text-zinc-400">{label}</span>
-      <span className="text-xl font-semibold">{value}</span>
-    </div>
-  );
-}
-
-function StatGroup({
-  title,
-  icon: Icon,
-  tiles,
-}: {
-  title: string;
-  icon: ComponentType<{ size?: number }>;
-  tiles: { label: string; value: string | number }[];
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <h3 className="flex items-center gap-2 text-sm font-medium text-zinc-500 dark:text-zinc-400">
-        <Icon size={16} />
-        {title}
-      </h3>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {tiles.map((tile) => (
-          <StatTile key={tile.label} label={tile.label} value={tile.value} />
-        ))}
-      </div>
-    </div>
-  );
-}
+import { GROUPS, METRICS, metricValue } from "@/lib/metrics";
 
 export function PlayerStats({ player }: { player: Player }) {
+  const [perNinety, setPerNinety] = useState(false);
+  const canPerNinety = player.minutes_played > 0;
+
   return (
     <div className="flex flex-col gap-6">
-      <StatGroup
-        title="Ataque"
-        icon={IconAttack}
-        tiles={[
-          { label: "Goles", value: player.goals },
-          { label: "Tiros", value: player.shots },
-          { label: "Tiros a puerta", value: player.shots_on_target },
-          { label: "xG", value: player.expected_goals.toFixed(2) },
-        ]}
-      />
-      <StatGroup
-        title="Creación"
-        icon={IconCreate}
-        tiles={[
-          { label: "Asistencias", value: player.assists },
-          { label: "xA", value: player.expected_assists.toFixed(2) },
-          { label: "Pases de gol", value: player.key_passes },
-          {
-            label: "Pases completados",
-            value: `${player.passes_completed}/${player.passes_attempted}`,
-          },
-          {
-            label: "Regates completados",
-            value: `${player.dribbles_completed}/${player.dribbles_attempted}`,
-          },
-        ]}
-      />
-      <StatGroup
-        title="Influencia"
-        icon={IconTarget}
-        tiles={[
-          { label: "Minutos", value: player.minutes_played },
-          { label: "xGChain", value: player.xg_chain.toFixed(2) },
-          { label: "xGBuildup", value: player.xg_buildup.toFixed(2) },
-        ]}
-      />
-      <StatGroup
-        title="Defensa"
-        icon={IconDefense}
-        tiles={[
-          { label: "Entradas ganadas", value: player.tackles_won },
-          { label: "Intercepciones", value: player.interceptions },
-        ]}
-      />
-      <StatGroup
-        title="Disciplina"
-        icon={IconCard}
-        tiles={[
-          { label: "Faltas cometidas", value: player.fouls_committed },
-          { label: "Faltas recibidas", value: player.fouls_won },
-          { label: "Tarjetas amarillas", value: player.yellow_cards },
-          { label: "Tarjetas rojas", value: player.red_cards },
-        ]}
-      />
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="font-display text-2xl font-bold tracking-tight">Estadísticas</h2>
+        {canPerNinety && (
+          <div className="glass flex rounded-full p-1 text-xs font-semibold">
+            {[
+              { value: false, label: "Totales" },
+              { value: true, label: "Por 90'" },
+            ].map((option) => (
+              <button
+                key={option.label}
+                type="button"
+                onClick={() => setPerNinety(option.value)}
+                className={`rounded-full px-3 py-1.5 transition ${perNinety === option.value ? "bg-white text-black" : "text-muted hover:text-ink"}`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {GROUPS.map((group, groupIndex) => {
+          const metrics = group.metrics.filter(
+            (key) => player[key] > 0 || !["passes_completed", "dribbles_completed", "expected_goals", "expected_assists", "xg_chain", "xg_buildup"].includes(key),
+          );
+          return (
+            <Reveal key={group.key} delay={groupIndex * 0.06}>
+              <div className="glass h-full rounded-3xl p-5">
+                <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                  {group.title}
+                </h3>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">
+                  {metrics.map((key) => {
+                    const info = METRICS[key];
+                    const value = metricValue(player, key, perNinety);
+                    return (
+                      <div key={key} className="flex flex-col" title={info.help}>
+                        <span className="font-display text-3xl font-bold tabular-nums">
+                          <CountUp
+                            key={String(perNinety)}
+                            value={value}
+                            decimals={perNinety ? 2 : (info.decimals ?? 0)}
+                            duration={0.8}
+                          />
+                        </span>
+                        <span className="text-xs text-muted">{info.short}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </Reveal>
+          );
+        })}
+      </div>
     </div>
   );
 }

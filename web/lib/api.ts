@@ -1,4 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const REVALIDATE_SECONDS = 600;
 
 export type PlayerSummary = {
   player_id: number;
@@ -73,9 +74,10 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  // Data changes weekly: let the server cache responses for a few minutes.
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
-    cache: "no-store",
+    next: { revalidate: REVALIDATE_SECONDS },
   });
   if (!response.ok) {
     const body = await response.text();
@@ -153,5 +155,57 @@ export function findSimilarPlayers(
   const query = params.toString();
   return request<SimilarPlayerMatch[]>(
     `/players/${playerId}/similar${query ? `?${query}` : ""}`,
+  );
+}
+
+export type SeasonLeader = Player & {
+  competition: string;
+  season_label: string;
+  team: string | null;
+};
+
+export type LeaderMetric =
+  | "goals"
+  | "assists"
+  | "expected_goals"
+  | "expected_assists"
+  | "shots"
+  | "key_passes"
+  | "xg_chain"
+  | "dribbles_completed"
+  | "tackles_won"
+  | "interceptions";
+
+export function listSeasonLeaders(
+  startYear: number,
+  options?: { metric?: LeaderMetric; limit?: number; competition?: string },
+): Promise<SeasonLeader[]> {
+  const params = new URLSearchParams();
+  if (options?.metric) params.set("metric", options.metric);
+  if (options?.limit) params.set("limit", String(options.limit));
+  if (options?.competition) params.set("competition", options.competition);
+  const query = params.toString();
+  return request<SeasonLeader[]>(
+    `/seasons/${startYear}/leaders${query ? `?${query}` : ""}`,
+  );
+}
+
+export type MetricPercentile = { per_90: number; percentile: number };
+
+export type PercentileReport = {
+  competition: string;
+  season_label: string;
+  position: string;
+  peer_count: number;
+  minimum_minutes: number;
+  metrics: Record<string, MetricPercentile>;
+};
+
+export function getPlayerPercentiles(
+  playerId: number,
+  season: Season,
+): Promise<PercentileReport> {
+  return request<PercentileReport>(
+    `/players/${playerId}/seasons/${encodeURIComponent(season.competition)}/${encodeURIComponent(season.label)}/percentiles`,
   );
 }

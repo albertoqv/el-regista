@@ -1,0 +1,107 @@
+"use client";
+
+import { motion } from "motion/react";
+import Link from "next/link";
+import { PlayerPortrait } from "@/app/components/PlayerPortrait";
+import { SimilarityMeter } from "@/app/components/SimilarityMeter";
+import type { MarketValuePoint, Player } from "@/lib/api";
+import {
+  footLabel,
+  formatAge,
+  formatMarketValue,
+  positionLabel,
+} from "@/lib/format";
+
+export type FaceOffSide = {
+  player: Player;
+  context: string;
+  marketValue: MarketValuePoint | null;
+};
+
+function Fighter({ side, color, fromLeft }: { side: FaceOffSide; color: string; fromLeft: boolean }) {
+  const { player } = side;
+  const age = formatAge(player);
+  const facts = [
+    positionLabel(player.position),
+    age ? `${age} años` : null,
+    player.preferred_foot ? footLabel(player.preferred_foot) : null,
+  ].filter(Boolean);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: fromLeft ? -120 : 120, rotate: fromLeft ? -4 : 4 }}
+      animate={{ opacity: 1, x: 0, rotate: 0 }}
+      transition={{ type: "spring", stiffness: 70, damping: 14, delay: 0.1 }}
+      className={`flex flex-col gap-3 ${fromLeft ? "items-start text-left" : "items-end text-right"}`}
+    >
+      <Link href={`/players/${player.player_id}`} className="group relative block w-full">
+        <PlayerPortrait
+          name={player.name}
+          photoUrl={player.photo_url}
+          accent={color}
+          mirrored={!fromLeft}
+          className="aspect-[3/4] w-full transition duration-500 group-hover:scale-[1.02]"
+        />
+        <div className={`absolute inset-x-0 bottom-0 flex flex-col p-4 sm:p-5 ${fromLeft ? "items-start" : "items-end"}`}>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color }}>
+            {side.context}
+          </span>
+          <span className="font-display text-2xl font-bold leading-tight sm:text-4xl">{player.name}</span>
+        </div>
+      </Link>
+      <div className={`flex flex-wrap gap-1.5 ${fromLeft ? "" : "justify-end"}`}>
+        {facts.map((fact) => (
+          <span key={fact} className="rounded-full bg-white/5 px-2.5 py-1 text-xs text-ink/80">
+            {fact}
+          </span>
+        ))}
+        {side.marketValue && (
+          <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: `${color}22`, color }}>
+            {formatMarketValue(side.marketValue.amount_eur)}
+          </span>
+        )}
+      </div>
+    </motion.div>
+  );
+}
+
+export function FaceOff({
+  a,
+  b,
+  similarity,
+}: {
+  a: FaceOffSide;
+  b: FaceOffSide;
+  similarity: number;
+}) {
+  return (
+    <section className="relative -mx-4 overflow-x-clip px-4 py-2 sm:mx-0 sm:px-0">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            "radial-gradient(40% 60% at 20% 40%, rgba(61,139,255,0.18), transparent), radial-gradient(40% 60% at 80% 40%, rgba(255,107,61,0.16), transparent)",
+        }}
+      />
+      <div className="grid grid-cols-2 items-start gap-4 sm:gap-8 md:grid-cols-[1fr_auto_1fr]">
+        <Fighter side={a} color="#3d8bff" fromLeft />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.4 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 160, damping: 12, delay: 0.55 }}
+          className="order-last col-span-2 flex flex-col items-center gap-5 md:order-none md:col-span-1 md:pt-24"
+        >
+          <div className="relative flex h-20 w-20 items-center justify-center">
+            <div className="spin-slow absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,#3d8bff,#22d3ee,#ff6b3d,#3d8bff)] opacity-80 blur-md" />
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-[#05070d] font-display text-2xl font-black italic">
+              VS
+            </div>
+          </div>
+          <SimilarityMeter percentage={similarity} size={140} />
+        </motion.div>
+        <Fighter side={b} color="#ff6b3d" fromLeft={false} />
+      </div>
+    </section>
+  );
+}

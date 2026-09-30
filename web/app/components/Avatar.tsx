@@ -48,6 +48,10 @@ export function Avatar({
         width={size}
         height={size}
         onError={() => setFailed(true)}
+        ref={(node) => {
+          // The error may fire before hydration, when onError is not attached yet.
+          if (node && node.complete && node.naturalWidth === 0) setFailed(true);
+        }}
         className="shrink-0 rounded-full bg-zinc-200 object-cover dark:bg-zinc-800"
         style={{ width: size, height: size }}
       />

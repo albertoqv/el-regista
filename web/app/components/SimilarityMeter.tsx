@@ -1,44 +1,66 @@
-const FILL_COLOR = "#2a78d6";
+"use client";
 
+import { motion } from "motion/react";
+import { CountUp } from "@/app/components/motion";
+
+const RADIUS = 52;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+function verdict(percentage: number): string {
+  if (percentage >= 85) return "Casi gemelos";
+  if (percentage >= 70) return "Muy parecidos";
+  if (percentage >= 50) return "Algo en común";
+  return "Perfiles distintos";
+}
+
+/** Animated ring gauge showing how alike two statistical profiles are. */
 export function SimilarityMeter({
   percentage,
-  size = 128,
+  size = 150,
 }: {
   percentage: number;
   size?: number;
 }) {
-  const strokeWidth = 10;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference * (1 - Math.min(Math.max(percentage, 0), 100) / 100);
-
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          strokeWidth={strokeWidth}
-          fill="none"
-          className="stroke-zinc-200 dark:stroke-zinc-800"
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={FILL_COLOR}
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          fill="none"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-semibold">{percentage}%</span>
-        <span className="text-xs text-zinc-500 dark:text-zinc-400">parecido</span>
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+          <defs>
+            <linearGradient id="similarity-gradient" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#3d8bff" />
+              <stop offset="100%" stopColor="#ff6b3d" />
+            </linearGradient>
+          </defs>
+          <circle cx="60" cy="60" r={RADIUS} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="9" />
+          <motion.circle
+            cx="60"
+            cy="60"
+            r={RADIUS}
+            fill="none"
+            stroke="url(#similarity-gradient)"
+            strokeWidth="9"
+            strokeLinecap="round"
+            strokeDasharray={CIRCUMFERENCE}
+            initial={{ strokeDashoffset: CIRCUMFERENCE }}
+            whileInView={{
+              strokeDashoffset: CIRCUMFERENCE * (1 - percentage / 100),
+            }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
+            style={{ filter: "drop-shadow(0 0 8px rgba(120,140,255,0.6))" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="font-display text-4xl font-bold tabular-nums">
+            <CountUp value={percentage} />
+            <span className="text-xl text-muted">%</span>
+          </span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+            similitud
+          </span>
+        </div>
       </div>
+      <span className="text-sm font-medium text-ink/80">{verdict(percentage)}</span>
     </div>
   );
 }

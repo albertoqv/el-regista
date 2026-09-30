@@ -4,6 +4,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PlayerAutocomplete } from "@/app/components/PlayerAutocomplete";
 import { listPlayerSeasons, type PlayerSummary, type Season } from "@/lib/api";
+import { seasonDisplay, sortSeasonsByRecency } from "@/lib/format";
+import { CAREER } from "@/lib/seasons";
+
+const LATEST = "";
 
 function seasonKey(season: Season): string {
   return `${season.competition}|${season.label}`;
@@ -13,21 +17,21 @@ function SeasonSelect({
   playerId,
   value,
   onChange,
+  color,
 }: {
   playerId: number | null;
-  value: Season | null;
-  onChange: (season: Season | null) => void;
+  value: string;
+  onChange: (value: string) => void;
+  color: string;
 }) {
   const [seasons, setSeasons] = useState<Season[]>([]);
 
   useEffect(() => {
-    if (playerId === null) {
-      return;
-    }
+    if (playerId === null) return;
     let cancelled = false;
     listPlayerSeasons(playerId)
       .then((result) => {
-        if (!cancelled) setSeasons(result);
+        if (!cancelled) setSeasons(sortSeasonsByRecency(result));
       })
       .catch(() => {
         if (!cancelled) setSeasons([]);
@@ -37,102 +41,120 @@ function SeasonSelect({
     };
   }, [playerId]);
 
-  if (playerId === null || seasons.length === 0) {
-    return null;
-  }
+  if (playerId === null) return null;
 
   return (
     <select
-      value={value ? seasonKey(value) : ""}
-      onChange={(event) => {
-        if (event.target.value === "") {
-          onChange(null);
-          return;
-        }
-        const [competition, label] = event.target.value.split("|");
-        onChange({ competition, label });
-      }}
-      className="rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className="glass w-full rounded-xl px-3 py-2 text-sm outline-none"
+      style={{ borderColor: `${color}55` }}
     >
-      <option value="">Carrera</option>
+      <option value={LATEST}>Última temporada</option>
       {seasons.map((season) => (
         <option key={seasonKey(season)} value={seasonKey(season)}>
-          {season.competition} {season.label}
+          {season.competition} {seasonDisplay(season.label)}
           {season.team ? ` · ${season.team}` : ""}
         </option>
       ))}
+      <option value={CAREER}>Carrera completa</option>
     </select>
   );
+}
+
+function initialValue(season: Season | null, career: boolean): string {
+  if (career) return CAREER;
+  return season ? seasonKey(season) : LATEST;
+}
+
+function applySeason(params: URLSearchParams, value: string, prefix: "a" | "b") {
+  if (value === CAREER) {
+    params.set(`s${prefix}l`, CAREER);
+  } else if (value !== LATEST) {
+    const [competition, label] = value.split("|");
+    params.set(`s${prefix}c`, competition);
+    params.set(`s${prefix}l`, label);
+  }
 }
 
 export function ComparePicker({
   defaultA,
   defaultB,
-  defaultSeasonA,
-  defaultSeasonB,
+  seasonA,
+  seasonB,
+  careerA,
+  careerB,
 }: {
   defaultA: PlayerSummary | null;
   defaultB: PlayerSummary | null;
-  defaultSeasonA: Season | null;
-  defaultSeasonB: Season | null;
+  seasonA: Season | null;
+  seasonB: Season | null;
+  careerA: boolean;
+  careerB: boolean;
 }) {
   const router = useRouter();
-  const [playerA, setPlayerA] = useState<number | null>(
-    defaultA?.player_id ?? null,
-  );
-  const [playerB, setPlayerB] = useState<number | null>(
-    defaultB?.player_id ?? null,
-  );
-  const [seasonA, setSeasonA] = useState<Season | null>(defaultSeasonA);
-  const [seasonB, setSeasonB] = useState<Season | null>(defaultSeasonB);
+  const [playerA, setPlayerA] = useState<number | null>(defaultA?.player_id ?? null);
+  const [playerB, setPlayerB] = useState<number | null>(defaultB?.player_id ?? null);
+  const [valueA, setValueA] = useState(initialValue(seasonA, careerA));
+  const [valueB, setValueB] = useState(initialValue(seasonB, careerB));
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (playerA === null || playerB === null) return;
-    const params = new URLSearchParams({ a: String(playerA), b: String(playerB) });
-    if (seasonA) {
-      params.set("sac", seasonA.competition);
-      params.set("sal", seasonA.label);
-    }
-    if (seasonB) {
-      params.set("sbc", seasonB.competition);
-      params.set("sbl", seasonB.label);
-    }
-    router.push(`/compare?${params.toString()}`);
+  function go(a: number | null, b: number | null, nextA: string, nextB: string) {
+    if (a === null || b === null) return;
+    const params = new URLSearchParams({ a: String(a), b: String(b) });
+    applySeason(params, nextA, "a");
+    applySeason(params, nextB, "b");
+    router.push(`/compare?${params.toString()}`, { scroll: false });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
+    <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-[1fr_auto_1fr]">
       <div className="flex flex-col gap-2">
         <PlayerAutocomplete
           initialPlayer={defaultA}
+          accent="#3d8bff"
           onSelect={(player) => {
-            setPlayerA(player?.player_id ?? null);
-            setSeasonA(null);
+            const id = player?.player_id ?? null;
+            setPlayerA(id);
+            setValueA(LATEST);
+            go(id, playerB, LATEST, valueB);
           }}
-          placeholder="Buscar jugador A…"
+          placeholder="Jugador 1…"
         />
-        <SeasonSelect playerId={playerA} value={seasonA} onChange={setSeasonA} />
+        <SeasonSelect
+          playerId={playerA}
+          value={valueA}
+          color="#3d8bff"
+          onChange={(value) => {
+            setValueA(value);
+            go(playerA, playerB, value, valueB);
+          }}
+        />
       </div>
-      <span className="pb-2 text-sm text-zinc-500 dark:text-zinc-400">vs</span>
+      <span className="hidden pt-3 text-center font-display text-sm font-bold italic text-muted md:block">
+        VS
+      </span>
       <div className="flex flex-col gap-2">
         <PlayerAutocomplete
           initialPlayer={defaultB}
+          accent="#ff6b3d"
           onSelect={(player) => {
-            setPlayerB(player?.player_id ?? null);
-            setSeasonB(null);
+            const id = player?.player_id ?? null;
+            setPlayerB(id);
+            setValueB(LATEST);
+            go(playerA, id, valueA, LATEST);
           }}
-          placeholder="Buscar jugador B…"
+          placeholder="Jugador 2…"
         />
-        <SeasonSelect playerId={playerB} value={seasonB} onChange={setSeasonB} />
+        <SeasonSelect
+          playerId={playerB}
+          value={valueB}
+          color="#ff6b3d"
+          onChange={(value) => {
+            setValueB(value);
+            go(playerA, playerB, valueA, value);
+          }}
+        />
       </div>
-      <button
-        type="submit"
-        disabled={playerA === null || playerB === null}
-        className="rounded-md bg-[#2a78d6] px-4 py-2 text-sm font-medium text-white hover:bg-[#1f5da8] disabled:opacity-50"
-      >
-        Comparar
-      </button>
-    </form>
+    </div>
   );
 }

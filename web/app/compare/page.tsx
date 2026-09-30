@@ -1,68 +1,72 @@
+import { CompareVerdict } from "@/app/components/CompareVerdict";
 import { ComparePicker } from "@/app/components/ComparePicker";
-import { IconValue } from "@/app/components/icons";
+import { DuelCard } from "@/app/components/DuelCard";
+import { FaceOff } from "@/app/components/FaceOff";
+import { HeadToHead } from "@/app/components/HeadToHead";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
-import { PlayerCompareChart } from "@/app/components/PlayerCompareChart";
-import { PlayerHeroCard } from "@/app/components/PlayerHeroCard";
-import { SimilarityMeter } from "@/app/components/SimilarityMeter";
+import { Reveal } from "@/app/components/motion";
+import { PercentileLegend } from "@/app/components/PercentileBars";
+import { RadarChart } from "@/app/components/RadarChart";
 import {
   ApiError,
   comparePlayers,
   getMarketValue,
   getPlayer,
+  getPlayerPercentiles,
   getPlayerSeason,
-  type Comparison,
-  type MarketValuePoint,
-  type Player,
+  listPlayerSeasons,
+  listSeasonLeaders,
+  type MarketValueHistory,
+  type PercentileReport,
   type Season,
 } from "@/lib/api";
+import { currentSeasonStartYear, seasonDisplay } from "@/lib/format";
+import { RADAR_METRICS } from "@/lib/metrics";
+import { CAREER, resolveSeason } from "@/lib/seasons";
 
-function paramValue(value: string | string[] | undefined): string | undefined {
+function param(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function seasonFromParams(
-  competition: string | undefined,
-  label: string | undefined,
-): Season | null {
-  return competition && label ? { competition, label } : null;
+function contextLabel(season: Season | null, team: string | null | undefined): string {
+  if (!season) return "Carrera completa";
+  return `${team ?? season.competition} · ${seasonDisplay(season.label)}`;
 }
 
-function seasonLabel(season: Season | null): string {
-  return season ? `${season.competition} ${season.label}` : "Carrera";
+const EMPTY_VALUE: MarketValueHistory = { current: null, history: [] };
+
+async function suggestions() {
+  const leaders = await listSeasonLeaders(currentSeasonStartYear(), {
+    metric: "goals",
+    limit: 6,
+  }).catch(() => []);
+  const pairs = [];
+  for (let i = 0; i + 1 < leaders.length && pairs.length < 3; i += 2) {
+    pairs.push({ a: leaders[i], b: leaders[i + 1] });
+  }
+  return pairs;
 }
 
 export default async function ComparePage(props: PageProps<"/compare">) {
   const searchParams = await props.searchParams;
-  const rawA = paramValue(searchParams.a);
-  const rawB = paramValue(searchParams.b);
-  const idA = rawA ? Number(rawA) : null;
-  const idB = rawB ? Number(rawB) : null;
-  const seasonA = seasonFromParams(
-    paramValue(searchParams.sac),
-    paramValue(searchParams.sal),
-  );
-  const seasonB = seasonFromParams(
-    paramValue(searchParams.sbc),
-    paramValue(searchParams.sbl),
-  );
+  const idA = Number(param(searchParams.a)) || null;
+  const idB = Number(param(searchParams.b)) || null;
 
-  const [preselectedA, preselectedB] = await Promise.all([
+  const [summaryA, summaryB, seasonsA, seasonsB] = await Promise.all([
     idA ? getPlayer(idA).catch(() => null) : null,
     idB ? getPlayer(idB).catch(() => null) : null,
+    idA ? listPlayerSeasons(idA).catch(() => [] as Season[]) : ([] as Season[]),
+    idB ? listPlayerSeasons(idB).catch(() => [] as Season[]) : ([] as Season[]),
   ]);
+  const seasonA = resolveSeason(seasonsA, param(searchParams.sac), param(searchParams.sal));
+  const seasonB = resolveSeason(seasonsB, param(searchParams.sbc), param(searchParams.sbl));
 
-  let result: Comparison | null = null;
-  let playerA: Player | null = null;
-  let playerB: Player | null = null;
-  let marketValueA: MarketValuePoint | null = null;
-  let marketValueB: MarketValuePoint | null = null;
-  let historyA: MarketValuePoint[] = [];
-  let historyB: MarketValuePoint[] = [];
+  let content = null;
   let error: string | null = null;
 
-  if (idA && idB) {
+  if (idA && idB && summaryA && summaryB) {
     try {
-      const [comparison, playerAResult, playerBResult, marketA, marketB] =
+      const [comparison, playerA, playerB, valueA, valueB, percentilesA, percentilesB] =
         await Promise.all([
           comparePlayers(idA, idB, {
             seasonA: seasonA ?? undefined,
@@ -70,75 +74,137 @@ export default async function ComparePage(props: PageProps<"/compare">) {
           }),
           seasonA ? getPlayerSeason(idA, seasonA) : getPlayer(idA),
           seasonB ? getPlayerSeason(idB, seasonB) : getPlayer(idB),
-          getMarketValue(idA).catch(() => ({ current: null, history: [] })),
-          getMarketValue(idB).catch(() => ({ current: null, history: [] })),
+          getMarketValue(idA).catch(() => EMPTY_VALUE),
+          getMarketValue(idB).catch(() => EMPTY_VALUE),
+          seasonA ? getPlayerPercentiles(idA, seasonA).catch(() => null) : null,
+          seasonB ? getPlayerPercentiles(idB, seasonB).catch(() => null) : null,
         ]);
-      result = comparison;
-      playerA = playerAResult;
-      playerB = playerBResult;
-      marketValueA = marketA.current;
-      marketValueB = marketB.current;
-      historyA = marketA.history;
-      historyB = marketB.history;
+      content = {
+        comparison,
+        playerA,
+        playerB,
+        valueA,
+        valueB,
+        percentilesA: percentilesA as PercentileReport | null,
+        percentilesB: percentilesB as PercentileReport | null,
+      };
     } catch (thrown) {
       error =
         thrown instanceof ApiError && thrown.status === 404
-          ? "Alguno de los dos jugadores no existe para la temporada elegida."
-          : "No se ha podido comparar a los jugadores.";
+          ? "Alguno de los dos jugadores no tiene datos para la temporada elegida."
+          : "No se ha podido comparar a los jugadores. Inténtalo de nuevo.";
     }
   }
 
+  const pairs = content ? [] : await suggestions();
+  const toValues = (report: PercentileReport | null) =>
+    report
+      ? Object.fromEntries(Object.entries(report.metrics).map(([key, value]) => [key, value.percentile]))
+      : {};
+
   return (
-    <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-3">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Comparar jugadores
-        </h1>
+    <div className="flex flex-col gap-10">
+      <section className="flex flex-col gap-5">
+        <Reveal>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-side-b">Cara a cara</p>
+          <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
+            Enfrenta a <span className="text-side-a">dos</span> jugadores
+          </h1>
+          <p className="mt-1 text-sm text-muted">
+            Elige dos jugadores. Por defecto se usa su última temporada; puedes cambiarla o
+            comparar carreras completas.
+          </p>
+        </Reveal>
         <ComparePicker
-          defaultA={preselectedA}
-          defaultB={preselectedB}
-          defaultSeasonA={seasonA}
-          defaultSeasonB={seasonB}
+          defaultA={summaryA}
+          defaultB={summaryB}
+          seasonA={param(searchParams.sac) ? seasonA : null}
+          seasonB={param(searchParams.sbc) ? seasonB : null}
+          careerA={param(searchParams.sal) === CAREER}
+          careerB={param(searchParams.sbl) === CAREER}
         />
       </section>
 
-      {error && (
-        <p className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
-          {error}
-        </p>
-      )}
+      {error && <p className="glass rounded-2xl p-5 text-sm text-red-300">{error}</p>}
 
-      {result && playerA && playerB && (
+      {content && (
         <>
-          <section className="flex flex-col items-center gap-6 rounded-md border border-zinc-200 p-6 sm:flex-row dark:border-zinc-800">
-            <PlayerHeroCard
-              player={playerA}
-              seasonLabel={seasonLabel(seasonA)}
-              currentMarketValue={marketValueA}
-            />
-            <SimilarityMeter percentage={result.similarity_percentage} />
-            <PlayerHeroCard
-              player={playerB}
-              seasonLabel={seasonLabel(seasonB)}
-              currentMarketValue={marketValueB}
-            />
-          </section>
+          <FaceOff
+            a={{
+              player: content.playerA,
+              context: contextLabel(seasonA, seasonA && seasonsA.find((s) => s.label === seasonA.label && s.competition === seasonA.competition)?.team),
+              marketValue: content.valueA.current,
+            }}
+            b={{
+              player: content.playerB,
+              context: contextLabel(seasonB, seasonB && seasonsB.find((s) => s.label === seasonB.label && s.competition === seasonB.competition)?.team),
+              marketValue: content.valueB.current,
+            }}
+            similarity={content.comparison.similarity_percentage}
+          />
 
-          <PlayerCompareChart playerA={playerA} playerB={playerB} />
+          <Reveal>
+            <CompareVerdict playerA={content.playerA} playerB={content.playerB} />
+          </Reveal>
 
-          {(historyA.length > 0 || historyB.length > 0) && (
-            <section className="flex flex-col gap-3">
-              <h2 className="flex items-center gap-2 text-lg font-semibold tracking-tight">
-                <IconValue size={18} />
-                Valor de mercado
-              </h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <MarketValueChart history={historyA} />
-                <MarketValueChart history={historyB} />
-              </div>
-            </section>
+          {(content.percentilesA || content.percentilesB) && (
+            <Reveal>
+              <section className="glass flex flex-col gap-4 rounded-3xl p-6">
+                <div className="text-center">
+                  <h2 className="font-display text-2xl font-bold tracking-tight">Radar de percentiles</h2>
+                  <p className="mx-auto max-w-2xl text-sm text-muted">
+                    Cada uno frente a los jugadores de su puesto en su liga. Cuanto más hacia fuera,
+                    mejor que el resto (100 = el mejor).
+                  </p>
+                </div>
+                <RadarChart
+                  axes={RADAR_METRICS}
+                  series={[
+                    { name: content.playerA.name, color: "#3d8bff", values: toValues(content.percentilesA) },
+                    { name: content.playerB.name, color: "#ff6b3d", values: toValues(content.percentilesB) },
+                  ]}
+                />
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex gap-5 text-sm font-semibold">
+                    <span className="text-side-a">● {content.playerA.name}</span>
+                    <span className="text-side-b">● {content.playerB.name}</span>
+                  </div>
+                  <PercentileLegend />
+                </div>
+              </section>
+            </Reveal>
+          )}
+
+          <Reveal>
+            <HeadToHead playerA={content.playerA} playerB={content.playerB} />
+          </Reveal>
+
+          {(content.valueA.history.length > 0 || content.valueB.history.length > 0) && (
+            <Reveal>
+              <MarketValueChart
+                series={[
+                  { name: content.playerA.name, color: "#3d8bff", history: content.valueA.history },
+                  { name: content.playerB.name, color: "#ff6b3d", history: content.valueB.history },
+                ]}
+              />
+            </Reveal>
           )}
         </>
+      )}
+
+      {!content && pairs.length > 0 && (
+        <section className="flex flex-col gap-4">
+          <h2 className="font-display text-xl font-bold tracking-tight">
+            ¿Sin ideas? Prueba con estos duelos
+          </h2>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {pairs.map((pair, index) => (
+              <Reveal key={`${pair.a.player_id}-${pair.b.player_id}`} delay={index * 0.08}>
+                <DuelCard title="Goleadores de la temporada" a={pair.a} b={pair.b} />
+              </Reveal>
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

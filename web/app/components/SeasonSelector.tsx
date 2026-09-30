@@ -1,10 +1,14 @@
 import Link from "next/link";
 import type { Season } from "@/lib/api";
+import { competitionColor, seasonDisplay } from "@/lib/format";
+import { CAREER } from "@/lib/seasons";
 
-function pillClasses(active: boolean): string {
-  return active
-    ? "rounded-full bg-[#2a78d6] px-3 py-1 text-sm font-medium text-white"
-    : "rounded-full border border-zinc-300 px-3 py-1 text-sm font-medium text-zinc-700 hover:border-zinc-500 dark:border-zinc-700 dark:text-zinc-300";
+function pill(active: boolean): string {
+  return `flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
+    active
+      ? "border-white/30 bg-white text-black"
+      : "border-line text-muted hover:border-line-strong hover:text-ink"
+  }`;
 }
 
 export function SeasonSelector({
@@ -14,32 +18,31 @@ export function SeasonSelector({
 }: {
   playerId: number;
   seasons: Season[];
-  selected?: Season;
+  selected: Season | null;
 }) {
-  if (seasons.length === 0) {
-    return null;
-  }
-
   return (
-    <div className="flex flex-wrap gap-2">
-      <Link href={`/players/${playerId}`} className={pillClasses(!selected)}>
-        Carrera
-      </Link>
+    <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
       {seasons.map((season) => {
-        const isSelected =
-          selected?.competition === season.competition &&
-          selected?.label === season.label;
+        const active =
+          selected?.competition === season.competition && selected?.label === season.label;
         return (
           <Link
             key={`${season.competition}-${season.label}`}
             href={`/players/${playerId}?sc=${encodeURIComponent(season.competition)}&sl=${encodeURIComponent(season.label)}`}
-            className={pillClasses(isSelected)}
+            className={pill(active)}
+            scroll={false}
           >
-            {season.competition} {season.label}
-            {season.team ? ` · ${season.team}` : ""}
+            <span
+              className="h-1.5 w-1.5 rounded-full"
+              style={{ background: competitionColor(season.competition) }}
+            />
+            {seasonDisplay(season.label)} · {season.team ?? season.competition}
           </Link>
         );
       })}
+      <Link href={`/players/${playerId}?sl=${CAREER}`} className={pill(selected === null)} scroll={false}>
+        Carrera completa
+      </Link>
     </div>
   );
 }
