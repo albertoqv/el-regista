@@ -525,3 +525,51 @@ class RosterEntry:
     xa: float
     yellow: int
     red: int
+
+
+@dataclass(frozen=True)
+class PageView:
+    """One page seen by a person. `visitor` is a daily-rotating hash, never an IP."""
+
+    day: date
+    path: str
+    visitor: str
+    referrer: str | None
+
+
+@dataclass(frozen=True)
+class DailyVisits:
+    day: date
+    views: int
+    visitors: int
+
+
+@dataclass(frozen=True)
+class RankedCount:
+    name: str
+    views: int
+    visitors: int
+
+
+class VisitRepository(Protocol):
+    def save_page_view(self, view: PageView) -> None: ...
+
+    def daily_visits(self, since: date) -> list[DailyVisits]: ...
+
+    def top_pages(self, since: date, limit: int) -> list[RankedCount]: ...
+
+    def top_referrers(self, since: date, limit: int) -> list[RankedCount]: ...
+
+
+@dataclass(frozen=True)
+class HostingUsage:
+    period_start: datetime
+    period_end: datetime
+    current_dollars: float
+    estimated_dollars: float | None
+    line_items: dict[str, float]
+    usage_limit_dollars: float | None
+
+
+class HostingUsageProvider(Protocol):
+    def current_usage(self) -> HostingUsage: ...
