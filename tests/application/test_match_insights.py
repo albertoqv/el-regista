@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 
 import pytest
 
@@ -11,7 +11,6 @@ from player_scouting.application.use_cases.match_insights import (
 )
 from tests.application.doubles import (
     InMemoryMatchStatsRepository,
-    InMemoryTeamRepository,
 )
 from tests.application.test_team_analytics import _repository as team_repository
 
