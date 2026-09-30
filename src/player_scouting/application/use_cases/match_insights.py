@@ -278,16 +278,12 @@ class MatchInsightsUseCase:
                 upcoming.odds_home, upcoming.odds_draw, upcoming.odds_away
             )
             market = (home, draw, away)
+        # Backtest (25/26, 1,751 matches): closing odds 0.582 Brier, our model
+        # 0.594, and every blend with the model was worse than the market alone.
+        # With a price, the headline 1X2 is the market's; ours stays as a second
+        # opinion. Without one, it is ours.
         model = (result.home_win, result.draw, result.away_win)
-        consensus = (
-            (
-                (model[0] + market[0]) / 2,
-                (model[1] + market[1]) / 2,
-                (model[2] + market[2]) / 2,
-            )
-            if market
-            else model
-        )
+        consensus = market if market else model
 
         matrix = score_matrix(result.expected_home, result.expected_away)
         cells = [(h, a, p) for h, row in enumerate(matrix) for a, p in enumerate(row)]
