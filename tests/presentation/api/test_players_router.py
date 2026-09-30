@@ -503,3 +503,54 @@ def test_player_seasons_include_the_team():
     body = client.get("/players/1/seasons").json()
 
     assert body == [{"competition": "La Liga", "label": "2026", "team": "Barcelona"}]
+
+
+def test_player_twins_with_price_and_similarity():
+    repository = InMemoryPlayerRepository()
+    for player_id, name, goals, value in (
+        (1, "Star", 20, 200_000_000),
+        (2, "Twin", 19, 40_000_000),
+        (3, "Other", 2, 5_000_000),
+    ):
+        repository.save_player(
+            Player(player_id, name, "Forward", None, birth_year=2000)
+        )
+        repository.save_season_statistics(
+            player_id,
+            Season("La Liga", "2025"),
+            Statistics(
+                goals,
+                5,
+                shots=goals * 4,
+                shots_on_target=goals,
+                key_passes=20,
+                tackles_won=10,
+                interceptions=5,
+                fouls_won=10,
+                minutes_played=2700,
+            ),
+            team=f"Team {player_id}",
+        )
+        repository.save_market_value_history(
+            player_id, [MarketValuePoint(date(2026, 6, 1), value, f"Team {player_id}")]
+        )
+    client = _client_with_repository(repository)
+
+    response = client.get("/players/1/twins?limit=5")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["target"]["name"] == "Star"
+    assert body["target"]["market_value_eur"] == 200_000_000
+    assert body["target"]["season_label"] == "2025"
+    assert body["twins"][0]["name"] == "Twin"
+    assert body["twins"][0]["market_value_eur"] == 40_000_000
+    assert body["twins"][0]["team"] == "Team 2"
+    assert 0 <= body["twins"][0]["similarity"] <= 100
+    assert "shared_strengths" in body["twins"][0]
+
+
+def test_player_twins_for_an_unknown_player_is_404():
+    client = _client_with_repository(InMemoryPlayerRepository())
+
+    assert client.get("/players/99/twins").status_code == 404

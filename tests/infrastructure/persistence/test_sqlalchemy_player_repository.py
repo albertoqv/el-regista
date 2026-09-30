@@ -425,3 +425,31 @@ def test_season_leaders_are_ranked_by_a_metric_across_competitions(session):
     assert by_goals[0].season == Season("Bundesliga", "2026")
     assert by_xa[0].statistics.expected_assists == 4.08
     assert [leader.player.name for leader in in_la_liga] == ["Lamine Yamal"]
+
+
+def test_season_records_for_some_labels_include_the_team(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_yamal(repository)
+    repository.save_season_statistics(1, Season("La Liga", "2010"), Statistics(1, 1))
+
+    [record] = repository.list_season_records(["2026"])
+
+    assert record.player.name == "Lamine Yamal"
+    assert record.season == LA_LIGA_2026
+    assert record.team == "Barcelona"
+
+
+def test_latest_market_value_of_every_player(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_yamal(repository)
+    repository.save_market_value_history(
+        1,
+        [
+            MarketValuePoint(date(2025, 1, 1), 150_000_000, "Barcelona"),
+            MarketValuePoint(date(2026, 6, 1), 200_000_000, "Barcelona"),
+        ],
+    )
+
+    latest = repository.latest_market_values()
+
+    assert latest == {1: MarketValuePoint(date(2026, 6, 1), 200_000_000, "Barcelona")}
