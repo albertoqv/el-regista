@@ -26,12 +26,37 @@ export const COMPETITIONS = [
   "Ligue 1",
 ] as const;
 
+/**
+ * Leagues with player stats from the Transfermarkt dataset: goals, assists,
+ * minutes and cards (no xG), and only for seasons the dataset already covers.
+ */
+export const OTHER_COMPETITIONS = [
+  "Eredivisie",
+  "Liga Portugal",
+  "Süper Lig",
+  "Jupiler Pro League",
+  "Scottish Premiership",
+  "Greek Super League",
+  "Danish Superliga",
+  "Ukrainian Premier League",
+  "Russian Premier League",
+] as const;
+
 const COMPETITION_COLORS: Record<string, string> = {
   "Premier League": "#a855f7",
   "La Liga": "#ff4b44",
   Bundesliga: "#e11d48",
   "Serie A": "#22c55e",
   "Ligue 1": "#38bdf8",
+  Eredivisie: "#f97316",
+  "Liga Portugal": "#16a34a",
+  "Süper Lig": "#dc2626",
+  "Jupiler Pro League": "#facc15",
+  "Scottish Premiership": "#2563eb",
+  "Greek Super League": "#0ea5e9",
+  "Danish Superliga": "#ef4444",
+  "Ukrainian Premier League": "#eab308",
+  "Russian Premier League": "#6366f1",
 };
 
 export function footLabel(foot: string): string {

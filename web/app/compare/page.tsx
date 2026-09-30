@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { CompareVerdict } from "@/app/components/CompareVerdict";
 import { ComparePicker } from "@/app/components/ComparePicker";
 import { DuelCard } from "@/app/components/DuelCard";
@@ -48,6 +49,22 @@ async function suggestions() {
     pairs.push({ a: leaders[i], b: leaders[i + 1] });
   }
   return pairs;
+}
+
+export async function generateMetadata(props: PageProps<"/compare">): Promise<Metadata> {
+  const searchParams = await props.searchParams;
+  const ids = [param(searchParams.a), param(searchParams.b)].map((id) => Number(id) || null);
+  const players = await Promise.all(ids.map((id) => (id ? getPlayer(id).catch(() => null) : null)));
+  if (players[0] && players[1]) {
+    return {
+      title: `${players[0].name} vs ${players[1].name} · TalentScope`,
+      description: `Cara a cara con datos reales: ${players[0].name} contra ${players[1].name}.`,
+    };
+  }
+  return {
+    title: "Comparar jugadores · TalentScope",
+    description: "Enfrenta a dos futbolistas con radar, percentiles, tiros y valor de mercado.",
+  };
 }
 
 export default async function ComparePage(props: PageProps<"/compare">) {

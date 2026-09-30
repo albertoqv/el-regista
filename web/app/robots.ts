@@ -6,7 +6,7 @@ const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: { userAgent: "*", allow: "/" },
+    rules: { userAgent: "*", allow: "/", disallow: "/admin" },
     sitemap: `${SITE}/sitemap.xml`,
   };
 }

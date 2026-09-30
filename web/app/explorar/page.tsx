@@ -6,6 +6,7 @@ import { ScoutNote } from "@/app/components/ScoutNote";
 import { explorePlayers, type ExploreRow } from "@/lib/api";
 import {
   COMPETITIONS,
+  OTHER_COMPETITIONS,
   competitionColor,
   currentSeasonStartYear,
   formatMarketValue,
@@ -136,6 +137,10 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
   const sortLabel = SORTS.find((entry) => entry.value === values.sort)?.label ?? values.sort;
   const perNinetyShown = values.per_90 && values.sort !== "market_value" && values.sort !== "age";
   const seasons = [0, 1, 2].map((offset) => String(Number(current) - offset));
+  const otherLeague = (OTHER_COMPETITIONS as readonly string[]).includes(values.competition);
+  const stringValues: Record<string, string> = Object.fromEntries(
+    Object.entries({ ...values, per_90: values.per_90 ? "true" : "" }).filter(([, value]) => value),
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -178,11 +183,20 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
         <Field label="Liga">
           <select name="competition" defaultValue={values.competition} className={INPUT}>
             <option value="">Todas</option>
-            {COMPETITIONS.map((league) => (
-              <option key={league} value={league}>
-                {league}
-              </option>
-            ))}
+            <optgroup label="5 grandes (con xG)">
+              {COMPETITIONS.map((league) => (
+                <option key={league} value={league}>
+                  {league}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Más ligas (goles, asistencias, minutos)">
+              {OTHER_COMPETITIONS.map((league) => (
+                <option key={league} value={league}>
+                  {league}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </Field>
         <Field label="Posición">
@@ -272,11 +286,35 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
         </div>
       </form>
 
+      {otherLeague ? (
+        <p className="-mt-4 px-2 text-xs text-muted">
+          En {values.competition} tenemos goles, asistencias, minutos y tarjetas (dataset de
+          Transfermarkt); xG, pases y regates solo existen para las 5 grandes.
+        </p>
+      ) : null}
+
       {rows.length === 0 ? (
         <p className="glass rounded-3xl p-8 text-center text-muted">
-          <ScoutNote rotate={-2}>nadie cumple todo eso…</ScoutNote>
-          <br />
-          Prueba a relajar algún filtro.
+          {otherLeague && values.season === current ? (
+            <>
+              <ScoutNote rotate={-2}>todavía sin datos</ScoutNote>
+              <br />
+              {values.competition} aún no tiene datos de {seasonDisplay(current)}: esa fuente se
+              actualiza con retraso.{" "}
+              <Link
+                href={`/explorar?${new URLSearchParams({ ...stringValues, season: String(Number(current) - 1) }).toString()}`}
+                className="text-brand-2 hover:underline"
+              >
+                Ver {seasonDisplay(String(Number(current) - 1))}
+              </Link>
+            </>
+          ) : (
+            <>
+              <ScoutNote rotate={-2}>nadie cumple todo eso…</ScoutNote>
+              <br />
+              Prueba a relajar algún filtro.
+            </>
+          )}
         </p>
       ) : (
         <div className="glass overflow-x-auto rounded-3xl">
