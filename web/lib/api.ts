@@ -10,6 +10,8 @@ export type PlayerSummary = {
   photo_url: string | null;
   preferred_foot: string | null;
   latest_season_year: number | null;
+  height_cm?: number | null;
+  detailed_position?: string | null;
 };
 
 export type Player = PlayerSummary & {

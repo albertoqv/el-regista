@@ -6,6 +6,7 @@ import {
   competitionColor,
   formatAge,
   formatMarketValue,
+  roleLabel,
   seasonDisplay,
 } from "@/lib/format";
 import { PROFILE_LABELS } from "@/lib/metrics";
@@ -71,6 +72,7 @@ export function TwinCard({
               style={{ background: competitionColor(twin.competition) }}
             />
             {twin.team ?? twin.competition} · {seasonDisplay(twin.season_label)}
+            {twin.detailed_position && ` · ${roleLabel(twin)}`}
             {age && ` · ${age} años`}
           </p>
         </div>

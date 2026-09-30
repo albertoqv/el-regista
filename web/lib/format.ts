@@ -42,6 +42,30 @@ export function positionLabel(position: string): string {
   return POSITION_LABELS[position] ?? position;
 }
 
+const DETAILED_POSITIONS: Record<string, string> = {
+  "Centre-Forward": "Delantero centro",
+  "Second Striker": "Segundo delantero",
+  "Left Winger": "Extremo izquierdo",
+  "Right Winger": "Extremo derecho",
+  "Attacking Midfield": "Mediapunta",
+  "Central Midfield": "Mediocentro",
+  "Defensive Midfield": "Pivote",
+  "Left Midfield": "Interior izquierdo",
+  "Right Midfield": "Interior derecho",
+  "Centre-Back": "Central",
+  "Left-Back": "Lateral izquierdo",
+  "Right-Back": "Lateral derecho",
+  Goalkeeper: "Portero",
+};
+
+/** Transfermarkt's role in Spanish, falling back to the broad position. */
+export function roleLabel(player: { position: string; detailed_position?: string | null }): string {
+  if (player.detailed_position) {
+    return DETAILED_POSITIONS[player.detailed_position] ?? player.detailed_position;
+  }
+  return positionLabel(player.position);
+}
+
 export function positionShort(position: string): string {
   return POSITION_SHORT[position] ?? position.slice(0, 3).toUpperCase();
 }

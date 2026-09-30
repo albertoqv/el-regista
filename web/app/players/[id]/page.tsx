@@ -32,6 +32,7 @@ import {
   formatAge,
   formatMarketValue,
   positionLabel,
+  roleLabel,
   seasonDisplay,
   sortSeasonsByRecency,
 } from "@/lib/format";
@@ -127,7 +128,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
           <div className="flex flex-col gap-5">
             <Reveal delay={0.05}>
               <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: accent }}>
-                {positionLabel(player.position)}
+                {roleLabel(player)}
                 {team && <span className="text-muted">· {team}</span>}
               </p>
               <h1 className="font-display text-5xl font-bold leading-none tracking-tight sm:text-6xl">
@@ -138,6 +139,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
             <Reveal delay={0.1} className="flex flex-wrap gap-2">
               {age && <Badge label="Edad" value={`${age} años`} />}
               {player.preferred_foot && <Badge label="Pie" value={footLabel(player.preferred_foot)} />}
+              {player.height_cm && <Badge label="Altura" value={`${player.height_cm} cm`} />}
               {marketValue.current && (
                 <Badge label="Valor" value={formatMarketValue(marketValue.current.amount_eur)} />
               )}
