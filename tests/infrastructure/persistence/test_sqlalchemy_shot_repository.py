@@ -238,3 +238,24 @@ def test_shot_totals_per_player_and_season(session):
     assert raphinha.np_goals == 2
     assert (raphinha.late_goals, raphinha.headed_goals) == (1, 1)
     assert (raphinha.outside_box_goals, raphinha.set_piece_goals) == (1, 0)
+
+
+def test_team_players_ranked_by_goals_then_xg(session):
+    _seed_players(session)
+    repository = SqlAlchemyShotRepository(session)
+    repository.save_match(
+        MATCH,
+        [
+            _shot(1, 101, 10, xg=0.3),
+            _shot(2, 102, 20, result="MissedShot", xg=0.9),
+            _shot(3, 103, 30, home=False, xg=0.5),
+        ],
+    )
+
+    players = repository.list_team_players("2026", "Barcelona")
+
+    assert [(p.player.name, p.goals) for p in players] == [
+        ("Raphinha", 1),
+        ("Lamine Yamal", 0),
+    ]
+    assert players[1].value == pytest.approx(0.9)

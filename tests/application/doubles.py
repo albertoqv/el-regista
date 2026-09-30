@@ -8,18 +8,18 @@ from player_scouting.application.ports import (
     AdvancedSeasonRow,
     CompetitionStatisticsResult,
     EnrichmentUnavailableError,
+    Fixture,
     LeaderMetric,
     LeaguePlayersPage,
     LeagueSummary,
     MarketValueHistoryResult,
-    Fixture,
     MatchRef,
-    TeamMatch,
     PlayerSeasonResult,
     PlayerSort,
     PlayerSummary,
     SeasonEntry,
     SeasonRecord,
+    TeamMatch,
 )
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
