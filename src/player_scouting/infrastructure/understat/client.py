@@ -25,6 +25,12 @@ class UnderstatClient:
     def get_league_matches(self, league: str, season: int) -> list[dict]:
         return self._league_data(league, season).get("dates", [])
 
+    def get_match_rosters(self, match_id: int) -> dict:
+        data = self._get(
+            f"/getMatchData/{match_id}", referer=f"{self._base_url}/match/{match_id}"
+        )
+        return data.get("rosters", {"h": {}, "a": {}})
+
     def get_match_shots(self, match_id: int) -> dict:
         data = self._get(
             f"/getMatchData/{match_id}", referer=f"{self._base_url}/match/{match_id}"

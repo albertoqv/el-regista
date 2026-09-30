@@ -149,6 +149,33 @@ class ShotModel(Base):
     outside_box: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
 
+class RosterModel(Base):
+    __tablename__ = "player_match_stats"
+
+    match_id: Mapped[int] = mapped_column(
+        ForeignKey("understat_matches.match_id"), primary_key=True
+    )
+    understat_player_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    competition: Mapped[str] = mapped_column(String, nullable=False)
+    season_label: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    played_on: Mapped[date] = mapped_column(Date, nullable=False)
+    team: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    opponent: Mapped[str] = mapped_column(String, nullable=False)
+    home: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    player_name: Mapped[str] = mapped_column(String, nullable=False)
+    position: Mapped[str] = mapped_column(String, nullable=False)
+    minutes: Mapped[int] = mapped_column(Integer, nullable=False)
+    goals: Mapped[int] = mapped_column(Integer, nullable=False)
+    own_goals: Mapped[int] = mapped_column(Integer, nullable=False)
+    assists: Mapped[int] = mapped_column(Integer, nullable=False)
+    shots: Mapped[int] = mapped_column(Integer, nullable=False)
+    key_passes: Mapped[int] = mapped_column(Integer, nullable=False)
+    xg: Mapped[float] = mapped_column(Float, nullable=False)
+    xa: Mapped[float] = mapped_column(Float, nullable=False)
+    yellow: Mapped[int] = mapped_column(Integer, nullable=False)
+    red: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
 class FixtureModel(Base):
     __tablename__ = "fixtures"
 

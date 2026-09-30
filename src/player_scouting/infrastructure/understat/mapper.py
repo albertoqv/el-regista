@@ -7,6 +7,7 @@ from player_scouting.application.ports import (
     AdvancedSeasonRow,
     Fixture,
     MatchRef,
+    RosterEntry,
     TeamMatch,
 )
 from player_scouting.domain.shots import Shot
@@ -139,3 +140,37 @@ def to_team_matches(
                 )
             )
     return matches
+
+
+def to_roster_entries(rosters: dict, match: MatchRef) -> list[RosterEntry]:
+    entries = []
+    for side in ("h", "a"):
+        home = side == "h"
+        team = match.home_team if home else match.away_team
+        opponent = match.away_team if home else match.home_team
+        for raw in rosters.get(side, {}).values():
+            entries.append(
+                RosterEntry(
+                    match_id=match.match_id,
+                    competition=match.competition,
+                    season_label=match.season_label,
+                    played_on=match.played_on,
+                    team=team,
+                    opponent=opponent,
+                    home=home,
+                    understat_player_id=int(raw["player_id"]),
+                    player_name=raw["player"],
+                    position=raw["position"],
+                    minutes=int(raw["time"]),
+                    goals=int(raw["goals"]),
+                    own_goals=int(raw["own_goals"]),
+                    assists=int(raw["assists"]),
+                    shots=int(raw["shots"]),
+                    key_passes=int(raw["key_passes"]),
+                    xg=round(float(raw["xG"]), 4),
+                    xa=round(float(raw["xA"]), 4),
+                    yellow=int(raw["yellow_card"]),
+                    red=int(raw["red_card"]),
+                )
+            )
+    return entries

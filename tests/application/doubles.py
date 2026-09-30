@@ -395,6 +395,29 @@ class InMemoryShotRepository:
     def list_team_players(self, season_label: str, team: str) -> list:
         return []
 
+    def save_rosters(self, match_id: int, entries: list) -> None:
+        self._rosters = [
+            e for e in getattr(self, "_rosters", []) if e.match_id != match_id
+        ] + list(entries)
+
+    def list_rosters(self, competition: str, season_labels: list[str]) -> list:
+        return sorted(
+            (
+                e
+                for e in getattr(self, "_rosters", [])
+                if e.competition == competition and e.season_label in season_labels
+            ),
+            key=lambda e: (e.played_on, e.match_id),
+        )
+
+    def matches_without_rosters(self, season_label: str, limit: int) -> list:
+        done = {e.match_id for e in getattr(self, "_rosters", [])}
+        return [
+            m
+            for m in sorted(self._matches.values(), key=lambda m: m.played_on)
+            if m.season_label == season_label and m.match_id not in done
+        ][:limit]
+
     def set_totals(self, totals: dict[tuple[int, Season], ShotTotals]) -> None:
         self._totals = totals
 

@@ -259,6 +259,8 @@ class ShotProvider(Protocol):
 
     def get_match_shots(self, match: MatchRef) -> list[Shot]: ...
 
+    def get_match_rosters(self, match: MatchRef) -> list[RosterEntry]: ...
+
 
 ShotMetric = Literal[
     "late_goals",
@@ -326,6 +328,16 @@ class ShotRepository(Protocol):
     def list_shot_totals(
         self, season_labels: list[str]
     ) -> dict[tuple[int, Season], ShotTotals]: ...
+
+    def save_rosters(self, match_id: int, entries: list[RosterEntry]) -> None: ...
+
+    def list_rosters(
+        self, competition: str, season_labels: list[str]
+    ) -> list[RosterEntry]: ...
+
+    def matches_without_rosters(
+        self, season_label: str, limit: int
+    ) -> list[MatchRef]: ...
 
     def list_team_players(self, season_label: str, team: str) -> list[ShotLeader]:
         """The team's shooters, by goals then expected goals (value = xG)."""

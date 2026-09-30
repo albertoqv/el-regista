@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import fields as dataclass_fields
 from typing import Any
 
 from sqlalchemy import ColumnElement, and_, case, func, select
@@ -9,6 +10,7 @@ from player_scouting.application.ports import (
     MatchRef,
     Partnership,
     PlayerShot,
+    RosterEntry,
     ShotLeader,
     ShotMetric,
 )
@@ -23,6 +25,7 @@ from player_scouting.domain.shots import (
 )
 from player_scouting.infrastructure.persistence.models import (
     PlayerModel,
+    RosterModel,
     ShotModel,
     UnderstatMatchModel,
 )
@@ -33,6 +36,7 @@ SET_PIECES = ("FromCorner", "SetPiece", "DirectFreekick")
 PENALTY = "Penalty"
 
 S = ShotModel
+_ROSTER_FIELDS = tuple(f.name for f in dataclass_fields(RosterEntry))
 M = UnderstatMatchModel
 
 
@@ -252,6 +256,52 @@ class SqlAlchemyShotRepository:
                 set_piece,
             ) in self._session.execute(statement)
         }
+
+    def save_rosters(self, match_id: int, entries: list[RosterEntry]) -> None:
+        self._session.query(RosterModel).filter(
+            RosterModel.match_id == match_id
+        ).delete()
+        self._session.add_all(
+            RosterModel(**{name: getattr(entry, name) for name in _ROSTER_FIELDS})
+            for entry in entries
+        )
+        self._session.flush()
+
+    def list_rosters(
+        self, competition: str, season_labels: list[str]
+    ) -> list[RosterEntry]:
+        statement = (
+            select(RosterModel)
+            .where(
+                RosterModel.competition == competition,
+                RosterModel.season_label.in_(season_labels),
+            )
+            .order_by(RosterModel.played_on, RosterModel.match_id)
+        )
+        return [
+            RosterEntry(**{name: getattr(model, name) for name in _ROSTER_FIELDS})
+            for model in self._session.scalars(statement)
+        ]
+
+    def matches_without_rosters(self, season_label: str, limit: int) -> list[MatchRef]:
+        with_rosters = select(RosterModel.match_id).distinct()
+        statement = (
+            select(M)
+            .where(M.season_label == season_label, M.match_id.not_in(with_rosters))
+            .order_by(M.played_on, M.match_id)
+            .limit(limit)
+        )
+        return [
+            MatchRef(
+                match_id=m.match_id,
+                competition=m.competition,
+                season_label=m.season_label,
+                played_on=m.played_on,
+                home_team=m.home_team,
+                away_team=m.away_team,
+            )
+            for m in self._session.scalars(statement)
+        ]
 
     def list_team_players(self, season_label: str, team: str) -> list[ShotLeader]:
         goals = _count(_goal)

@@ -4,9 +4,13 @@ import time
 from collections.abc import Callable
 from typing import Protocol
 
-from player_scouting.application.ports import MatchRef
+from player_scouting.application.ports import MatchRef, RosterEntry
 from player_scouting.domain.shots import Shot
-from player_scouting.infrastructure.understat.mapper import to_match_ref, to_shot
+from player_scouting.infrastructure.understat.mapper import (
+    to_match_ref,
+    to_roster_entries,
+    to_shot,
+)
 from player_scouting.infrastructure.understat.provider import (
     LEAGUES,
     PAUSE_BETWEEN_LEAGUES_SECONDS,
@@ -17,6 +21,8 @@ class MatchesClient(Protocol):
     def get_league_matches(self, league: str, season: int) -> list[dict]: ...
 
     def get_match_shots(self, match_id: int) -> dict: ...
+
+    def get_match_rosters(self, match_id: int) -> dict: ...
 
 
 class UnderstatShotProvider:
@@ -43,3 +49,6 @@ class UnderstatShotProvider:
     def get_match_shots(self, match: MatchRef) -> list[Shot]:
         sides = self._client.get_match_shots(match.match_id)
         return [to_shot(raw) for side in ("h", "a") for raw in sides.get(side, [])]
+
+    def get_match_rosters(self, match: MatchRef) -> list[RosterEntry]:
+        return to_roster_entries(self._client.get_match_rosters(match.match_id), match)
