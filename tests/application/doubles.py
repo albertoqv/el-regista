@@ -7,6 +7,7 @@ from player_scouting.application.league_ingestion_job import LeagueIngestionJob
 from player_scouting.application.ports import (
     AdvancedSeasonRow,
     CompetitionStatisticsResult,
+    DailyVisits,
     EnrichmentUnavailableError,
     Fixture,
     LeaderMetric,
@@ -15,9 +16,11 @@ from player_scouting.application.ports import (
     MarketValueHistoryResult,
     MatchRef,
     MatchStats,
+    PageView,
     PlayerSeasonResult,
     PlayerSort,
     PlayerSummary,
+    RankedCount,
     SeasonEntry,
     SeasonRecord,
     TeamMatch,
@@ -500,3 +503,40 @@ class InMemoryMatchStatsRepository:
 
     def find_upcoming(self, competition, played_on, home_team, away_team):
         return self._matches.get((competition, played_on, home_team, away_team))
+
+
+class InMemoryVisitRepository:
+    def __init__(self) -> None:
+        self.views: list[PageView] = []
+
+    def save_page_view(self, view: PageView) -> None:
+        self.views.append(view)
+
+    def daily_visits(self, since: date) -> list[DailyVisits]:
+        days = sorted({v.day for v in self.views if v.day >= since})
+        return [
+            DailyVisits(
+                day,
+                sum(1 for v in self.views if v.day == day),
+                len({v.visitor for v in self.views if v.day == day}),
+            )
+            for day in days
+        ]
+
+    def _ranked(self, since: date, key, limit: int) -> list[RankedCount]:
+        groups: dict[str, list[PageView]] = {}
+        for view in self.views:
+            name = key(view)
+            if view.day >= since and name:
+                groups.setdefault(name, []).append(view)
+        ranked = [
+            RankedCount(name, len(vs), len({(v.day, v.visitor) for v in vs}))
+            for name, vs in groups.items()
+        ]
+        return sorted(ranked, key=lambda r: (-r.views, r.name))[:limit]
+
+    def top_pages(self, since: date, limit: int) -> list[RankedCount]:
+        return self._ranked(since, lambda v: v.path, limit)
+
+    def top_referrers(self, since: date, limit: int) -> list[RankedCount]:
+        return self._ranked(since, lambda v: v.referrer, limit)
