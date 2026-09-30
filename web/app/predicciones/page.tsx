@@ -90,9 +90,10 @@ function TrustPanel({
           <strong>Frente a las casas de apuestas</strong> en los mismos{" "}
           {benchmark.matches.toLocaleString("es-ES")} partidos (Brier, menos es mejor): nuestro modelo{" "}
           <strong>{benchmark.model_brier.toFixed(3)}</strong>, cuotas de cierre{" "}
-          <strong>{benchmark.market_brier.toFixed(3)}</strong> y el consenso de ambos{" "}
-          <strong>{benchmark.consensus_brier.toFixed(3)}</strong>. Por eso, en el análisis de
-          cada partido con cuotas publicadas mostramos también el consenso.
+          <strong>{benchmark.market_brier.toFixed(3)}</strong>. En el ganador del partido el mercado
+          acierta más (sabe de lesiones y alineaciones), así que cuando hay cuotas publicadas las
+          mostramos como referencia. Donde aportamos lo que las cuotas gratuitas no dan es en córners,
+          tarjetas, faltas, tiros y jugadores.
         </p>
       )}
     </section>

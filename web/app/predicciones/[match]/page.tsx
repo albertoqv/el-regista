@@ -195,14 +195,17 @@ export default async function MatchPage(props: PageProps<"/predicciones/[match]"
         <section className="glass grid grid-cols-1 gap-5 rounded-3xl p-5 sm:p-6 lg:grid-cols-2">
           <div className="flex flex-col gap-4">
             <h2 className="font-display text-2xl font-bold tracking-tight">Resultado</h2>
-            <OutcomeRow label="Nuestro modelo" outcome={insights.result} />
             {insights.market && (
-              <OutcomeRow label="Casas de apuestas" outcome={insights.market} note="sin margen" />
+              <OutcomeRow
+                label="Casas de apuestas"
+                outcome={insights.market}
+                note="la referencia más fiable en 1X2"
+              />
             )}
             <OutcomeRow
-              label={insights.market ? "Consenso" : "Pronóstico"}
-              outcome={insights.consensus}
-              note={insights.market ? "media de ambos" : undefined}
+              label="Nuestro modelo"
+              outcome={insights.result}
+              note={insights.market ? "opinión independiente" : undefined}
             />
             <OutcomeRow label="Al descanso" outcome={insights.half_time} />
           </div>

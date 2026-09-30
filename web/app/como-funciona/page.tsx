@@ -283,9 +283,11 @@ export default async function HowItWorksPage() {
           <strong>árbitro</strong> (hoy solo en la Premier), se ajusta por su media de amarillas.
         </p>
         <p>
-          En el <strong>resultado</strong> mostramos también la probabilidad de las casas de apuestas
-          (sus cuotas sin el margen) y un <strong>consenso</strong> que promedia ambas: el mercado sabe
-          de lesiones y alineaciones que nosotros no vemos.
+          En el <strong>ganador del partido</strong> mostramos también la probabilidad de las casas de
+          apuestas (sus cuotas sin el margen). Lo hemos medido: en la temporada 25/26 las cuotas de
+          cierre aciertan más que nuestro modelo y que cualquier mezcla de ambos, porque saben de
+          lesiones y alineaciones. Por eso, cuando hay cuotas, son la referencia principal del 1X2, y
+          nuestro modelo queda como opinión independiente.
         </p>
         {statsBacktest.length > 0 && (
           <div className="overflow-x-auto rounded-2xl bg-white/[0.03] p-4">
