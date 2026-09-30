@@ -444,3 +444,28 @@ class InMemoryTeamRepository:
             ),
             key=lambda f: (f.kickoff, f.match_id),
         )
+
+
+class InMemoryMatchStatsRepository:
+    def __init__(self) -> None:
+        self._matches: dict[tuple, MatchStats] = {}
+
+    def save_match_stats(self, matches: list[MatchStats]) -> None:
+        for match in matches:
+            key = (match.competition, match.played_on, match.home_team, match.away_team)
+            self._matches[key] = match
+
+    def list_match_stats(
+        self, competition: str, season_labels: list[str]
+    ) -> list[MatchStats]:
+        return sorted(
+            (
+                m
+                for m in self._matches.values()
+                if m.competition == competition and m.season_label in season_labels
+            ),
+            key=lambda m: (m.played_on, m.home_team),
+        )
+
+    def find_upcoming(self, competition, played_on, home_team, away_team):
+        return self._matches.get((competition, played_on, home_team, away_team))
