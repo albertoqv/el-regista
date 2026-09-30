@@ -191,3 +191,15 @@ def test_stats_backtest_compares_against_the_league_average():
     corners = report["corners"]
     assert corners.matches == 3
     assert corners.model_mae >= 0 and corners.baseline_mae >= 0
+
+
+def test_half_time_goals_are_the_full_time_expectation_scaled_by_the_league():
+    from player_scouting.application.use_cases.match_insights import half_time_share
+
+    matches = [
+        _stats(1, "A", "B", 2, 2),  # HT 1-1 -> half of the goals before the break
+        _stats(2, "C", "D", 4, 0),  # HT 2-0
+    ]
+
+    assert half_time_share(matches) == pytest.approx(0.5)
+    assert half_time_share([]) == pytest.approx(0.45)
