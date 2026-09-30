@@ -72,8 +72,13 @@ function teamHref(team: string, competition: string): string {
   return `/equipos/${encodeURIComponent(team)}?liga=${encodeURIComponent(competition)}`;
 }
 
+/** Understat kick-offs are UTC without a zone suffix. */
+export function kickoffDate(iso: string): Date {
+  return new Date(/[zZ]|[+-]\d\d:\d\d$/.test(iso) ? iso : `${iso}Z`);
+}
+
 export function ForecastCard({ forecast }: { forecast: Forecast }) {
-  const kickoff = new Date(forecast.kickoff);
+  const kickoff = kickoffDate(forecast.kickoff);
   return (
     <article className="glass flex flex-col gap-4 rounded-3xl p-5">
       <div className="flex items-center justify-between text-xs text-muted">
@@ -82,18 +87,18 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
           {forecast.competition}
         </span>
         <span>
-          {kickoff.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" })}{" "}
-          · {kickoff.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })} UTC
+          {kickoff.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short", timeZone: "Europe/Madrid" })}{" "}
+          · {kickoff.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" })} h
         </span>
       </div>
 
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         <Link href={teamHref(forecast.home_team, forecast.competition)} className="flex flex-col gap-1 hover:underline">
-          <span className="font-display text-lg font-bold leading-tight">{forecast.home_team}</span>
+          <span className="font-display text-base font-bold leading-tight">{forecast.home_team}</span>
           <FormPills form={forecast.home_form} />
         </Link>
         <div className="flex flex-col items-center">
-          <span className="font-display text-2xl font-bold tabular-nums">
+          <span className="whitespace-nowrap font-display text-xl font-bold tabular-nums">
             {forecast.expected_home.toFixed(1)} – {forecast.expected_away.toFixed(1)}
           </span>
           <span className="text-[10px] uppercase tracking-wider text-muted">goles esperados</span>
@@ -102,7 +107,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
           href={teamHref(forecast.away_team, forecast.competition)}
           className="flex flex-col items-end gap-1 text-right hover:underline"
         >
-          <span className="font-display text-lg font-bold leading-tight">{forecast.away_team}</span>
+          <span className="font-display text-base font-bold leading-tight">{forecast.away_team}</span>
           <FormPills form={forecast.away_form} />
         </Link>
       </div>

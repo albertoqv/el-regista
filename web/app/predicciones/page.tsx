@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ForecastCard } from "@/app/components/Forecast";
+import { ForecastCard, kickoffDate } from "@/app/components/Forecast";
 import { Reveal } from "@/app/components/motion";
 import { ScoutNote } from "@/app/components/ScoutNote";
 import { getBacktest, getPredictions, type Backtest, type Forecast } from "@/lib/api";
@@ -19,11 +19,11 @@ function param(value: string | string[] | undefined): string | undefined {
 }
 
 function dayLabel(iso: string): string {
-  return new Date(iso).toLocaleDateString("es-ES", {
+  return kickoffDate(iso).toLocaleDateString("es-ES", {
     weekday: "long",
     day: "numeric",
     month: "long",
-    timeZone: "UTC",
+    timeZone: "Europe/Madrid",
   });
 }
 
@@ -82,7 +82,7 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
 
   const byDay = new Map<string, Forecast[]>();
   for (const forecast of forecasts) {
-    const day = forecast.kickoff.slice(0, 10);
+    const day = kickoffDate(forecast.kickoff).toLocaleDateString("sv-SE", { timeZone: "Europe/Madrid" });
     byDay.set(day, [...(byDay.get(day) ?? []), forecast]);
   }
 

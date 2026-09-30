@@ -47,7 +47,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <p className="font-hand text-lg text-ink/70">
             Hecho por gente que ve demasiado fútbol.
           </p>
-          <p className="mt-1">Datos: FBref, Understat y Transfermarkt · Actualizado cada semana</p>
+          <p className="mt-1">
+            Datos: FBref, Understat y Transfermarkt · Se actualiza dos veces por semana ·{" "}
+            <a href="/como-funciona" className="text-brand-2 hover:underline">
+              Cómo funciona
+            </a>
+          </p>
         </footer>
       </body>
     </html>

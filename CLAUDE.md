@@ -76,8 +76,9 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 - Web: Vercel (https://web-seven-tan-39.vercel.app). `cd web && npx vercel --prod --yes`.
 - Secretos solo como variables de entorno (Railway / GitHub secrets
   `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo.
-- `.github/workflows/weekly-fbref-refresh.yml`: martes, FBref + Understat + fusión de
-  duplicados + tiros nuevos + 400 jugadores de Transfermarkt desde el runner.
+- `.github/workflows/weekly-fbref-refresh.yml`: martes y viernes: FBref, Understat
+  (jugadores, equipos/calendario, tiros), dataset de Transfermarkt, fusión de
+  duplicados y 400 jugadores de Transfermarkt desde el runner.
 
 ## Trampas del entorno (Windows)
 
@@ -91,22 +92,23 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 
 ## Trabajo en curso
 
-Hecho (2026-09-30):
-- **Gemelos** (`GET /players/{id}/twins`, web `/gemelos`): estilo = percentiles por 90'
-  frente a su puesto y liga; similitud = 100 − brecha media de percentiles; precio y
-  ahorro; filtros presupuesto/edad/liga; solo temporadas recientes con ≥900'.
-- **Tiros** (Understat `getMatchData`, tablas `understat_matches`/`shots`, migración
-  0010): tramo final, goles decisivos (marcador reconstruido; autogol va en el lado de
-  quien lo marca y suma al rival), cabeza, fuera del área, balón parado, definición,
-  xG/tiro, parejas asistente→goleador, mapa de tiros por jugador.
-  `POST /ingestion/understat/shots/{año}?limit=120` es incremental.
-- **Transfermarkt fuera de Railway**: `scripts/enrich_remote.py` (local o runner de
-  GitHub) + `GET/POST /ingestion/enrichment/...`. El "bloqueo" de ~130 era un bug:
-  búsqueda sin resultados = redirección a `keinergebnis` (ahora "no encontrado").
-- **Duplicados** FBref (misma persona, distinta grafía) → `POST
-  /ingestion/maintenance/merge-duplicates` por `understat_id` compartido.
-- Web con estética de pizarra táctica (tiza, jugadas animadas, grano, notas a mano).
+Hecho (2026-09-30), además de lo anterior:
+- **Gemelos 2.0**: el perfil de tiro (tramo final, cabeza, lejos, balón parado,
+  definición, xG/tiro) entra en la similitud; mini-radar por gemelo.
+- **Explorador** (`GET /players/explore`, web `/explorar`) con recetas.
+- **Carta compartible** (`web/app/players/[id]/card/route.tsx`, `next/og`) + OG.
+- **Dataset Transfermarkt** (Kaggle `davidcariboo/player-scores`, sin cuenta):
+  fotos/altura/posición detallada/valores para ~92% de jugadores y 9 ligas más con
+  stats por jugador (TR, PO, NL, BE, SC, GR, DK, UKR, RU; el resto de ligas del
+  dataset no trae apariciones). Ids nuevos = 500_000_000 + id de Transfermarkt.
+- **Equipos y predicciones** (Understat `getLeagueData`: `teams.history` y `dates`,
+  migración 0012): `/teams/table|matches|players`, `/predictions`,
+  `/predictions/backtest`. Modelo Poisson + Dixon-Coles con fuerzas por xG
+  (`domain/prediction.py`), parámetros afinados en 24/25 y validados en 25/26:
+  Brier 0,594 (referencia 0,649), acierto 52%, bien calibrado. Horas de Understat en
+  UTC (la web las muestra en Europe/Madrid).
+- Web: `/equipos`, `/equipos/[team]`, `/predicciones`, `/como-funciona`.
 
-Ideas siguientes: más ligas (FBref/Kaggle y Understat solo cubren las 5 grandes;
-buscar otra fuente gratuita), usar el perfil de tiro en la similitud de gemelos.
+Ideas siguientes: lesiones/alineaciones (no hay fuente gratuita fiable), usar los
+datos de equipo en la ficha del jugador, más ligas con datos avanzados.
 No hay fuente gratuita de fotos de cuerpo entero.
