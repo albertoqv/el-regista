@@ -10,6 +10,7 @@ lookups run elsewhere: a developer machine or a GitHub Actions runner.
 from __future__ import annotations
 
 import argparse
+import io
 import os
 import sys
 import time
@@ -30,6 +31,9 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--limit", type=int, default=125)
     args = parser.parse_args()
+    # Windows consoles use a legacy codepage: never die over a name like "Modrić".
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
     api = httpx.Client(
         base_url=os.environ["API_BASE_URL"],
