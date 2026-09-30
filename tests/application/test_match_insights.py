@@ -251,3 +251,56 @@ def test_market_benchmark_scores_model_market_and_consensus_on_the_same_matches(
     assert report.matches == 4
     for brier in (report.model_brier, report.market_brier, report.consensus_brier):
         assert 0 <= brier <= 2
+
+
+def test_the_highlighted_scorer_is_likely_to_play():
+    from datetime import datetime
+
+    from player_scouting.application.ports import RosterEntry
+    from player_scouting.application.use_cases.match_insights import HighlightsUseCase
+    from tests.application.test_player_markets import _rosters
+
+    shots = _rosters()
+    # A striker who played once, long ago, and scored: high "if he plays", rarely plays.
+    shots.save_rosters(
+        1,
+        [
+            *shots.list_rosters(LEAGUE, ["2026"])[:4],
+            RosterEntry(
+                1,
+                LEAGUE,
+                "2026",
+                date(2026, 9, 1),
+                "Barcelona",
+                "Getafe",
+                True,
+                50,
+                "Rare Sub",
+                "FW",
+                30,
+                2,
+                0,
+                0,
+                5,
+                0,
+                2.5,
+                0.0,
+                0,
+                0,
+            ),
+        ],
+    )
+
+    picks = (
+        HighlightsUseCase(
+            team_repository(),
+            _stats_repository(),
+            shots,
+            now=lambda: datetime(2026, 10, 1, 12),
+        )
+        .execute(per_category=3)
+        .picks
+    )
+
+    scorer = next(p for p in picks if p.category == "scorers")
+    assert "Rare Sub" not in scorer.label
