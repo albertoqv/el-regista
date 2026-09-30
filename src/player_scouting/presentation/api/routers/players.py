@@ -14,12 +14,14 @@ from player_scouting.presentation.api.dependencies import (
     FindTwinsUseCaseDep,
     GetPlayerPercentilesUseCaseDep,
     PlayerRepositoryDep,
+    ShotRepositoryDep,
 )
 from player_scouting.presentation.api.schemas import (
     ComparisonOut,
     MarketValueHistoryOut,
     PercentileReportOut,
     PlayerOut,
+    PlayerShotOut,
     SeasonOut,
     SimilarPlayerMatchOut,
     TwinReportOut,
@@ -27,6 +29,7 @@ from player_scouting.presentation.api.schemas import (
     market_value_history_out_from_domain,
     percentile_report_out_from_domain,
     player_out_from_domain,
+    player_shot_out_from_domain,
     season_out_from_domain,
     similar_player_match_out_from_domain,
     twin_report_out_from_domain,
@@ -140,6 +143,16 @@ def find_twins(
     except PlayerNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     return twin_report_out_from_domain(report)
+
+
+@router.get("/{player_id}/shots", response_model=list[PlayerShotOut])
+def list_player_shots(
+    player_id: int,
+    repository: ShotRepositoryDep,
+    season_label: str | None = None,
+) -> list[PlayerShotOut]:
+    shots = repository.list_player_shots(player_id, season_label)
+    return [player_shot_out_from_domain(entry) for entry in shots]
 
 
 @router.get("/{player_id}/market-value", response_model=MarketValueHistoryOut)

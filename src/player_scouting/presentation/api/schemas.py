@@ -6,7 +6,13 @@ from pydantic import BaseModel
 
 from player_scouting.application.ingestion_result import IngestionResult
 from player_scouting.application.league_ingestion_job import LeagueIngestionJob
-from player_scouting.application.ports import LeagueSummary, SeasonRecord
+from player_scouting.application.ports import (
+    LeagueSummary,
+    Partnership,
+    PlayerShot,
+    SeasonRecord,
+    ShotLeader,
+)
 from player_scouting.application.use_cases.find_similar_players import (
     SimilarPlayerMatch,
 )
@@ -121,6 +127,46 @@ class EnrichmentIn(BaseModel):
     date_of_birth: date | None = None
     preferred_foot: str | None = None
     market_values: list[MarketValuePointIn] = []
+
+
+class ShotLeaderOut(PlayerSummaryOut):
+    competition: str
+    team: str | None
+    value: float
+    goals: int
+    shots: int
+
+
+class PartnershipOut(BaseModel):
+    scorer: PlayerSummaryOut
+    assister_name: str
+    assister: PlayerSummaryOut | None
+    team: str
+    competition: str
+    goals: int
+
+
+class PlayerShotOut(BaseModel):
+    minute: int
+    result: str
+    x: float
+    y: float
+    xg: float
+    situation: str
+    shot_type: str
+    decisive: bool
+    assisted_by: str | None
+    competition: str
+    season_label: str
+    team: str
+    opponent: str
+    played_on: date
+
+
+class ShotIngestionSummaryOut(BaseModel):
+    matches: int
+    shots: int
+    remaining: int
 
 
 class ComparisonOut(BaseModel):
@@ -348,4 +394,46 @@ def twin_report_out_from_domain(report: TwinReport) -> TwinReportOut:
             )
             for twin in report.twins
         ],
+    )
+
+
+def shot_leader_out_from_domain(leader: ShotLeader) -> ShotLeaderOut:
+    return ShotLeaderOut(
+        **player_summary_from_domain(leader.player).model_dump(),
+        competition=leader.competition,
+        team=leader.team,
+        value=round(leader.value, 2),
+        goals=leader.goals,
+        shots=leader.shots,
+    )
+
+
+def partnership_out_from_domain(pair: Partnership) -> PartnershipOut:
+    return PartnershipOut(
+        scorer=player_summary_from_domain(pair.scorer),
+        assister_name=pair.assister_name,
+        assister=player_summary_from_domain(pair.assister) if pair.assister else None,
+        team=pair.team,
+        competition=pair.competition,
+        goals=pair.goals,
+    )
+
+
+def player_shot_out_from_domain(entry: PlayerShot) -> PlayerShotOut:
+    shot = entry.shot
+    return PlayerShotOut(
+        minute=shot.minute,
+        result=shot.result,
+        x=round(shot.x, 3),
+        y=round(shot.y, 3),
+        xg=round(shot.xg, 3),
+        situation=shot.situation,
+        shot_type=shot.shot_type,
+        decisive=shot.decisive,
+        assisted_by=shot.assisted_by,
+        competition=entry.competition,
+        season_label=entry.season_label,
+        team=entry.team,
+        opponent=entry.opponent,
+        played_on=entry.played_on,
     )

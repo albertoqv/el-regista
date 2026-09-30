@@ -43,6 +43,15 @@ jobs:
             "$API_BASE_URL/ingestion/understat/seasons/$START_YEAR" \
             -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested, skipped: (.skipped | length)}'
 
+      - name: Shots of the new matches (Understat)
+        run: |
+          # Only matches not stored yet; loop in batches until none is left.
+          for batch in $(seq 1 10); do
+            RESULT=$(curl --fail-with-body -sS --max-time 600 -X POST               "$API_BASE_URL/ingestion/understat/shots/$START_YEAR?limit=120"               -H "X-Ingestion-Key: $INGESTION_API_KEY")
+            echo "$RESULT"
+            [ "$(echo "$RESULT" | jq .remaining)" = "0" ] && break
+          done
+
       # Transfermarkt throttles Railway's IP, so the lookups run on this runner
       # (a different IP each run) and only the results go to the API.
       - uses: actions/checkout@v4

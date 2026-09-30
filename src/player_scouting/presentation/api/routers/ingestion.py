@@ -15,6 +15,7 @@ from player_scouting.presentation.api.dependencies import (
     IngestCompetitionUseCaseDep,
     IngestPlayerSeasonUseCaseDep,
     IngestSeasonDatasetUseCaseDep,
+    IngestSeasonShotsUseCaseDep,
     LeagueIngestionJobRepositoryDep,
     LeagueSearchProviderDep,
     PlayerRepositoryDep,
@@ -28,6 +29,7 @@ from player_scouting.presentation.api.schemas import (
     LeagueIngestionJobOut,
     LeagueSummaryOut,
     PendingEnrichmentOut,
+    ShotIngestionSummaryOut,
     ingestion_result_out_from_domain,
     league_ingestion_batch_summary_out_from_domain,
     league_ingestion_job_out_from_domain,
@@ -81,6 +83,18 @@ def ingest_understat_season(
 ) -> IngestionResultOut:
     result = use_case.execute(start_year)
     return ingestion_result_out_from_domain(result)
+
+
+@router.post("/understat/shots/{start_year}", response_model=ShotIngestionSummaryOut)
+def ingest_understat_shots(
+    start_year: int,
+    use_case: IngestSeasonShotsUseCaseDep,
+    limit: Annotated[int, Query(ge=1, le=400)] = 80,
+) -> ShotIngestionSummaryOut:
+    summary = use_case.execute(start_year, limit)
+    return ShotIngestionSummaryOut(
+        matches=summary.matches, shots=summary.shots, remaining=summary.remaining
+    )
 
 
 @router.post("/transfermarkt/enrich", response_model=IngestionResultOut)

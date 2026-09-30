@@ -40,6 +40,9 @@ from player_scouting.application.use_cases.ingest_player_season import (
 from player_scouting.application.use_cases.ingest_season_dataset import (
     IngestSeasonDatasetUseCase,
 )
+from player_scouting.application.use_cases.ingest_season_shots import (
+    IngestSeasonShotsUseCase,
+)
 from player_scouting.application.use_cases.process_league_ingestion_batch import (
     ProcessLeagueIngestionBatchUseCase,
 )
@@ -73,6 +76,9 @@ from player_scouting.infrastructure.persistence.sqlalchemy_league_ingestion_job_
 from player_scouting.infrastructure.persistence.sqlalchemy_player_repository import (
     SqlAlchemyPlayerRepository,
 )
+from player_scouting.infrastructure.persistence.sqlalchemy_shot_repository import (
+    SqlAlchemyShotRepository,
+)
 from player_scouting.infrastructure.statsbomb.client import StatsBombClient
 from player_scouting.infrastructure.statsbomb.competition_statistics_provider import (
     StatsBombCompetitionStatisticsProvider,
@@ -84,6 +90,9 @@ from player_scouting.infrastructure.transfermarkt.provider import (
 from player_scouting.infrastructure.understat.client import UnderstatClient
 from player_scouting.infrastructure.understat.provider import (
     UnderstatSeasonProvider,
+)
+from player_scouting.infrastructure.understat.shot_provider import (
+    UnderstatShotProvider,
 )
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -392,4 +401,32 @@ def get_record_enrichment_use_case(
 
 RecordEnrichmentUseCaseDep = Annotated[
     RecordEnrichmentUseCase, Depends(get_record_enrichment_use_case)
+]
+
+
+def get_shot_repository(session: SessionDep) -> SqlAlchemyShotRepository:
+    return SqlAlchemyShotRepository(session)
+
+
+ShotRepositoryDep = Annotated[SqlAlchemyShotRepository, Depends(get_shot_repository)]
+
+
+def get_shot_provider() -> UnderstatShotProvider:
+    return UnderstatShotProvider(UnderstatClient(httpx.Client()))
+
+
+def get_shot_pause() -> Callable[[float], None]:
+    return time.sleep
+
+
+def get_ingest_season_shots_use_case(
+    provider: Annotated[UnderstatShotProvider, Depends(get_shot_provider)],
+    repository: ShotRepositoryDep,
+    pause: Annotated[Callable[[float], None], Depends(get_shot_pause)],
+) -> IngestSeasonShotsUseCase:
+    return IngestSeasonShotsUseCase(provider, repository, pause)
+
+
+IngestSeasonShotsUseCaseDep = Annotated[
+    IngestSeasonShotsUseCase, Depends(get_ingest_season_shots_use_case)
 ]
