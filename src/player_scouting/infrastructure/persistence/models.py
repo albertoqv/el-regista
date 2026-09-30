@@ -251,3 +251,13 @@ class TeamMatchModel(Base):
     deep_allowed: Mapped[int] = mapped_column(Integer, nullable=False)
     xpts: Mapped[float] = mapped_column(Float, nullable=False)
     result: Mapped[str] = mapped_column(String, nullable=False)
+
+
+class PageViewModel(Base):
+    __tablename__ = "page_views"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    day: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    path: Mapped[str] = mapped_column(String, nullable=False)
+    visitor: Mapped[str] = mapped_column(String, nullable=False)
+    referrer: Mapped[str | None] = mapped_column(String, nullable=True)
