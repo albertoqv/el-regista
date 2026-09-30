@@ -1,5 +1,5 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
-const REVALIDATE_SECONDS = 600;
+const REVALIDATE_SECONDS = 1800;
 
 export type PlayerSummary = {
   player_id: number;
@@ -75,9 +75,26 @@ export class ApiError extends Error {
   }
 }
 
+// A sleeping API (Railway serverless) answers its first request late or with a
+// gateway error while it wakes up: retry those once before giving up.
+const WAKING_STATUSES = new Set([502, 503, 504]);
+const WAKE_UP_DELAY_MS = 2500;
+
+async function fetchWaking(url: string, init: RequestInit): Promise<Response> {
+  try {
+    const response = await fetch(url, init);
+    if (!WAKING_STATUSES.has(response.status)) return response;
+  } catch {
+    // Network error: the service may be starting.
+  }
+  await new Promise((resolve) => setTimeout(resolve, WAKE_UP_DELAY_MS));
+  return fetch(url, init);
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  // Data changes weekly: let the server cache responses for a few minutes.
-  const response = await fetch(`${API_URL}${path}`, {
+  // Data changes twice a week: the server keeps responses cached for a while, so
+  // most pages are served without waking the API.
+  const response = await fetchWaking(`${API_URL}${path}`, {
     ...init,
     next: { revalidate: REVALIDATE_SECONDS },
   });
@@ -568,4 +585,90 @@ export type MarketBenchmark = {
 
 export function getMarketBenchmark(season: string): Promise<MarketBenchmark> {
   return request<MarketBenchmark>(`/predictions/market-benchmark?season=${season}`);
+}
+
+export type HotMetric = "goals_assists" | "goals" | "threat" | "form";
+
+export type HotPlayer = {
+  understat_player_id: number;
+  player_id: number | null;
+  photo_url: string | null;
+  name: string;
+  team: string;
+  competition: string;
+  position: string;
+  matches: number;
+  minutes: number;
+  goals: number;
+  assists: number;
+  xg: number;
+  xa: number;
+  shots: number;
+  key_passes: number;
+  per90: number;
+  before_per90: number | null;
+};
+
+export type HotBoard = {
+  window_start: string;
+  window_end: string;
+  metric: HotMetric;
+  players: HotPlayer[];
+};
+
+export function getHotPlayers(options: {
+  metric?: HotMetric;
+  competition?: string;
+  days?: number;
+  limit?: number;
+} = {}): Promise<HotBoard> {
+  const params = new URLSearchParams();
+  if (options.metric) params.set("metric", options.metric);
+  if (options.competition) params.set("competition", options.competition);
+  if (options.days) params.set("days", String(options.days));
+  if (options.limit) params.set("limit", String(options.limit));
+  return request<HotBoard>(`/players/hot?${params.toString()}`);
+}
+
+export type RecordTotals = {
+  matches: number;
+  hits: number;
+  brier: number;
+  confident: number;
+  confident_hits: number;
+  market_matches: number;
+  market_hits: number;
+  market_brier: number | null;
+};
+
+export type WeekRecord = RecordTotals & { week_start: string };
+
+export type ScoredPick = {
+  match_id: number;
+  competition: string;
+  kickoff: string;
+  home_team: string;
+  away_team: string;
+  home_goals: number;
+  away_goals: number;
+  model: [number, number, number];
+  market: [number, number, number] | null;
+  model_hit: boolean;
+  market_hit: boolean | null;
+  over_2_5: number | null;
+  over_hit: boolean | null;
+};
+
+export type TrackRecord = {
+  season_label: string;
+  live_total: RecordTotals;
+  live_weeks: WeekRecord[];
+  live_recent: ScoredPick[];
+  pending: number;
+  rebuilt_total: RecordTotals;
+  rebuilt_weeks: WeekRecord[];
+};
+
+export function getTrackRecord(season: number): Promise<TrackRecord> {
+  return request<TrackRecord>(`/predictions/track-record?season=${season}`);
 }
