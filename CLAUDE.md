@@ -71,7 +71,8 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 - Web: Vercel (https://web-seven-tan-39.vercel.app). `cd web && npx vercel --prod --yes`.
 - Secretos solo como variables de entorno (Railway / GitHub secrets
   `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo.
-- `.github/workflows/weekly-fbref-refresh.yml`: martes, refresca la temporada en curso.
+- `.github/workflows/weekly-fbref-refresh.yml`: martes, FBref + Understat de la
+  temporada en curso y 200 jugadores de Transfermarkt.
 
 ## Trampas del entorno (Windows)
 
@@ -85,10 +86,12 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 
 ## Trabajo en curso
 
-Plan activo: `C:\Users\Alberto Quesada\.claude\plans\recursive-hatching-bubble.md`
-(fotos + edad exacta desde Transfermarkt y métricas avanzadas desde Understat).
-Hecho y commiteado: dominio, cruce de jugadores, ingesta avanzada, provider de
-Understat, FBref con equipo y minutos. En curso: Transfermarkt (mapper/provider
-hechos), luego caso de uso de enriquecimiento por lotes, persistencia (migración
-0009), API, web, workflow semanal y cargas en producción.
-Fase 2 (después): métricas por 90', mapas de tiro, rediseño visual con animaciones.
+Completado (2026-09-30): fotos, fecha exacta y valor de mercado desde Transfermarkt
+(`POST /ingestion/transfermarkt/enrich?limit=25`, más relevantes primero, marca
+`enrichment_checked_at`) y métricas avanzadas desde Understat
+(`POST /ingestion/understat/seasons/{año}`, cruce ~96%). El workflow semanal hace
+FBref → Understat → 8 lotes de Transfermarkt.
+
+Siguiente (fase 2, secundaria): métricas por 90', mapas de tiro y pie con
+`getPlayerData/{understat_id}`, rediseño visual con animaciones y pantalla de
+enfrentamiento en el comparador (no hay imágenes gratuitas de cuerpo entero).
