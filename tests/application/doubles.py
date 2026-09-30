@@ -35,6 +35,7 @@ class InMemoryPlayerRepository:
         self._advanced: dict[tuple[int, Season], AdvancedStatistics] = {}
         self._understat_ids: dict[int, int] = {}
         self._enrichment_checked: set[int] = set()
+        self._transfermarkt_ids: dict[int, int] = {}
 
     def add(self, player: Player, season: Season, statistics: Statistics) -> None:
         self.save_player(player)
@@ -146,6 +147,12 @@ class InMemoryPlayerRepository:
             for (player_id, season) in self._season_statistics
             if season.label in season_labels and player_id in self._players
         ]
+
+    def set_transfermarkt_id(self, player_id: int, transfermarkt_id: int) -> None:
+        self._transfermarkt_ids[transfermarkt_id] = player_id
+
+    def transfermarkt_index(self) -> dict[int, int]:
+        return dict(self._transfermarkt_ids)
 
     def list_duplicate_groups(self) -> list[list[int]]:
         groups: dict[int, list[int]] = {}

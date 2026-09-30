@@ -32,6 +32,11 @@ class PlayerModel(Base):
     preferred_foot: Mapped[str | None] = mapped_column(String, nullable=True)
     birth_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
     understat_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    transfermarkt_id: Mapped[int | None] = mapped_column(
+        Integer, nullable=True, unique=True
+    )
+    height_cm: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    detailed_position: Mapped[str | None] = mapped_column(String, nullable=True)
     enrichment_checked_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )

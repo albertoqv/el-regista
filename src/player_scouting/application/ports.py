@@ -69,6 +69,12 @@ class PlayerRepository(Protocol):
 
     def list_duplicate_groups(self) -> list[list[int]]: ...
 
+    def set_transfermarkt_id(self, player_id: int, transfermarkt_id: int) -> None: ...
+
+    def transfermarkt_index(self) -> dict[int, int]:
+        """Transfermarkt id -> our player id."""
+        ...
+
     def merge_players(self, keep: int, remove: int) -> None: ...
 
     def latest_market_values(self) -> dict[int, MarketValuePoint]: ...
@@ -320,3 +326,36 @@ class ShotRepository(Protocol):
     def list_shot_totals(
         self, season_labels: list[str]
     ) -> dict[tuple[int, Season], ShotTotals]: ...
+
+
+@dataclass(frozen=True)
+class DatasetProfile:
+    """A player as the public Transfermarkt dataset describes him."""
+
+    transfermarkt_id: int
+    name: str
+    date_of_birth: date | None
+    position: str
+    detailed_position: str | None
+    foot: str | None
+    height_cm: int | None
+    photo_url: str | None
+    club: str | None
+    valuations: tuple[MarketValuePoint, ...]
+
+
+@dataclass(frozen=True)
+class DatasetSeasonRow:
+    transfermarkt_id: int
+    competition: str
+    season_label: str
+    team: str | None
+    statistics: Statistics
+
+
+class TransfermarktDatasetProvider(Protocol):
+    def profiles(self) -> list[DatasetProfile]: ...
+
+    def season_rows(self, start_year: int) -> list[DatasetSeasonRow]:
+        """League seasons outside the five big leagues (those come from FBref)."""
+        ...

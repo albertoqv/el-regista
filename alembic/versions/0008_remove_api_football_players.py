@@ -23,8 +23,7 @@ branch_labels: Sequence[str] | None = None
 depends_on: Sequence[str] | None = None
 
 API_FOOTBALL_PLAYERS = (
-    "SELECT player_id FROM players "
-    "WHERE photo_url LIKE 'https://media.api-sports.io/%'"
+    "SELECT player_id FROM players WHERE photo_url LIKE 'https://media.api-sports.io/%'"
 )
 
 

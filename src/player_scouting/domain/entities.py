@@ -15,6 +15,9 @@ class Player:
     photo_url: str | None = None
     preferred_foot: str | None = None
     birth_year: int | None = None
+    height_cm: int | None = None
+    # Transfermarkt's role, e.g. "Right Winger" or "Centre-Back".
+    detailed_position: str | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.player_id, int) or isinstance(self.player_id, bool):

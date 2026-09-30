@@ -278,6 +278,8 @@ def _player(model: PlayerModel) -> Player:
         photo_url=model.photo_url,
         preferred_foot=model.preferred_foot,
         birth_year=model.birth_year,
+        height_cm=model.height_cm,
+        detailed_position=model.detailed_position,
     )
 
 

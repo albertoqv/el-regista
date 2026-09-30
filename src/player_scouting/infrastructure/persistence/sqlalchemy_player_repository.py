@@ -150,6 +150,8 @@ class SqlAlchemyPlayerRepository:
         model.photo_url = player.photo_url
         model.preferred_foot = player.preferred_foot
         model.birth_year = player.birth_year
+        model.height_cm = player.height_cm
+        model.detailed_position = player.detailed_position
         self._session.flush()
 
     def save_season_statistics(
@@ -280,6 +282,20 @@ class SqlAlchemyPlayerRepository:
                 Basic.season_label.in_(season_labels)
             )
         ]
+
+    def set_transfermarkt_id(self, player_id: int, transfermarkt_id: int) -> None:
+        model = self._session.get(PlayerModel, player_id)
+        if model is not None:
+            model.transfermarkt_id = transfermarkt_id
+            self._session.flush()
+
+    def transfermarkt_index(self) -> dict[int, int]:
+        rows = self._session.execute(
+            select(PlayerModel.transfermarkt_id, PlayerModel.player_id).where(
+                PlayerModel.transfermarkt_id.is_not(None)
+            )
+        )
+        return {tm_id: player_id for tm_id, player_id in rows if tm_id is not None}
 
     def list_duplicate_groups(self) -> list[list[int]]:
         """Players that are the same person: FBref spelled them differently."""
@@ -483,4 +499,6 @@ class SqlAlchemyPlayerRepository:
             photo_url=model.photo_url,
             preferred_foot=model.preferred_foot,
             birth_year=model.birth_year,
+            height_cm=model.height_cm,
+            detailed_position=model.detailed_position,
         )
