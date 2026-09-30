@@ -47,12 +47,25 @@ STATS: dict[str, tuple[str, str, tuple[float, ...]]] = {
 GOAL_LINES = (0.5, 1.5, 2.5, 3.5, 4.5)
 HEAD_TO_HEAD = 6
 RECENT = 5
+# Typical share of goals scored before half-time in top leagues.
+DEFAULT_HALF_TIME_SHARE = 0.45
 # A referee's own average counts as this many "league average" matches.
 REFEREE_PRIOR_MATCHES = 10
 
 
 def _played(matches: list[MatchStats]) -> list[MatchStats]:
     return [m for m in matches if m.played]
+
+
+def half_time_share(matches: list[MatchStats]) -> float:
+    """Share of a league's goals that come before the break."""
+    full = half = 0
+    for m in _played(matches):
+        if m.home_goals_ht is None or m.away_goals_ht is None:
+            continue
+        full += (m.home_goals or 0) + (m.away_goals or 0)
+        half += m.home_goals_ht + m.away_goals_ht
+    return half / full if full else DEFAULT_HALF_TIME_SHARE
 
 
 def learn_team_names(
@@ -253,7 +266,7 @@ class MatchInsightsUseCase:
                 multiplier=multiplier,
             )
 
-        half_time = self._half_time(played, home_name, away_name, today)
+        half_time = self._half_time(played, result.expected_home, result.expected_away)
         meetings = [
             m
             for m in reversed(played)
@@ -281,23 +294,10 @@ class MatchInsightsUseCase:
 
     @staticmethod
     def _half_time(
-        played: list[MatchStats], home: str, away: str, today: date
+        played: list[MatchStats], rate_home: float, rate_away: float
     ) -> tuple[float, float, float]:
-        records = _records(played, "home_goals_ht", "away_goals_ht")
-        if not records:
-            return (1 / 3, 1 / 3, 1 / 3)
-        ratings = count_ratings(records, today)
-        rate_home = (
-            ratings.home_average
-            * ratings.for_.get(home, 1.0)
-            * ratings.against.get(away, 1.0)
-        )
-        rate_away = (
-            ratings.away_average
-            * ratings.for_.get(away, 1.0)
-            * ratings.against.get(home, 1.0)
-        )
-        matrix = score_matrix(rate_home, rate_away, rho=0.0)
+        share = half_time_share(played)
+        matrix = score_matrix(rate_home * share, rate_away * share, rho=0.0)
         cells = [(h, a, p) for h, row in enumerate(matrix) for a, p in enumerate(row)]
         return (
             sum(p for h, a, p in cells if h > a),
