@@ -350,3 +350,65 @@ def test_enrich_pending_players_enriches_up_to_the_limit():
     assert response.status_code == 200
     assert response.json()["ingested"] == 1
     assert repository.get_player(1).preferred_foot == "left"
+
+
+def _enrichment_client(repository):
+    app = create_app()
+    app.dependency_overrides[get_player_repository] = lambda: repository
+    return TestClient(app)
+
+
+def test_lists_players_pending_enrichment():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Lamine Yamal", "Forward", None, birth_year=2007),
+        Season("La Liga", "2026"),
+        Statistics(7, 4),
+    )
+
+    response = _enrichment_client(repository).get(
+        "/ingestion/enrichment/pending?limit=5"
+    )
+
+    assert response.status_code == 200
+    assert response.json() == [
+        {"player_id": 1, "name": "Lamine Yamal", "birth_year": 2007}
+    ]
+
+
+def test_records_an_enrichment_found_elsewhere():
+    repository = InMemoryPlayerRepository()
+    repository.save_player(Player(1, "Rodri", "Midfielder", None, birth_year=1996))
+
+    response = _enrichment_client(repository).post(
+        "/ingestion/enrichment/1",
+        json={
+            "found": True,
+            "photo_url": "https://img.a.transfermarkt.technology/portrait/header/357565-1.jpg",
+            "date_of_birth": "1996-06-22",
+            "preferred_foot": "right",
+            "market_values": [
+                {
+                    "as_of": "2026-06-01",
+                    "amount_eur": 55000000,
+                    "club": "Manchester City",
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 204
+    assert repository.get_player(1).date_of_birth == date(1996, 6, 22)
+    assert repository.is_enrichment_checked(1)
+
+
+def test_records_that_a_player_was_not_found():
+    repository = InMemoryPlayerRepository()
+    repository.save_player(Player(1, "Nobody", "Forward", None, birth_year=2000))
+
+    response = _enrichment_client(repository).post(
+        "/ingestion/enrichment/1", json={"found": False}
+    )
+
+    assert response.status_code == 204
+    assert repository.is_enrichment_checked(1)
