@@ -68,7 +68,9 @@ def main() -> int:
     while found + missing < args.limit:
         size = min(PAGE_SIZE, args.limit - found - missing)
         pending = _call(
-            lambda: api.get("/ingestion/enrichment/pending", params={"limit": size})
+            lambda size=size: api.get(
+                "/ingestion/enrichment/pending", params={"limit": size}
+            )
         )
         players = pending.json()
         if not players:
@@ -105,7 +107,7 @@ def main() -> int:
             else:
                 missing += 1
             url = f"/ingestion/enrichment/{player['player_id']}"
-            _call(lambda: api.post(url, json=body))
+            _call(lambda url=url, body=body: api.post(url, json=body))
             status = "ok" if result else "not found"
             print(f"{found + missing:4d} {player['name']}: {status}", flush=True)
             time.sleep(PAUSE_SECONDS)
