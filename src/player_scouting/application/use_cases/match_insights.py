@@ -549,3 +549,124 @@ class HighlightsUseCase:
             return []
         best = max(lines, key=lambda line: line.props.goal)
         return [Pick(fixture, "scorers", f"{best.name} marca", best.props.goal)]
+
+
+@dataclass(frozen=True)
+class MarketBenchmark:
+    matches: int
+    model_brier: float
+    market_brier: float
+    consensus_brier: float
+    model_accuracy: float
+    market_accuracy: float
+
+
+def _average(
+    first: tuple[float, float, float], second: tuple[float, float, float]
+) -> tuple[float, float, float]:
+    return (
+        (first[0] + second[0]) / 2,
+        (first[1] + second[1]) / 2,
+        (first[2] + second[2]) / 2,
+    )
+
+
+def _hit(probabilities: tuple[float, float, float], outcome: int) -> bool:
+    return max(range(3), key=lambda i: probabilities[i]) == outcome
+
+
+def _brier3(probabilities: tuple[float, float, float], outcome: int) -> float:
+    return sum(
+        (p - (1.0 if i == outcome else 0.0)) ** 2 for i, p in enumerate(probabilities)
+    )
+
+
+@dataclass
+class MarketBenchmarkUseCase:
+    """Our 1X2 model vs bookmakers' closing odds on exactly the same matches.
+
+    Walk-forward like the other backtests: each match is forecast only with the
+    matches played before it.
+    """
+
+    teams: TeamRepository
+    stats: MatchStatsRepository
+    minimum_history: int = 30
+
+    def execute(self, season_label: str) -> MarketBenchmark:
+        labels = _labels_up_to(season_label)
+        rows: list[
+            tuple[tuple[float, float, float], tuple[float, float, float], int]
+        ] = []
+        fixtures = [
+            f
+            for f in self.teams.list_fixtures()
+            if f.played and f.season_label == season_label
+        ]
+        for competition in sorted({f.competition for f in fixtures}):
+            history = self.teams.list_team_matches(labels, competition)
+            league_stats = self.stats.list_match_stats(competition, labels)
+            names = learn_team_names(
+                [
+                    f
+                    for f in self.teams.list_fixtures(competition)
+                    if f.season_label in labels
+                ],
+                league_stats,
+            )
+            odds = {
+                (m.played_on, m.home_team, m.away_team): m
+                for m in league_stats
+                if m.odds_home and m.odds_draw and m.odds_away
+            }
+            ratings_by_day: dict[date, LeagueRatings] = {}
+            for fixture in (f for f in fixtures if f.competition == competition):
+                day = fixture.kickoff.date()
+                earlier = [m for m in history if m.played_on < day]
+                if len({m.match_id for m in earlier}) < self.minimum_history:
+                    continue
+                home = names.get(fixture.home_team, fixture.home_team)
+                away = names.get(fixture.away_team, fixture.away_team)
+                match = next(
+                    (
+                        odds[(day + timedelta(days=offset), home, away)]
+                        for offset in (0, -1, 1)
+                        if (day + timedelta(days=offset), home, away) in odds
+                    ),
+                    None,
+                )
+                if match is None:
+                    continue
+                if day not in ratings_by_day:
+                    ratings_by_day[day] = team_ratings(
+                        [_record(m) for m in earlier], day
+                    )
+                prediction = predict(
+                    ratings_by_day[day], fixture.home_team, fixture.away_team
+                )
+                model = (prediction.home_win, prediction.draw, prediction.away_win)
+                assert match.odds_home and match.odds_draw and match.odds_away
+                h, d, a = implied_probabilities(
+                    match.odds_home, match.odds_draw, match.odds_away
+                )
+                assert fixture.home_goals is not None and fixture.away_goals is not None
+                outcome = (
+                    0
+                    if fixture.home_goals > fixture.away_goals
+                    else 1
+                    if fixture.home_goals == fixture.away_goals
+                    else 2
+                )
+                rows.append((model, (h, d, a), outcome))
+        if not rows:
+            return MarketBenchmark(0, 0.0, 0.0, 0.0, 0.0, 0.0)
+        count = len(rows)
+
+        return MarketBenchmark(
+            matches=count,
+            model_brier=sum(_brier3(m, o) for m, _, o in rows) / count,
+            market_brier=sum(_brier3(k, o) for _, k, o in rows) / count,
+            consensus_brier=sum(_brier3(_average(m, k), o) for m, k, o in rows) / count,
+            model_accuracy=sum(_hit(m, o) for m, _, o in rows) / count,
+            market_accuracy=sum(_hit(k, o) for _, k, o in rows) / count,
+        )
