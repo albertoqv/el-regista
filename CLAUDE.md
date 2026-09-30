@@ -130,6 +130,10 @@ Hecho (2026-09-30), además de lo anterior:
 - Workflow semanal reescrito con funciones `post`/`until_done`; lotes de plantillas de 40
   (con 120 Railway corta la petición).
 
+- **1X2 frente al mercado** (`MarketBenchmarkUseCase`, `/predictions/market-benchmark`):
+  en 25/26 cuotas de cierre 0,582 < modelo 0,594 y toda mezcla empeora al mercado →
+  con cuotas, el 1X2 principal es el del mercado.
+
 Ideas siguientes: calibrar el sesgo de "marca" con el backtest completo, mercado vs
 modelo con cuotas de cierre en el backtest 1X2, lesiones/alineaciones (no hay fuente
 gratuita fiable), producto (cuentas, favoritos, alertas, planes).
