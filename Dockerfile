@@ -10,9 +10,14 @@ RUN uv sync --frozen --no-dev
 COPY alembic.ini ./
 COPY alembic ./alembic
 COPY src ./src
+# Install the project itself now that its code is here (uvicorn runs without uv).
+RUN uv sync --frozen --no-dev
 
-ENV PATH="/app/.venv/bin:$PATH"
+# Fewer glibc malloc arenas: less resident memory for a single process, and
+# memory is almost all of the Railway bill.
+ENV PATH="/app/.venv/bin:$PATH" MALLOC_ARENA_MAX=2 PYTHONUNBUFFERED=1
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "uv run alembic upgrade head && uv run uvicorn player_scouting.presentation.api.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# exec: uvicorn replaces the shell, no extra uv/sh processes stay resident.
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn player_scouting.presentation.api.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

@@ -7,7 +7,11 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from player_scouting.infrastructure.persistence.settings import get_settings
 
-engine = create_engine(get_settings().database_url)
+# pre_ping + recycle: connections survive the API or the database sleeping
+# (Railway "serverless") instead of failing the first request after a pause.
+engine = create_engine(
+    get_settings().database_url, pool_pre_ping=True, pool_recycle=300
+)
 SessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
 
 
