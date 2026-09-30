@@ -5,6 +5,7 @@ from datetime import date
 
 from player_scouting.application.league_ingestion_job import LeagueIngestionJob
 from player_scouting.application.ports import (
+    EnrichmentUnavailableError,
     AdvancedSeasonRow,
     CompetitionStatisticsResult,
     LeaguePlayersPage,
@@ -205,12 +206,28 @@ class FakeSeasonDatasetProvider:
 
 
 class FakeMarketValueProvider:
-    def __init__(self, result: MarketValueHistoryResult | None) -> None:
+    def __init__(
+        self,
+        result: MarketValueHistoryResult | None = None,
+        results_by_name: dict[str, MarketValueHistoryResult] | None = None,
+        blocked_after: int | None = None,
+    ) -> None:
         self._result = result
+        self._results_by_name = results_by_name
+        self._blocked_after = blocked_after
+        self.requests: list[tuple[str, int | None]] = []
 
     def get_market_value_history(
-        self, player_name: str
+        self, player_name: str, birth_year: int | None = None
     ) -> MarketValueHistoryResult | None:
+        if (
+            self._blocked_after is not None
+            and len(self.requests) >= self._blocked_after
+        ):
+            raise EnrichmentUnavailableError("blocked")
+        self.requests.append((player_name, birth_year))
+        if self._results_by_name is not None:
+            return self._results_by_name.get(player_name)
         return self._result
 
 
