@@ -428,3 +428,73 @@ export function getBacktest(season: string, competition?: string): Promise<Backt
   if (competition) params.set("competition", competition);
   return request<Backtest>(`/predictions/backtest?${params.toString()}`);
 }
+
+export type Outcome = { home_win: number; draw: number; away_win: number };
+export type LineProbability = { line: number; over: number };
+export type StatForecast = {
+  stat: string;
+  expected_home: number;
+  expected_away: number;
+  expected_total: number;
+  home_more: number;
+  equal: number;
+  away_more: number;
+  over: LineProbability[];
+  distribution: number[];
+};
+export type MatchLine = {
+  played_on: string;
+  home_team: string;
+  away_team: string;
+  home_goals: number | null;
+  away_goals: number | null;
+  home_corners: number | null;
+  away_corners: number | null;
+  home_yellows: number | null;
+  away_yellows: number | null;
+  home_shots: number | null;
+  away_shots: number | null;
+};
+export type MatchInsights = {
+  match_id: number;
+  competition: string;
+  kickoff: string;
+  home_team: string;
+  away_team: string;
+  expected_home: number;
+  expected_away: number;
+  result: Outcome;
+  market: Outcome | null;
+  consensus: Outcome;
+  scorelines: { home: number; away: number; probability: number }[];
+  goals_over: LineProbability[];
+  both_teams_score: number;
+  home_clean_sheet: number;
+  away_clean_sheet: number;
+  half_time: Outcome;
+  stats: StatForecast[];
+  referee: { name: string; matches: number; yellows_per_match: number; multiplier: number } | null;
+  head_to_head: MatchLine[];
+  home_recent: MatchLine[];
+  away_recent: MatchLine[];
+};
+export function getMatchInsights(matchId: number): Promise<MatchInsights> {
+  return request<MatchInsights>(`/predictions/${matchId}/insights`);
+}
+export type PlayerMarket = {
+  understat_player_id: number;
+  player_id: number | null;
+  name: string;
+  photo_url: string | null;
+  position: string;
+  expected_minutes: number;
+  goal: number;
+  assist: number;
+  card: number;
+  shots_1: number;
+  shots_2: number;
+};
+export type PlayerMarkets = { match_id: number; home_team: string; away_team: string; home: PlayerMarket[]; away: PlayerMarket[] };
+export function getPlayerMarkets(matchId: number): Promise<PlayerMarkets> {
+  return request<PlayerMarkets>(`/predictions/${matchId}/players`);
+}

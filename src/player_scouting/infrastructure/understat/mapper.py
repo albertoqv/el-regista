@@ -173,4 +173,11 @@ def to_roster_entries(rosters: dict, match: MatchRef) -> list[RosterEntry]:
                     red=int(raw["red_card"]),
                 )
             )
-    return entries
+    # Understat occasionally lists a player twice in one match: keep the line
+    # with the most minutes.
+    unique: dict[int, RosterEntry] = {}
+    for entry in entries:
+        kept = unique.get(entry.understat_player_id)
+        if kept is None or entry.minutes > kept.minutes:
+            unique[entry.understat_player_id] = entry
+    return list(unique.values())

@@ -132,6 +132,12 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
           Marcan ambos <strong className="float-right tabular-nums">{percent(forecast.both_teams_score)}</strong>
         </span>
       </div>
+      <Link
+        href={`/predicciones/${forecast.match_id}`}
+        className="mt-auto rounded-full bg-white px-4 py-2 text-center text-xs font-bold text-black transition hover:bg-white/85"
+      >
+        Análisis completo: córners, tarjetas, goleadores…
+      </Link>
     </article>
   );
 }
