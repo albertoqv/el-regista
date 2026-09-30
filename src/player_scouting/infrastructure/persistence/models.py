@@ -166,6 +166,40 @@ class FixtureModel(Base):
     away_xg: Mapped[float | None] = mapped_column(Float, nullable=True)
 
 
+class MatchStatsModel(Base):
+    """football-data.co.uk: match stats (once played) and bookmaker odds."""
+
+    __tablename__ = "match_stats"
+
+    competition: Mapped[str] = mapped_column(String, primary_key=True)
+    played_on: Mapped[date] = mapped_column(Date, primary_key=True)
+    home_team: Mapped[str] = mapped_column(String, primary_key=True)
+    away_team: Mapped[str] = mapped_column(String, primary_key=True)
+    season_label: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    referee: Mapped[str | None] = mapped_column(String, nullable=True)
+    home_goals: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    away_goals: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    home_goals_ht: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    away_goals_ht: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    home_shots: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    away_shots: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    home_shots_on_target: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    away_shots_on_target: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    home_fouls: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    away_fouls: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    home_corners: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    away_corners: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    home_yellows: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    away_yellows: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    home_reds: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    away_reds: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    odds_home: Mapped[float | None] = mapped_column(Float, nullable=True)
+    odds_draw: Mapped[float | None] = mapped_column(Float, nullable=True)
+    odds_away: Mapped[float | None] = mapped_column(Float, nullable=True)
+    odds_over_2_5: Mapped[float | None] = mapped_column(Float, nullable=True)
+    odds_under_2_5: Mapped[float | None] = mapped_column(Float, nullable=True)
+
+
 class TeamMatchModel(Base):
     __tablename__ = "team_matches"
 
