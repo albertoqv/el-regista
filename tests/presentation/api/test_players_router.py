@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
-from player_scouting.domain.statistics import Statistics
+from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 from player_scouting.presentation.api.dependencies import get_player_repository
 from player_scouting.presentation.api.main import create_app
 from tests.application.doubles import InMemoryPlayerRepository
@@ -459,3 +459,46 @@ def test_find_similar_players_returns_404_when_target_is_missing():
     response = client.get("/players/1/similar")
 
     assert response.status_code == 404
+
+
+def test_player_exposes_minutes_and_understat_metrics():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Lamine Yamal", "Forward", None, birth_year=2007),
+        Season("La Liga", "2026"),
+        Statistics(7, 4, minutes_played=598),
+    )
+    repository.save_season_advanced(
+        1,
+        Season("La Liga", "2026"),
+        AdvancedStatistics(
+            expected_goals=6.08,
+            expected_assists=4.08,
+            key_passes=27,
+            xg_chain=9.5,
+            xg_buildup=2.1,
+        ),
+    )
+    client = _client_with_repository(repository)
+
+    body = client.get("/players/1").json()
+
+    assert body["minutes_played"] == 598
+    assert body["expected_goals"] == 6.08
+    assert body["expected_assists"] == 4.08
+    assert body["key_passes"] == 27
+    assert body["xg_chain"] == 9.5
+    assert body["xg_buildup"] == 2.1
+
+
+def test_player_seasons_include_the_team():
+    repository = InMemoryPlayerRepository()
+    repository.save_player(Player(1, "Lamine Yamal", "Forward", None, birth_year=2007))
+    repository.save_season_statistics(
+        1, Season("La Liga", "2026"), Statistics(7, 4), team="Barcelona"
+    )
+    client = _client_with_repository(repository)
+
+    body = client.get("/players/1/seasons").json()
+
+    assert body == [{"competition": "La Liga", "label": "2026", "team": "Barcelona"}]

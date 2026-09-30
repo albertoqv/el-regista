@@ -333,6 +333,14 @@ def test_season_entries_include_team_and_minutes(session):
     assert entry.statistics.minutes_played == 598
 
 
+def test_returns_the_team_of_a_player_season(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    _seed_yamal(repository)
+
+    assert repository.get_season_team(1, LA_LIGA_2026) == "Barcelona"
+    assert repository.get_season_team(1, Season("La Liga", "1999")) is None
+
+
 def test_advanced_metrics_are_merged_into_every_statistics_read(session):
     repository = SqlAlchemyPlayerRepository(session)
     _seed_yamal(repository)

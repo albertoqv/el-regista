@@ -3,7 +3,9 @@ from datetime import date
 from fastapi.testclient import TestClient
 
 from player_scouting.application.league_ingestion_job import LeagueIngestionJob
+from player_scouting.application.player_matching import ExternalPlayer
 from player_scouting.application.ports import (
+    AdvancedSeasonRow,
     CompetitionStatisticsResult,
     LeaguePlayersPage,
     LeagueSummary,
@@ -14,8 +16,10 @@ from player_scouting.application.ports import (
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
-from player_scouting.domain.statistics import Statistics
+from player_scouting.domain.statistics import AdvancedStatistics, Statistics
 from player_scouting.presentation.api.dependencies import (
+    get_advanced_season_provider,
+    get_enrichment_pause,
     get_birth_date_provider,
     get_league_ingestion_job_repository,
     get_league_players_provider,
@@ -28,6 +32,7 @@ from player_scouting.presentation.api.dependencies import (
 )
 from player_scouting.presentation.api.main import create_app
 from tests.application.doubles import (
+    FakeAdvancedSeasonProvider,
     FakeBirthDateProvider,
     FakeCompetitionStatisticsProvider,
     FakeLeaguePlayersProvider,
@@ -286,3 +291,60 @@ def test_ingest_fbref_season_persists_every_player_of_the_season():
     assert response.status_code == 200
     assert response.json()["ingested"] == 1
     assert repository.get_player(1_500_000_000).birth_year == 2003
+
+
+def test_ingest_understat_season_stores_advanced_metrics():
+    repository = InMemoryPlayerRepository()
+    repository.save_player(Player(1, "Lamine Yamal", "Forward", None, birth_year=2007))
+    repository.save_season_statistics(
+        1, Season("La Liga", "2026"), Statistics(7, 4, minutes_played=598), "Barcelona"
+    )
+    provider = FakeAdvancedSeasonProvider(
+        {
+            2026: [
+                AdvancedSeasonRow(
+                    competition="La Liga",
+                    player=ExternalPlayer(11500, "Lamine Yamal", ("Barcelona",), 598, 7),
+                    advanced=AdvancedStatistics(6.08, 4.08, 27, 9.5, 2.1),
+                )
+            ]
+        }
+    )
+    app = create_app()
+    app.dependency_overrides[get_advanced_season_provider] = lambda: provider
+    app.dependency_overrides[get_player_repository] = lambda: repository
+    client = TestClient(app)
+
+    response = client.post("/ingestion/understat/seasons/2026")
+
+    assert response.status_code == 200
+    assert response.json()["ingested"] == 1
+    stats = repository.get_season_statistics(1, Season("La Liga", "2026"))
+    assert stats.expected_assists == 4.08
+
+
+def test_enrich_pending_players_enriches_up_to_the_limit():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Lamine Yamal", "Forward", None, birth_year=2007),
+        Season("La Liga", "2026"),
+        Statistics(7, 4),
+    )
+    provider = FakeMarketValueProvider(
+        result=MarketValueHistoryResult(
+            preferred_foot="left",
+            points=[],
+            photo_url="https://img.a.transfermarkt.technology/portrait/header/1.jpg",
+        )
+    )
+    app = create_app()
+    app.dependency_overrides[get_market_value_provider] = lambda: provider
+    app.dependency_overrides[get_player_repository] = lambda: repository
+    app.dependency_overrides[get_enrichment_pause] = lambda: (lambda seconds: None)
+    client = TestClient(app)
+
+    response = client.post("/ingestion/transfermarkt/enrich?limit=5")
+
+    assert response.status_code == 200
+    assert response.json()["ingested"] == 1
+    assert repository.get_player(1).preferred_foot == "left"
