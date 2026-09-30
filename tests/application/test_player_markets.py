@@ -139,9 +139,8 @@ def test_player_markets_for_a_fixture():
     assert markets.fixture.home_team == "Barcelona"
     assert home["Striker"].props.goal > home["Hard Man"].props.goal
     assert home["Hard Man"].props.card > home["Striker"].props.card
-    assert (
-        home["Winger"].props.expected_minutes < home["Striker"].props.expected_minutes
-    )
+    # Dropped for the last two: less likely to play; if he plays, a full match.
+    assert home["Winger"].plays < home["Striker"].plays
     assert [line.name for line in markets.away] == ["Rival"]
 
 
