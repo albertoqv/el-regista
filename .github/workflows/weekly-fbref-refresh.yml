@@ -87,6 +87,10 @@ jobs:
       - name: Player lines of the new matches (Understat rosters)
         run: source "$RUNNER_TEMP/post.sh" && until_done "/ingestion/understat/rosters/$START_YEAR?limit=40"
 
+      # Track record: log this week's forecasts before kickoff, with fresh odds.
+      - name: Log the forecasts of the coming days
+        run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/predictions/snapshot?days=7"
+
       # Transfermarkt throttles Railway's IP, so the lookups run on this runner
       # (a different IP each run) and only the results go to the API.
       - uses: actions/checkout@v4
