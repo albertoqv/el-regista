@@ -558,3 +558,35 @@ def test_player_twins_for_an_unknown_player_is_404():
     client = _client_with_repository(InMemoryPlayerRepository())
 
     assert client.get("/players/99/twins").status_code == 404
+
+
+def test_explore_players_with_filters_and_sorting():
+    repository = InMemoryPlayerRepository()
+    for player_id, goals, minutes in ((1, 6, 600), (2, 8, 900)):
+        repository.save_player(
+            Player(player_id, f"P{player_id}", "Forward", None, birth_year=2003)
+        )
+        repository.save_season_statistics(
+            player_id,
+            Season("La Liga", "2026"),
+            Statistics(goals, 0, minutes_played=minutes),
+            team="Team",
+        )
+    client = _client_with_repository(repository)
+
+    response = client.get(
+        "/players/explore?season=2026&position=Forward&sort=goals&per_90=true&min_minutes=0"
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert [row["name"] for row in body] == ["P1", "P2"]
+    assert body[0]["sort_value"] == 0.9
+    assert body[0]["team"] == "Team"
+    assert body[0]["market_value_eur"] is None
+
+
+def test_explore_rejects_an_unknown_sort():
+    client = _client_with_repository(InMemoryPlayerRepository())
+
+    assert client.get("/players/explore?sort=height").status_code == 422

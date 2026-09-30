@@ -8,7 +8,8 @@ import {
   formatMarketValue,
   seasonDisplay,
 } from "@/lib/format";
-import { METRICS, type MetricKey } from "@/lib/metrics";
+import { PROFILE_LABELS } from "@/lib/metrics";
+import { MiniRadar } from "@/app/components/MiniRadar";
 import { badges, saving, savingLabel } from "@/lib/twins";
 
 function compareHref(target: TwinProfile, twin: Twin): string {
@@ -23,7 +24,7 @@ function compareHref(target: TwinProfile, twin: Twin): string {
 }
 
 function metricName(key: string): string {
-  return METRICS[key as MetricKey]?.short ?? key;
+  return PROFILE_LABELS[key] ?? key;
 }
 
 export function TwinCard({
@@ -97,17 +98,22 @@ export function TwinCard({
           )}
         </div>
 
-        {twin.shared_strengths.length > 0 && (
-          <p className="text-sm text-ink/85">
-            <span className="text-muted">Se parecen en </span>
-            {twin.shared_strengths.map(metricName).join(", ")}
-          </p>
-        )}
-        {twin.differences.length > 0 && (
-          <p className="text-xs text-muted">
-            Donde cambia: {twin.differences.map(metricName).join(", ")}
-          </p>
-        )}
+        <div className="flex items-center gap-3">
+          <MiniRadar target={target.percentiles} twin={twin.percentiles} />
+          <div className="flex flex-col gap-1.5">
+            {twin.shared_strengths.length > 0 && (
+              <p className="text-sm text-ink/85">
+                <span className="text-muted">Se parecen en </span>
+                {twin.shared_strengths.map(metricName).join(", ")}
+              </p>
+            )}
+            {twin.differences.length > 0 && (
+              <p className="text-xs text-muted">
+                Donde cambia: {twin.differences.map(metricName).join(", ")}
+              </p>
+            )}
+          </div>
+        </div>
 
         <div className="mt-auto flex gap-2 pt-1">
           <Link

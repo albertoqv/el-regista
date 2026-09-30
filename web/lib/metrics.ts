@@ -232,3 +232,38 @@ export function percentileColor(percentile: number): string {
   if (percentile >= 30) return "#fb923c";
   return "#f87171";
 }
+
+/** Short names for every profile metric, including the shot-based ones. */
+export const PROFILE_LABELS: Record<string, string> = {
+  ...Object.fromEntries(Object.values(METRICS).map((info) => [info.key, info.short])),
+  late_goals: "Tramo final",
+  headed_goals: "Cabeza",
+  outside_box_goals: "De lejos",
+  set_piece_goals: "Balón parado",
+  finishing: "Definición",
+  npxg_per_shot: "xG/tiro",
+};
+
+/** Drawing order for profile radars: attack, shooting style, creation, defence. */
+export const PROFILE_ORDER = [
+  "goals",
+  "expected_goals",
+  "shots",
+  "shots_on_target",
+  "finishing",
+  "npxg_per_shot",
+  "late_goals",
+  "headed_goals",
+  "outside_box_goals",
+  "set_piece_goals",
+  "assists",
+  "expected_assists",
+  "key_passes",
+  "xg_chain",
+  "xg_buildup",
+  "passes_completed",
+  "dribbles_completed",
+  "fouls_won",
+  "tackles_won",
+  "interceptions",
+];
