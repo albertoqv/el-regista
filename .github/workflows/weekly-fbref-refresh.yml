@@ -76,7 +76,7 @@ jobs:
       - name: Player lines of the new matches (Understat rosters)
         run: |
           for batch in $(seq 1 10); do
-            RESULT=$(curl --fail-with-body -sS --max-time 600 -X POST               "$API_BASE_URL/ingestion/understat/rosters/$START_YEAR?limit=120"               -H "X-Ingestion-Key: $INGESTION_API_KEY")
+            RESULT=$(curl --fail-with-body -sS --max-time 600 -X POST               "$API_BASE_URL/ingestion/understat/rosters/$START_YEAR?limit=40"               -H "X-Ingestion-Key: $INGESTION_API_KEY")
             echo "$RESULT"
             [ "$(echo "$RESULT" | jq .remaining)" = "0" ] && break
           done

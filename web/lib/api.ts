@@ -498,3 +498,18 @@ export type PlayerMarkets = { match_id: number; home_team: string; away_team: st
 export function getPlayerMarkets(matchId: number): Promise<PlayerMarkets> {
   return request<PlayerMarkets>(`/predictions/${matchId}/players`);
 }
+
+export type Pick = {
+  match_id: number;
+  competition: string;
+  kickoff: string;
+  home_team: string;
+  away_team: string;
+  category: "result" | "goals" | "corners" | "cards" | "scorers";
+  label: string;
+  probability: number;
+};
+export type Highlights = { window_start: string; window_end: string; picks: Pick[] };
+export function getHighlights(perCategory = 5): Promise<Highlights> {
+  return request<Highlights>(`/predictions/highlights?per_category=${perCategory}`);
+}

@@ -2,8 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ForecastCard, kickoffDate } from "@/app/components/Forecast";
 import { Reveal } from "@/app/components/motion";
+import { RoundHighlights } from "@/app/components/RoundHighlights";
 import { ScoutNote } from "@/app/components/ScoutNote";
-import { getBacktest, getPredictions, type Backtest, type Forecast } from "@/lib/api";
+import {
+  getBacktest,
+  getHighlights,
+  getPredictions,
+  type Backtest,
+  type Forecast,
+  type Highlights,
+} from "@/lib/api";
 import { COMPETITIONS, competitionColor, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -75,9 +83,10 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
   const searchParams = await props.searchParams;
   const league = param(searchParams.liga);
   const lastSeason = String(currentSeasonStartYear() - 1);
-  const [forecasts, backtest] = await Promise.all([
+  const [forecasts, backtest, highlights] = await Promise.all([
     getPredictions(WINDOW_DAYS, league).catch((): Forecast[] => []),
     getBacktest(lastSeason).catch((): Backtest | null => null),
+    league ? Promise.resolve(null) : getHighlights(5).catch((): Highlights | null => null),
   ]);
 
   const byDay = new Map<string, Forecast[]>();
@@ -96,6 +105,12 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
           partidos, calculados con el rendimiento real de cada equipo (xG) y su forma reciente.
         </p>
       </Reveal>
+
+      {highlights && (
+        <Reveal>
+          <RoundHighlights highlights={highlights} />
+        </Reveal>
+      )}
 
       {backtest && backtest.matches > 0 && (
         <Reveal>
