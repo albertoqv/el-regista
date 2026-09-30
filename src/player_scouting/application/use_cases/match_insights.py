@@ -543,8 +543,12 @@ class HighlightsUseCase:
         )
         if not lines:
             return []
-        best = max(lines, key=lambda line: line.props.goal)
-        return [Pick(fixture, "scorers", f"{best.name} marca", best.props.goal)]
+        # Rank by the chance he scores in this match: priced "if he plays" times
+        # the chance that he plays (a rarely used sub is not a headline pick).
+        best = max(lines, key=lambda line: line.props.goal * line.plays)
+        return [
+            Pick(fixture, "scorers", f"{best.name} marca", best.props.goal * best.plays)
+        ]
 
 
 @dataclass(frozen=True)

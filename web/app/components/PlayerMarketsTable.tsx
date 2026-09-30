@@ -27,8 +27,10 @@ function Column({
   market: keyof PlayerMarket;
   color: string;
 }) {
-  const sorted = [...players].sort((a, b) => (b[market] as number) - (a[market] as number)).slice(0, 8);
-  const max = Math.max(...sorted.map((p) => p[market] as number), 0.01);
+  // Chance in this match = "if he plays" x chance that he plays.
+  const chance = (player: PlayerMarket) => (player[market] as number) * player.plays;
+  const sorted = [...players].sort((a, b) => chance(b) - chance(a)).slice(0, 8);
+  const max = Math.max(...sorted.map(chance), 0.01);
   return (
     <div className="flex flex-col gap-2">
       <h4 className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color }}>
@@ -36,7 +38,8 @@ function Column({
       </h4>
       <ol className="flex flex-col gap-1.5">
         {sorted.map((player) => {
-          const value = player[market] as number;
+          const value = chance(player);
+          const ifPlays = player[market] as number;
           const content = (
             <span className="relative flex items-center gap-3 overflow-hidden rounded-xl px-2 py-1.5">
               <span
@@ -49,7 +52,7 @@ function Column({
               <span className="relative flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-semibold">{player.name}</span>
                 <span className="text-[10px] text-muted">
-                  {player.position} · juega {percent(player.plays)} · ~{Math.round(player.expected_minutes)}&apos;
+                  {player.position} · juega {percent(player.plays)} · si juega {percent(ifPlays)}
                 </span>
               </span>
               <span className="relative font-display text-lg font-bold tabular-nums">{percent(value)}</span>
@@ -81,9 +84,9 @@ export function PlayerMarketsTable({ markets }: { markets: PlayerMarkets }) {
         <div>
           <h2 className="font-display text-2xl font-bold tracking-tight">Jugadores</h2>
           <p className="text-sm text-muted">
-            {info.help} Calculado <strong>si juega</strong> (como en las casas de apuestas, que anulan la
-            apuesta si no sale); &quot;juega&quot; es la probabilidad de que participe según sus últimos
-            partidos.
+            {info.help} La cifra grande es la probabilidad en este partido; debajo, la probabilidad de
+            que juegue (según sus últimos partidos) y la probabilidad <strong>si juega</strong>, que es
+            la que usan las casas de apuestas (anulan la apuesta si no sale).
           </p>
         </div>
         <div className="glass flex rounded-full p-1 text-xs font-semibold">
