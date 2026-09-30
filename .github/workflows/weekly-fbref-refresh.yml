@@ -43,6 +43,13 @@ jobs:
             "$API_BASE_URL/ingestion/understat/seasons/$START_YEAR" \
             -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested, skipped: (.skipped | length)}'
 
+      - name: Photos, height, roles and other leagues (Transfermarkt dataset)
+        run: |
+          curl --fail-with-body -sS --max-time 900 -X POST             "$API_BASE_URL/ingestion/transfermarkt-dataset/profiles"             -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested}'
+          for YEAR in $START_YEAR $((START_YEAR - 1)); do
+            curl --fail-with-body -sS --max-time 900 -X POST               "$API_BASE_URL/ingestion/transfermarkt-dataset/seasons/$YEAR"               -H "X-Ingestion-Key: $INGESTION_API_KEY" | jq '{ingested, skipped: (.skipped | length)}'
+          done
+
       - name: Merge players FBref spelled in two ways
         run: |
           curl --fail-with-body -sS --max-time 600 -X POST             "$API_BASE_URL/ingestion/maintenance/merge-duplicates"             -H "X-Ingestion-Key: $INGESTION_API_KEY"

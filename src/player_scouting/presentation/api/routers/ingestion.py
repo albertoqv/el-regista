@@ -9,10 +9,12 @@ from player_scouting.application.ports import MarketValueHistoryResult
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.presentation.api.dependencies import (
     EnqueueLeagueIngestionUseCaseDep,
+    EnrichFromDatasetUseCaseDep,
     EnrichPendingPlayersUseCaseDep,
     EnrichPlayerMarketValueUseCaseDep,
     IngestAdvancedSeasonUseCaseDep,
     IngestCompetitionUseCaseDep,
+    IngestDatasetLeaguesUseCaseDep,
     IngestPlayerSeasonUseCaseDep,
     IngestSeasonDatasetUseCaseDep,
     IngestSeasonShotsUseCaseDep,
@@ -103,6 +105,22 @@ def merge_duplicate_players(
     use_case: MergeDuplicatePlayersUseCaseDep,
 ) -> dict[str, int]:
     return {"merged": use_case.execute()}
+
+
+@router.post("/transfermarkt-dataset/profiles", response_model=IngestionResultOut)
+def enrich_from_transfermarkt_dataset(
+    use_case: EnrichFromDatasetUseCaseDep,
+) -> IngestionResultOut:
+    return ingestion_result_out_from_domain(use_case.execute())
+
+
+@router.post(
+    "/transfermarkt-dataset/seasons/{start_year}", response_model=IngestionResultOut
+)
+def ingest_transfermarkt_dataset_season(
+    start_year: int, use_case: IngestDatasetLeaguesUseCaseDep
+) -> IngestionResultOut:
+    return ingestion_result_out_from_domain(use_case.execute(start_year))
 
 
 @router.post("/transfermarkt/enrich", response_model=IngestionResultOut)

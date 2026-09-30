@@ -55,6 +55,10 @@ from player_scouting.application.use_cases.process_league_ingestion_batch import
 from player_scouting.application.use_cases.record_enrichment import (
     RecordEnrichmentUseCase,
 )
+from player_scouting.application.use_cases.transfermarkt_dataset import (
+    EnrichFromDatasetUseCase,
+    IngestDatasetLeaguesUseCase,
+)
 from player_scouting.domain.similarity_calculator import SimilarityCalculator
 from player_scouting.infrastructure.api_football.league_provider import (
     ApiFootballLeaguePlayersProvider,
@@ -92,6 +96,12 @@ from player_scouting.infrastructure.statsbomb.competition_statistics_provider im
 from player_scouting.infrastructure.transfermarkt.client import TransfermarktClient
 from player_scouting.infrastructure.transfermarkt.provider import (
     TransfermarktMarketValueProvider,
+)
+from player_scouting.infrastructure.transfermarkt_dataset.client import (
+    TransfermarktDatasetClient,
+)
+from player_scouting.infrastructure.transfermarkt_dataset.provider import (
+    TransfermarktDatasetZipProvider,
 )
 from player_scouting.infrastructure.understat.client import UnderstatClient
 from player_scouting.infrastructure.understat.provider import (
@@ -459,4 +469,33 @@ def get_explore_players_use_case(
 
 ExplorePlayersUseCaseDep = Annotated[
     ExplorePlayersUseCase, Depends(get_explore_players_use_case)
+]
+
+
+def get_transfermarkt_dataset_provider() -> TransfermarktDatasetZipProvider:
+    return TransfermarktDatasetZipProvider(TransfermarktDatasetClient(httpx.Client()))
+
+
+TransfermarktDatasetProviderDep = Annotated[
+    TransfermarktDatasetZipProvider, Depends(get_transfermarkt_dataset_provider)
+]
+
+
+def get_enrich_from_dataset_use_case(
+    provider: TransfermarktDatasetProviderDep, repository: PlayerRepositoryDep
+) -> EnrichFromDatasetUseCase:
+    return EnrichFromDatasetUseCase(provider, repository)
+
+
+def get_ingest_dataset_leagues_use_case(
+    provider: TransfermarktDatasetProviderDep, repository: PlayerRepositoryDep
+) -> IngestDatasetLeaguesUseCase:
+    return IngestDatasetLeaguesUseCase(provider, repository)
+
+
+EnrichFromDatasetUseCaseDep = Annotated[
+    EnrichFromDatasetUseCase, Depends(get_enrich_from_dataset_use_case)
+]
+IngestDatasetLeaguesUseCaseDep = Annotated[
+    IngestDatasetLeaguesUseCase, Depends(get_ingest_dataset_leagues_use_case)
 ]
