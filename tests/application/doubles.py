@@ -14,6 +14,7 @@ from player_scouting.application.ports import (
     LeagueSummary,
     MarketValueHistoryResult,
     MatchRef,
+    MatchStats,
     PlayerSeasonResult,
     PlayerSort,
     PlayerSummary,
