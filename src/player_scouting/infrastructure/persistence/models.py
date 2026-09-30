@@ -1,8 +1,16 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
-from sqlalchemy import Date, Float, ForeignKey, Integer, String, UniqueConstraint
+from sqlalchemy import (
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -22,6 +30,10 @@ class PlayerModel(Base):
     photo_url: Mapped[str | None] = mapped_column(String, nullable=True)
     preferred_foot: Mapped[str | None] = mapped_column(String, nullable=True)
     birth_year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    understat_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    enrichment_checked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
 
 
 class PlayerSeasonStatisticsModel(Base):
@@ -50,6 +62,25 @@ class PlayerSeasonStatisticsModel(Base):
     fouls_won: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     yellow_cards: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     red_cards: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    minutes_played: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    team: Mapped[str | None] = mapped_column(String, nullable=True)
+
+
+class PlayerSeasonAdvancedStatisticsModel(Base):
+    __tablename__ = "player_season_advanced_stats"
+    __table_args__ = (UniqueConstraint("player_id", "competition", "season_label"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    player_id: Mapped[int] = mapped_column(
+        ForeignKey("players.player_id"), nullable=False
+    )
+    competition: Mapped[str] = mapped_column(String, nullable=False)
+    season_label: Mapped[str] = mapped_column(String, nullable=False)
+    expected_goals: Mapped[float] = mapped_column(Float, nullable=False)
+    expected_assists: Mapped[float] = mapped_column(Float, nullable=False)
+    key_passes: Mapped[int] = mapped_column(Integer, nullable=False)
+    xg_chain: Mapped[float] = mapped_column(Float, nullable=False)
+    xg_buildup: Mapped[float] = mapped_column(Float, nullable=False)
 
 
 class PlayerMarketValueModel(Base):

@@ -60,7 +60,7 @@ def extract_photo_url(profile_html: str) -> str | None:
 
 def extract_date_of_birth(profile_html: str) -> date | None:
     soup = BeautifulSoup(profile_html, "html.parser")
-    item = soup.find(attrs={"itemprop": "birthDate"})
+    item = soup.select_one('[itemprop="birthDate"]')
     match = _BIRTH_DATE_PATTERN.search(item.get_text()) if item else None
     if match is None:
         return None
