@@ -78,3 +78,37 @@ def test_maps_team_history_rows_onto_their_matches():
     assert match.ppda_allowed == 249 / 33
     assert (match.deep, match.deep_allowed) == (9, 2)
     assert match.xpts == 2.6
+
+
+def test_team_provider_reads_the_five_leagues():
+    from player_scouting.infrastructure.understat.team_provider import (
+        UnderstatTeamProvider,
+    )
+
+    class Client:
+        def __init__(self):
+            self.leagues = []
+
+        def get_league_data(self, league, season):
+            self.leagues.append(league)
+            if league != "La_liga":
+                return {"teams": {}, "dates": []}
+            return {
+                "teams": {
+                    "158": {
+                        "id": "158",
+                        "title": "Alaves",
+                        "history": [ALAVES_HISTORY_ROW],
+                    }
+                },
+                "dates": [PLAYED, UPCOMING],
+            }
+
+    client = Client()
+    fixtures, matches = UnderstatTeamProvider(
+        client, pause=lambda s: None
+    ).get_team_season(2026)
+
+    assert len(client.leagues) == 5
+    assert [f.match_id for f in fixtures] == [30770, 30840]
+    assert [m.team for m in matches] == ["Alaves"]

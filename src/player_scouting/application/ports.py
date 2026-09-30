@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from typing import Literal, Protocol
 
 from player_scouting.application.player_matching import ExternalPlayer
@@ -359,3 +359,70 @@ class TransfermarktDatasetProvider(Protocol):
     def season_rows(self, start_year: int) -> list[DatasetSeasonRow]:
         """League seasons outside the five big leagues (those come from FBref)."""
         ...
+
+
+@dataclass(frozen=True)
+class Fixture:
+    match_id: int
+    competition: str
+    season_label: str
+    kickoff: datetime
+    home_team: str
+    away_team: str
+    home_goals: int | None
+    away_goals: int | None
+    home_xg: float | None
+    away_xg: float | None
+
+    @property
+    def played(self) -> bool:
+        return self.home_goals is not None and self.away_goals is not None
+
+
+@dataclass(frozen=True)
+class TeamMatch:
+    """A played match from one team's side, with Understat's team metrics."""
+
+    match_id: int
+    competition: str
+    season_label: str
+    played_on: date
+    team: str
+    opponent: str
+    home: bool
+    goals_for: int
+    goals_against: int
+    xg_for: float
+    xg_against: float
+    npxg_for: float
+    npxg_against: float
+    # Passes allowed per defensive action: lower = more intense pressing.
+    ppda: float | None
+    ppda_allowed: float | None
+    deep: int
+    deep_allowed: int
+    xpts: float
+    result: str
+
+
+class TeamDataProvider(Protocol):
+    def get_team_season(
+        self, start_year: int
+    ) -> tuple[list[Fixture], list[TeamMatch]]: ...
+
+
+class TeamRepository(Protocol):
+    def save_team_season(
+        self, fixtures: list[Fixture], team_matches: list[TeamMatch]
+    ) -> None: ...
+
+    def list_team_matches(
+        self, season_labels: list[str], competition: str | None = None
+    ) -> list[TeamMatch]: ...
+
+    def list_fixtures(
+        self,
+        competition: str | None = None,
+        start: datetime | None = None,
+        end: datetime | None = None,
+    ) -> list[Fixture]: ...

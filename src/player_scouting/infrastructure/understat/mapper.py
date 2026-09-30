@@ -3,7 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 
 from player_scouting.application.player_matching import ExternalPlayer
-from player_scouting.application.ports import AdvancedSeasonRow, MatchRef
+from player_scouting.application.ports import (
+    AdvancedSeasonRow,
+    Fixture,
+    MatchRef,
+    TeamMatch,
+)
 from player_scouting.domain.shots import Shot
 from player_scouting.domain.statistics import AdvancedStatistics
 
@@ -59,3 +64,78 @@ def to_shot(raw: dict) -> Shot:
         home=raw["h_a"] == "h",
         assisted_by=raw.get("player_assisted") or None,
     )
+
+
+def _kickoff(raw: dict) -> datetime:
+    return datetime.strptime(raw["datetime"], "%Y-%m-%d %H:%M:%S")
+
+
+def _optional_int(value: object) -> int | None:
+    return None if value is None else int(str(value))
+
+
+def _optional_float(value: object) -> float | None:
+    return None if value is None else float(str(value))
+
+
+def to_fixture(raw: dict, competition: str, season_label: str) -> Fixture:
+    played = bool(raw.get("isResult"))
+    return Fixture(
+        match_id=int(raw["id"]),
+        competition=competition,
+        season_label=season_label,
+        kickoff=_kickoff(raw),
+        home_team=raw["h"]["title"],
+        away_team=raw["a"]["title"],
+        home_goals=_optional_int(raw["goals"]["h"]) if played else None,
+        away_goals=_optional_int(raw["goals"]["a"]) if played else None,
+        home_xg=_optional_float(raw["xG"]["h"]) if played else None,
+        away_xg=_optional_float(raw["xG"]["a"]) if played else None,
+    )
+
+
+def _ratio(pair: dict) -> float | None:
+    return pair["att"] / pair["def"] if pair.get("def") else None
+
+
+def to_team_matches(
+    league_data: dict, competition: str, season_label: str
+) -> list[TeamMatch]:
+    """Team history rows carry no match id: find it by kick-off, team and venue."""
+    fixtures = {}
+    for raw in league_data.get("dates", []):
+        if raw.get("isResult"):
+            fixtures[(raw["datetime"], raw["h"]["title"], "h")] = raw
+            fixtures[(raw["datetime"], raw["a"]["title"], "a")] = raw
+    matches = []
+    for team in league_data.get("teams", {}).values():
+        for row in team["history"]:
+            fixture = fixtures.get((row["date"], team["title"], row["h_a"]))
+            if fixture is None:
+                continue
+            home = row["h_a"] == "h"
+            opponent = fixture["a" if home else "h"]["title"]
+            matches.append(
+                TeamMatch(
+                    match_id=int(fixture["id"]),
+                    competition=competition,
+                    season_label=season_label,
+                    played_on=_kickoff(fixture).date(),
+                    team=team["title"],
+                    opponent=opponent,
+                    home=home,
+                    goals_for=int(row["scored"]),
+                    goals_against=int(row["missed"]),
+                    xg_for=float(row["xG"]),
+                    xg_against=float(row["xGA"]),
+                    npxg_for=float(row["npxG"]),
+                    npxg_against=float(row["npxGA"]),
+                    ppda=_ratio(row["ppda"]),
+                    ppda_allowed=_ratio(row["ppda_allowed"]),
+                    deep=int(row["deep"]),
+                    deep_allowed=int(row["deep_allowed"]),
+                    xpts=float(row["xpts"]),
+                    result=row["result"],
+                )
+            )
+    return matches
