@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 
 from player_scouting.application.exceptions import PlayerNotFoundError
 from player_scouting.application.ports import MarketValueHistoryResult
+from player_scouting.application.use_cases.track_record import (
+    SnapshotPredictionsUseCase,
+)
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.presentation.api.dependencies import (
     EnqueueLeagueIngestionUseCaseDep,
@@ -23,10 +27,13 @@ from player_scouting.presentation.api.dependencies import (
     IngestTeamSeasonUseCaseDep,
     LeagueIngestionJobRepositoryDep,
     LeagueSearchProviderDep,
+    MatchStatsRepositoryDep,
     MergeDuplicatePlayersUseCaseDep,
     PlayerRepositoryDep,
+    PredictionLogDep,
     ProcessLeagueIngestionBatchUseCaseDep,
     RecordEnrichmentUseCaseDep,
+    TeamRepositoryDep,
 )
 from player_scouting.presentation.api.schemas import (
     EnrichmentIn,
@@ -135,6 +142,22 @@ def ingest_understat_teams(
     return TeamSeasonSummaryOut(
         fixtures=summary.fixtures, team_matches=summary.team_matches
     )
+
+
+# Replaced in tests: forecasts are logged relative to "now".
+_now = datetime.now
+
+
+@router.post("/predictions/snapshot")
+def snapshot_predictions(
+    teams: TeamRepositoryDep,
+    stats: MatchStatsRepositoryDep,
+    log: PredictionLogDep,
+    days: Annotated[int, Query(ge=1, le=90)] = 7,
+) -> dict[str, int]:
+    """Log the forecasts of the coming days before kickoff (the track record)."""
+    saved = SnapshotPredictionsUseCase(teams, stats, log, now=_now).execute(days)
+    return {"saved": saved}
 
 
 @router.post("/football-data/seasons/{start_year}")

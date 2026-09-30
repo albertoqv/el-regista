@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import time
+from dataclasses import asdict
 from datetime import date
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
@@ -23,10 +24,15 @@ from player_scouting.application.use_cases.player_markets import (
     PlayerMarketsBacktestUseCase,
     PlayerMarketsUseCase,
 )
+from player_scouting.application.use_cases.track_record import (
+    TrackRecord,
+    TrackRecordUseCase,
+)
 from player_scouting.domain.counts import StatPrediction
 from player_scouting.presentation.api.dependencies import (
     MatchStatsRepositoryDep,
     PlayerRepositoryDep,
+    PredictionLogDep,
     ShotRepositoryDep,
     TeamRepositoryDep,
 )
@@ -39,6 +45,20 @@ _players_cache: dict[tuple, tuple[float, PlayerMarketsBacktest]] = {}
 _benchmark_cache: dict[tuple, tuple[float, MarketBenchmark]] = {}
 HIGHLIGHTS_CACHE_SECONDS = 600
 _highlights_cache: dict[int, tuple[float, Highlights]] = {}
+TRACK_RECORD_CACHE_SECONDS = 600
+_track_record_cache: dict[str, tuple[float, TrackRecord]] = {}
+
+
+@router.get("/track-record")
+def track_record(
+    teams: TeamRepositoryDep, log: PredictionLogDep, season: str
+) -> dict[str, Any]:
+    """Forecasts logged before kickoff, scored with the real results."""
+    cached = _track_record_cache.get(season)
+    if cached is None or time.monotonic() - cached[0] > TRACK_RECORD_CACHE_SECONDS:
+        cached = (time.monotonic(), TrackRecordUseCase(teams, log).execute(season))
+        _track_record_cache[season] = cached
+    return asdict(cached[1])
 
 
 class PickOut(BaseModel):

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import time
+from dataclasses import asdict
 from datetime import date
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, HTTPException, Query
 
@@ -12,7 +14,12 @@ from player_scouting.application.use_cases.explore_players import (
     ExploreSort,
 )
 from player_scouting.application.use_cases.find_twins import TwinFilters
+from player_scouting.application.use_cases.hot_players import (
+    HotMetric,
+    HotPlayersUseCase,
+)
 from player_scouting.domain.season import Season
+from player_scouting.infrastructure.understat.provider import LEAGUES
 from player_scouting.presentation.api.dependencies import (
     ComparePlayersUseCaseDep,
     ExplorePlayersUseCaseDep,
@@ -104,6 +111,56 @@ def explore_players(
         )
     )
     return [explore_row_out_from_domain(row) for row in rows]
+
+
+# Replaced in tests: "the last N days" are counted back from today.
+_today = date.today
+HOT_CACHE_SECONDS = 600
+_hot_cache: dict[tuple[Any, ...], tuple[float, dict[str, Any]]] = {}
+
+
+@router.get("/hot")
+def hot_players(
+    shots: ShotRepositoryDep,
+    players: PlayerRepositoryDep,
+    season: str | None = None,
+    competition: str | None = None,
+    metric: HotMetric = "goals_assists",
+    days: Annotated[int, Query(ge=7, le=90)] = 30,
+    limit: Annotated[int, Query(ge=1, le=50)] = 20,
+) -> dict[str, Any]:
+    """Who is on fire lately (Understat lineups, the five big leagues)."""
+    key = (season, competition, metric, days, limit, _today())
+    cached = _hot_cache.get(key)
+    if cached and time.monotonic() - cached[0] < HOT_CACHE_SECONDS:
+        return cached[1]
+    board = HotPlayersUseCase(shots, list(LEAGUES.values()), _today).execute(
+        season or _current_season_label(),
+        days=days,
+        metric=metric,
+        limit=limit,
+        competition=competition,
+    )
+    known = players.find_by_understat_ids(
+        [p.understat_player_id for p in board.players]
+    )
+    rows = []
+    for hot in board.players:
+        row = asdict(hot)
+        player = known.get(hot.understat_player_id)
+        row["player_id"] = player.player_id if player else None
+        row["photo_url"] = player.photo_url if player else None
+        if player:
+            row["name"] = player.name
+        rows.append(row)
+    body = {
+        "window_start": board.window_start.isoformat(),
+        "window_end": board.window_end.isoformat(),
+        "metric": board.metric,
+        "players": rows,
+    }
+    _hot_cache[key] = (time.monotonic(), body)
+    return body
 
 
 @router.get("/{player_id}", response_model=PlayerOut)

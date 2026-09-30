@@ -11,7 +11,11 @@ from sqlalchemy.orm import Session
 from player_scouting.application.league_ingestion_job import (
     LeagueIngestionJobRepository,
 )
-from player_scouting.application.ports import HostingUsageProvider, VisitRepository
+from player_scouting.application.ports import (
+    HostingUsageProvider,
+    PredictionLogRepository,
+    VisitRepository,
+)
 from player_scouting.application.use_cases.compare_players import ComparePlayersUseCase
 from player_scouting.application.use_cases.enqueue_league_ingestion import (
     EnqueueLeagueIngestionUseCase,
@@ -101,6 +105,9 @@ from player_scouting.infrastructure.persistence.sqlalchemy_match_stats_repositor
 )
 from player_scouting.infrastructure.persistence.sqlalchemy_player_repository import (
     SqlAlchemyPlayerRepository,
+)
+from player_scouting.infrastructure.persistence.sqlalchemy_prediction_log import (
+    SqlAlchemyPredictionLog,
 )
 from player_scouting.infrastructure.persistence.sqlalchemy_shot_repository import (
     SqlAlchemyShotRepository,
@@ -605,3 +612,10 @@ def get_hosting_usage_provider(
     return RailwayUsageProvider(
         httpx.Client(), settings.railway_api_token, settings.railway_workspace_id
     )
+
+
+def get_prediction_log(session: SessionDep) -> PredictionLogRepository:
+    return SqlAlchemyPredictionLog(session)
+
+
+PredictionLogDep = Annotated[PredictionLogRepository, Depends(get_prediction_log)]
