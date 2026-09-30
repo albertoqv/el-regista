@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 import httpx
 import pytest
@@ -67,7 +67,7 @@ def test_reads_the_bill_like_the_railway_cli():
     usage = _provider(CONTEXT, seen).current_usage()
 
     assert usage.current_dollars == pytest.approx(0.1377, abs=1e-4)
-    assert usage.period_start == datetime(2026, 9, 29, 11, 22, 57, 647000, timezone.utc)
+    assert usage.period_start == datetime(2026, 9, 29, 11, 22, 57, 647000, UTC)
     # The CLI printed 0.1616 for this same data.
     assert usage.estimated_dollars == pytest.approx(0.1616, abs=1e-3)
     assert usage.line_items["Memoria"] == pytest.approx(0.1269, abs=1e-4)

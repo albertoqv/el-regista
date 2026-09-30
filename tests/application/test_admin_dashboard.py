@@ -141,4 +141,3 @@ def test_dashboard_includes_hosting_costs_and_survives_their_failure():
     assert ok.hosting == usage
     assert broken.hosting is None
     assert broken.hosting_error == "401"
-
