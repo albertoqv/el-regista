@@ -1,9 +1,14 @@
 "use client";
 
-import { animate, motion, useInView, useReducedMotion } from "motion/react";
+import { animate, useInView, useReducedMotion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-/** Fades and lifts its children into place when they scroll into view. */
+/**
+ * Fades and lifts its children into place. Pure CSS (see `.reveal` in
+ * globals.css): the content is always in the HTML and visible even if
+ * JavaScript is slow or fails; browsers with scroll-driven animations reveal
+ * it while scrolling, the rest fade it in on load.
+ */
 export function Reveal({
   children,
   delay = 0,
@@ -14,15 +19,12 @@ export function Reveal({
   className?: string;
 }) {
   return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
+    <div
+      className={`reveal ${className ?? ""}`}
+      style={delay ? { animationDelay: `${delay}s` } : undefined}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 

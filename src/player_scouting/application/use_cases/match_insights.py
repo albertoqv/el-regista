@@ -428,7 +428,7 @@ class Highlights:
 
 # The next round: from the first upcoming kick-off, a long weekend.
 ROUND_DAYS = 4
-CATEGORY_LINES = {"corners": (8.5, 9.5, 10.5), "yellows": (3.5, 4.5, 5.5)}
+CATEGORY_LINES = {"corners": (8.5, 9.5), "yellows": (3.5, 4.5)}
 STAT_WORDS = {"corners": "córners", "yellows": "amarillas"}
 
 
@@ -492,10 +492,10 @@ class HighlightsUseCase:
         picks = [
             Pick(fixture, "result", f"Gana {home}", p_home),
             Pick(fixture, "result", f"Gana {away}", p_away),
-            Pick(fixture, "result", f"{home} no pierde", p_home + p_draw),
-            Pick(fixture, "result", f"{away} no pierde", p_away + p_draw),
         ]
-        for line in (1.5, 2.5, 3.5):
+        # Headline markets only: "over 1.5 goals" or "fewer than 6.5 cards" are
+        # almost always likely and tell nobody anything.
+        for line in (2.5,):
             over = insights.goals_over[line]
             picks += [
                 Pick(fixture, "goals", f"Más de {_number(line)} goles", over),
