@@ -13,6 +13,7 @@ from player_scouting.application.ports import (
     SeasonRecord,
     ShotLeader,
 )
+from player_scouting.application.use_cases.explore_players import ExploreRow
 from player_scouting.application.use_cases.find_similar_players import (
     SimilarPlayerMatch,
 )
@@ -167,6 +168,12 @@ class ShotIngestionSummaryOut(BaseModel):
     matches: int
     shots: int
     remaining: int
+
+
+class ExploreRowOut(SeasonLeaderOut):
+    market_value_eur: int | None
+    age: int | None
+    sort_value: float
 
 
 class ComparisonOut(BaseModel):
@@ -436,4 +443,13 @@ def player_shot_out_from_domain(entry: PlayerShot) -> PlayerShotOut:
         team=entry.team,
         opponent=entry.opponent,
         played_on=entry.played_on,
+    )
+
+
+def explore_row_out_from_domain(row: ExploreRow) -> ExploreRowOut:
+    return ExploreRowOut(
+        **season_leader_out_from_domain(row.record).model_dump(),
+        market_value_eur=row.market_value.amount_eur if row.market_value else None,
+        age=row.age,
+        sort_value=round(row.sort_value, 2),
     )

@@ -1,15 +1,21 @@
 from __future__ import annotations
 
+from datetime import date
 from typing import Annotated
 
 from fastapi import APIRouter, HTTPException, Query
 
 from player_scouting.application.exceptions import PlayerNotFoundError
 from player_scouting.application.ports import PlayerSort
+from player_scouting.application.use_cases.explore_players import (
+    ExploreFilters,
+    ExploreSort,
+)
 from player_scouting.application.use_cases.find_twins import TwinFilters
 from player_scouting.domain.season import Season
 from player_scouting.presentation.api.dependencies import (
     ComparePlayersUseCaseDep,
+    ExplorePlayersUseCaseDep,
     FindSimilarPlayersUseCaseDep,
     FindTwinsUseCaseDep,
     GetPlayerPercentilesUseCaseDep,
@@ -18,6 +24,7 @@ from player_scouting.presentation.api.dependencies import (
 )
 from player_scouting.presentation.api.schemas import (
     ComparisonOut,
+    ExploreRowOut,
     MarketValueHistoryOut,
     PercentileReportOut,
     PlayerOut,
@@ -26,6 +33,7 @@ from player_scouting.presentation.api.schemas import (
     SimilarPlayerMatchOut,
     TwinReportOut,
     comparison_out_from_domain,
+    explore_row_out_from_domain,
     market_value_history_out_from_domain,
     percentile_report_out_from_domain,
     player_out_from_domain,
@@ -57,6 +65,47 @@ def list_players(
         )
         for summary in repository.search_player_summaries(q, sort, limit)
     ]
+
+
+def _current_season_label() -> str:
+    """The season being played: it starts in July."""
+    today = date.today()
+    return str(today.year if today.month >= 7 else today.year - 1)
+
+
+@router.get("/explore", response_model=list[ExploreRowOut])
+def explore_players(
+    use_case: ExplorePlayersUseCaseDep,
+    season: str | None = None,
+        date.today().year if date.today().month >= 7 else date.today().year - 1
+    ),
+    competition: str | None = None,
+    position: str | None = None,
+    min_age: Annotated[int | None, Query(ge=14, le=50)] = None,
+    max_age: Annotated[int | None, Query(ge=14, le=50)] = None,
+    max_value: Annotated[int | None, Query(ge=0)] = None,
+    min_minutes: Annotated[int, Query(ge=0)] = 0,
+    sort: ExploreSort = "goals",
+    per_90: bool = False,
+    ascending: bool = False,
+    limit: Annotated[int, Query(ge=1, le=200)] = 50,
+) -> list[ExploreRowOut]:
+    rows = use_case.execute(
+        ExploreFilters(
+            season_label=season or _current_season_label(),
+            competition=competition,
+            position=position,
+            min_age=min_age,
+            max_age=max_age,
+            max_value=max_value,
+            min_minutes=min_minutes,
+            sort=sort,
+            per_90=per_90,
+            ascending=ascending,
+            limit=limit,
+        )
+    )
+    return [explore_row_out_from_domain(row) for row in rows]
 
 
 @router.get("/{player_id}", response_model=PlayerOut)

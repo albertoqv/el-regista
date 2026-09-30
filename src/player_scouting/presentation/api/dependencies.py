@@ -21,6 +21,9 @@ from player_scouting.application.use_cases.enrich_pending_players import (
 from player_scouting.application.use_cases.enrich_player_market_value import (
     EnrichPlayerMarketValueUseCase,
 )
+from player_scouting.application.use_cases.explore_players import (
+    ExplorePlayersUseCase,
+)
 from player_scouting.application.use_cases.find_similar_players import (
     FindSimilarPlayersUseCase,
 )
@@ -446,3 +449,14 @@ def get_find_twins_use_case(
 
 
 FindTwinsUseCaseDep = Annotated[FindTwinsUseCase, Depends(get_find_twins_use_case)]
+
+
+def get_explore_players_use_case(
+    repository: PlayerRepositoryDep,
+) -> ExplorePlayersUseCase:
+    return ExplorePlayersUseCase(repository)
+
+
+ExplorePlayersUseCaseDep = Annotated[
+    ExplorePlayersUseCase, Depends(get_explore_players_use_case)
+]
