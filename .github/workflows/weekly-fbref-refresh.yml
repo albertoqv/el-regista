@@ -4,6 +4,8 @@ on:
   schedule:
     # The source Kaggle dataset is regenerated every Monday.
     - cron: "0 6 * * 2"
+    # Friday: fresh results and forecasts before the weekend fixtures.
+    - cron: "0 6 * * 5"
   workflow_dispatch:
     inputs:
       start_year:
@@ -53,6 +55,10 @@ jobs:
       - name: Merge players FBref spelled in two ways
         run: |
           curl --fail-with-body -sS --max-time 600 -X POST             "$API_BASE_URL/ingestion/maintenance/merge-duplicates"             -H "X-Ingestion-Key: $INGESTION_API_KEY"
+
+      - name: Calendar, results and team metrics (Understat)
+        run: |
+          curl --fail-with-body -sS --max-time 600 -X POST             "$API_BASE_URL/ingestion/understat/teams/$START_YEAR"             -H "X-Ingestion-Key: $INGESTION_API_KEY"
 
       - name: Shots of the new matches (Understat)
         run: |

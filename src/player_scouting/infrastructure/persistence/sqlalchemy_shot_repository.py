@@ -253,6 +253,32 @@ class SqlAlchemyShotRepository:
             ) in self._session.execute(statement)
         }
 
+    def list_team_players(self, season_label: str, team: str) -> list[ShotLeader]:
+        goals = _count(_goal)
+        xg = func.sum(S.xg)
+        statement = (
+            select(PlayerModel, M.competition, goals, xg, func.count(S.shot_id))
+            .select_from(S)
+            .join(M, M.match_id == S.match_id)
+            .join(PlayerModel, PlayerModel.understat_id == S.understat_player_id)
+            .where(M.season_label == season_label, _team == team)
+            .group_by(PlayerModel.player_id, M.competition)
+            .order_by(goals.desc(), xg.desc(), PlayerModel.name)
+        )
+        return [
+            ShotLeader(
+                player=_player(model),
+                competition=league,
+                team=team,
+                value=float(expected or 0),
+                goals=int(scored or 0),
+                shots=int(shots or 0),
+            )
+            for model, league, scored, expected, shots in self._session.execute(
+                statement
+            )
+        ]
+
     def _players_by_name(self, names: set[str]) -> dict[str, Player]:
         """Understat-linked players with exactly that name; ambiguous ones left out."""
         found: dict[str, list[PlayerModel]] = {}

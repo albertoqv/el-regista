@@ -327,6 +327,10 @@ class ShotRepository(Protocol):
         self, season_labels: list[str]
     ) -> dict[tuple[int, Season], ShotTotals]: ...
 
+    def list_team_players(self, season_label: str, team: str) -> list[ShotLeader]:
+        """The team's shooters, by goals then expected goals (value = xG)."""
+        ...
+
 
 @dataclass(frozen=True)
 class DatasetProfile:

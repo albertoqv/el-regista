@@ -55,6 +55,9 @@ from player_scouting.application.use_cases.process_league_ingestion_batch import
 from player_scouting.application.use_cases.record_enrichment import (
     RecordEnrichmentUseCase,
 )
+from player_scouting.application.use_cases.team_analytics import (
+    IngestTeamSeasonUseCase,
+)
 from player_scouting.application.use_cases.transfermarkt_dataset import (
     EnrichFromDatasetUseCase,
     IngestDatasetLeaguesUseCase,
@@ -89,6 +92,9 @@ from player_scouting.infrastructure.persistence.sqlalchemy_player_repository imp
 from player_scouting.infrastructure.persistence.sqlalchemy_shot_repository import (
     SqlAlchemyShotRepository,
 )
+from player_scouting.infrastructure.persistence.sqlalchemy_team_repository import (
+    SqlAlchemyTeamRepository,
+)
 from player_scouting.infrastructure.statsbomb.client import StatsBombClient
 from player_scouting.infrastructure.statsbomb.competition_statistics_provider import (
     StatsBombCompetitionStatisticsProvider,
@@ -109,6 +115,9 @@ from player_scouting.infrastructure.understat.provider import (
 )
 from player_scouting.infrastructure.understat.shot_provider import (
     UnderstatShotProvider,
+)
+from player_scouting.infrastructure.understat.team_provider import (
+    UnderstatTeamProvider,
 )
 
 SessionDep = Annotated[Session, Depends(get_session)]
@@ -498,4 +507,27 @@ EnrichFromDatasetUseCaseDep = Annotated[
 ]
 IngestDatasetLeaguesUseCaseDep = Annotated[
     IngestDatasetLeaguesUseCase, Depends(get_ingest_dataset_leagues_use_case)
+]
+
+
+def get_team_repository(session: SessionDep) -> SqlAlchemyTeamRepository:
+    return SqlAlchemyTeamRepository(session)
+
+
+TeamRepositoryDep = Annotated[SqlAlchemyTeamRepository, Depends(get_team_repository)]
+
+
+def get_team_data_provider() -> UnderstatTeamProvider:
+    return UnderstatTeamProvider(UnderstatClient(httpx.Client()))
+
+
+def get_ingest_team_season_use_case(
+    provider: Annotated[UnderstatTeamProvider, Depends(get_team_data_provider)],
+    repository: TeamRepositoryDep,
+) -> IngestTeamSeasonUseCase:
+    return IngestTeamSeasonUseCase(provider, repository)
+
+
+IngestTeamSeasonUseCaseDep = Annotated[
+    IngestTeamSeasonUseCase, Depends(get_ingest_team_season_use_case)
 ]

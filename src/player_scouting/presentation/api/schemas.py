@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from pydantic import BaseModel
 
@@ -12,6 +12,7 @@ from player_scouting.application.ports import (
     PlayerShot,
     SeasonRecord,
     ShotLeader,
+    TeamMatch,
 )
 from player_scouting.application.use_cases.explore_players import ExploreRow
 from player_scouting.application.use_cases.find_similar_players import (
@@ -23,6 +24,11 @@ from player_scouting.application.use_cases.get_player_percentiles import (
 )
 from player_scouting.application.use_cases.process_league_ingestion_batch import (
     LeagueIngestionBatchSummary,
+)
+from player_scouting.application.use_cases.team_analytics import (
+    BacktestReport,
+    FixtureForecast,
+    TableRow,
 )
 from player_scouting.domain.comparison import Comparison
 from player_scouting.domain.entities import Player
@@ -176,6 +182,92 @@ class ExploreRowOut(SeasonLeaderOut):
     market_value_eur: int | None
     age: int | None
     sort_value: float
+
+
+class TableRowOut(BaseModel):
+    position: int
+    team: str
+    competition: str
+    played: int
+    wins: int
+    draws: int
+    losses: int
+    goals_for: int
+    goals_against: int
+    points: int
+    xg_for: float
+    xg_against: float
+    npxg_difference: float
+    xpts: float
+    ppda: float | None
+    ppda_allowed: float | None
+    deep: int
+    deep_allowed: int
+    form: list[str]
+
+
+class TeamMatchOut(BaseModel):
+    match_id: int
+    competition: str
+    season_label: str
+    played_on: date
+    team: str
+    opponent: str
+    home: bool
+    goals_for: int
+    goals_against: int
+    xg_for: float
+    xg_against: float
+    ppda: float | None
+    deep: int
+    deep_allowed: int
+    xpts: float
+    result: str
+
+
+class ScorelineOut(BaseModel):
+    home: int
+    away: int
+    probability: float
+
+
+class FixtureForecastOut(BaseModel):
+    match_id: int
+    competition: str
+    kickoff: datetime
+    home_team: str
+    away_team: str
+    home_win: float
+    draw: float
+    away_win: float
+    expected_home: float
+    expected_away: float
+    scorelines: list[ScorelineOut]
+    over_2_5: float
+    both_teams_score: float
+    home_form: list[str]
+    away_form: list[str]
+
+
+class CalibrationBucketOut(BaseModel):
+    predicted: float
+    observed: float
+    count: int
+
+
+class BacktestReportOut(BaseModel):
+    matches: int
+    accuracy: float
+    brier: float
+    log_loss: float
+    baseline_accuracy: float
+    baseline_brier: float
+    calibration: list[CalibrationBucketOut]
+
+
+class TeamSeasonSummaryOut(BaseModel):
+    fixtures: int
+    team_matches: int
 
 
 class ComparisonOut(BaseModel):
@@ -456,4 +548,94 @@ def explore_row_out_from_domain(row: ExploreRow) -> ExploreRowOut:
         market_value_eur=row.market_value.amount_eur if row.market_value else None,
         age=row.age,
         sort_value=round(row.sort_value, 2),
+    )
+
+
+def table_row_out_from_domain(row: TableRow, position: int) -> TableRowOut:
+    return TableRowOut(
+        position=position,
+        team=row.team,
+        competition=row.competition,
+        played=row.played,
+        wins=row.wins,
+        draws=row.draws,
+        losses=row.losses,
+        goals_for=row.goals_for,
+        goals_against=row.goals_against,
+        points=row.points,
+        xg_for=round(row.xg_for, 2),
+        xg_against=round(row.xg_against, 2),
+        npxg_difference=round(row.npxg_difference, 2),
+        xpts=round(row.xpts, 2),
+        ppda=round(row.ppda, 2) if row.ppda is not None else None,
+        ppda_allowed=round(row.ppda_allowed, 2)
+        if row.ppda_allowed is not None
+        else None,
+        deep=row.deep,
+        deep_allowed=row.deep_allowed,
+        form=row.form,
+    )
+
+
+def team_match_out_from_domain(match: TeamMatch) -> TeamMatchOut:
+    return TeamMatchOut(
+        match_id=match.match_id,
+        competition=match.competition,
+        season_label=match.season_label,
+        played_on=match.played_on,
+        team=match.team,
+        opponent=match.opponent,
+        home=match.home,
+        goals_for=match.goals_for,
+        goals_against=match.goals_against,
+        xg_for=round(match.xg_for, 2),
+        xg_against=round(match.xg_against, 2),
+        ppda=round(match.ppda, 2) if match.ppda is not None else None,
+        deep=match.deep,
+        deep_allowed=match.deep_allowed,
+        xpts=round(match.xpts, 2),
+        result=match.result,
+    )
+
+
+def fixture_forecast_out_from_domain(forecast: FixtureForecast) -> FixtureForecastOut:
+    fixture, prediction = forecast.fixture, forecast.prediction
+    return FixtureForecastOut(
+        match_id=fixture.match_id,
+        competition=fixture.competition,
+        kickoff=fixture.kickoff,
+        home_team=fixture.home_team,
+        away_team=fixture.away_team,
+        home_win=round(prediction.home_win, 4),
+        draw=round(prediction.draw, 4),
+        away_win=round(prediction.away_win, 4),
+        expected_home=round(prediction.expected_home, 2),
+        expected_away=round(prediction.expected_away, 2),
+        scorelines=[
+            ScorelineOut(home=home, away=away, probability=round(probability, 4))
+            for home, away, probability in prediction.scorelines
+        ],
+        over_2_5=round(prediction.over_2_5, 4),
+        both_teams_score=round(prediction.both_teams_score, 4),
+        home_form=forecast.home_form,
+        away_form=forecast.away_form,
+    )
+
+
+def backtest_report_out_from_domain(report: BacktestReport) -> BacktestReportOut:
+    return BacktestReportOut(
+        matches=report.matches,
+        accuracy=round(report.accuracy, 4),
+        brier=round(report.brier, 4),
+        log_loss=round(report.log_loss, 4),
+        baseline_accuracy=round(report.baseline_accuracy, 4),
+        baseline_brier=round(report.baseline_brier, 4),
+        calibration=[
+            CalibrationBucketOut(
+                predicted=round(bucket.predicted, 4),
+                observed=round(bucket.observed, 4),
+                count=bucket.count,
+            )
+            for bucket in report.calibration
+        ],
     )

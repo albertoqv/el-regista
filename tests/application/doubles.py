@@ -391,6 +391,9 @@ class InMemoryShotRepository:
     def shots_of(self, match_id: int) -> list[Shot]:
         return self._shots[match_id]
 
+    def list_team_players(self, season_label: str, team: str) -> list:
+        return []
+
     def set_totals(self, totals: dict[tuple[int, Season], ShotTotals]) -> None:
         self._totals = totals
 
