@@ -512,3 +512,13 @@ def test_stores_height_detailed_position_and_transfermarkt_id(session):
 
     assert (player.height_cm, player.detailed_position) == (183, "Right Winger")
     assert repository.transfermarkt_index() == {937958: 1}
+
+
+def test_finds_players_by_their_understat_ids(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(1, "Lamine Yamal", "Forward", None, birth_year=2007))
+    repository.set_understat_id(1, 11500)
+
+    found = repository.find_by_understat_ids([11500, 999])
+
+    assert list(found) == [11500] and found[11500].name == "Lamine Yamal"

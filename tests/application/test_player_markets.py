@@ -1,12 +1,11 @@
 from datetime import date
 
+from player_scouting.application.ports import MatchRef, RosterEntry
 from player_scouting.application.use_cases.player_markets import (
     IngestRostersUseCase,
     PlayerMarketsBacktestUseCase,
     PlayerMarketsUseCase,
 )
-
-from player_scouting.application.ports import MatchRef, RosterEntry
 from tests.application.doubles import InMemoryShotRepository
 from tests.application.test_team_analytics import _repository as team_repository
 
