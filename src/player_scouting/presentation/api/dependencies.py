@@ -46,6 +46,9 @@ from player_scouting.application.use_cases.ingest_season_dataset import (
 from player_scouting.application.use_cases.ingest_season_shots import (
     IngestSeasonShotsUseCase,
 )
+from player_scouting.application.use_cases.match_insights import (
+    IngestMatchStatsUseCase,
+)
 from player_scouting.application.use_cases.merge_duplicate_players import (
     MergeDuplicatePlayersUseCase,
 )
@@ -82,9 +85,16 @@ from player_scouting.infrastructure.fbref_kaggle.client import FbrefKaggleClient
 from player_scouting.infrastructure.fbref_kaggle.provider import (
     FbrefKaggleSeasonProvider,
 )
+from player_scouting.infrastructure.football_data.client import FootballDataClient
+from player_scouting.infrastructure.football_data.provider import (
+    FootballDataProvider,
+)
 from player_scouting.infrastructure.persistence.database import get_session
 from player_scouting.infrastructure.persistence.sqlalchemy_league_ingestion_job_repository import (  # noqa: E501
     SqlAlchemyLeagueIngestionJobRepository,
+)
+from player_scouting.infrastructure.persistence.sqlalchemy_match_stats_repository import (  # noqa: E501
+    SqlAlchemyMatchStatsRepository,
 )
 from player_scouting.infrastructure.persistence.sqlalchemy_player_repository import (
     SqlAlchemyPlayerRepository,
@@ -530,4 +540,29 @@ def get_ingest_team_season_use_case(
 
 IngestTeamSeasonUseCaseDep = Annotated[
     IngestTeamSeasonUseCase, Depends(get_ingest_team_season_use_case)
+]
+
+
+def get_match_stats_repository(session: SessionDep) -> SqlAlchemyMatchStatsRepository:
+    return SqlAlchemyMatchStatsRepository(session)
+
+
+MatchStatsRepositoryDep = Annotated[
+    SqlAlchemyMatchStatsRepository, Depends(get_match_stats_repository)
+]
+
+
+def get_match_stats_provider() -> FootballDataProvider:
+    return FootballDataProvider(FootballDataClient(httpx.Client()))
+
+
+def get_ingest_match_stats_use_case(
+    provider: Annotated[FootballDataProvider, Depends(get_match_stats_provider)],
+    repository: MatchStatsRepositoryDep,
+) -> IngestMatchStatsUseCase:
+    return IngestMatchStatsUseCase(provider, repository)
+
+
+IngestMatchStatsUseCaseDep = Annotated[
+    IngestMatchStatsUseCase, Depends(get_ingest_match_stats_use_case)
 ]

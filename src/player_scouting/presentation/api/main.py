@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from player_scouting.presentation.api.routers import (
     ingestion,
+    insights,
     players,
     seasons,
     teams,
@@ -23,6 +24,7 @@ def create_app() -> FastAPI:
     app.include_router(players.router)
     app.include_router(seasons.router)
     app.include_router(teams.teams_router)
+    app.include_router(insights.router)
     app.include_router(teams.predictions_router)
     app.include_router(ingestion.router)
     return app

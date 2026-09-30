@@ -49,7 +49,8 @@ def test_stats_backtest():
     body = (
         _client()
         .get(
-            "/predictions/stats-backtest?competition=La Liga&season=2026&minimum_history=2"
+            "/predictions/stats-backtest",
+            params={"competition": "La Liga", "season": "2026", "minimum_history": 2},
         )
         .json()
     )
