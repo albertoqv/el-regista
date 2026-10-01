@@ -39,16 +39,16 @@ function CalibrationChart({ backtest }: { backtest: Backtest }) {
           cx={scale(bucket.predicted)}
           cy={flip(bucket.observed)}
           r={round(3 + 7 * Math.sqrt(bucket.count / maxCount))}
-          fill="#f2c230"
+          fill="#9ccfea"
           fillOpacity="0.85"
         >
           <title>{`Dice ${Math.round(bucket.predicted * 100)}% → pasó ${Math.round(bucket.observed * 100)}% (${bucket.count} casos)`}</title>
         </circle>
       ))}
-      <text x={SIZE / 2} y={SIZE - 6} textAnchor="middle" className="fill-[#8b93a7] text-[10px]">
+      <text x={SIZE / 2} y={SIZE - 6} textAnchor="middle" className="fill-[#c7b3b0] text-xs">
         probabilidad que da el modelo
       </text>
-      <text x={10} y={SIZE / 2} textAnchor="middle" transform={`rotate(-90 10 ${SIZE / 2})`} className="fill-[#8b93a7] text-[10px]">
+      <text x={10} y={SIZE / 2} textAnchor="middle" transform={`rotate(-90 10 ${SIZE / 2})`} className="fill-[#c7b3b0] text-xs">
         frecuencia real
       </text>
     </svg>
@@ -80,7 +80,7 @@ export default async function HowItWorksPage() {
       <Reveal>
         <ScoutNote rotate={-3}>sin trucos ni cajas negras</ScoutNote>
         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
-          Cómo <Marker color="#f2c230">funciona</Marker>
+          Cómo <Marker color="#9ccfea">funciona</Marker>
         </h1>
         <p className="mt-2 text-muted">
           Todo lo que ves sale de datos públicos y de cálculos que puedes entender. Aquí está cada uno
@@ -297,7 +297,7 @@ export default async function HowItWorksPage() {
             </p>
             <table className="w-full min-w-[420px] text-sm">
               <thead>
-                <tr className="text-left text-[11px] uppercase tracking-[0.12em] text-muted">
+                <tr className="text-left text-xs text-muted">
                   <th className="py-1">Estadística</th>
                   <th className="text-right">Modelo</th>
                   <th className="text-right">Media de la liga</th>

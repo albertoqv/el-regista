@@ -130,7 +130,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
     <div className="flex flex-col gap-10">
       <section className="flex flex-col gap-5">
         <Reveal>
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-side-b">Cara a cara</p>
+          <p className="text-xs font-semibold text-side-b">Cara a cara</p>
           <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
             Enfrenta a <span className="text-side-a">dos</span> jugadores
           </h1>
@@ -181,8 +181,8 @@ export default async function ComparePage(props: PageProps<"/compare">) {
                 <RadarChart
                   axes={RADAR_METRICS}
                   series={[
-                    { name: content.playerA.name, color: "#7cc0ff", values: toValues(content.percentilesA) },
-                    { name: content.playerB.name, color: "#ff8a4c", values: toValues(content.percentilesB) },
+                    { name: content.playerA.name, color: "#9ccfea", values: toValues(content.percentilesA) },
+                    { name: content.playerB.name, color: "#f28c6b", values: toValues(content.percentilesB) },
                   ]}
                 />
                 <div className="flex flex-col items-center gap-2">
@@ -213,8 +213,8 @@ export default async function ComparePage(props: PageProps<"/compare">) {
             <Reveal>
               <MarketValueChart
                 series={[
-                  { name: content.playerA.name, color: "#7cc0ff", history: content.valueA.history },
-                  { name: content.playerB.name, color: "#ff8a4c", history: content.valueB.history },
+                  { name: content.playerA.name, color: "#9ccfea", history: content.valueA.history },
+                  { name: content.playerB.name, color: "#f28c6b", history: content.valueB.history },
                 ]}
               />
             </Reveal>

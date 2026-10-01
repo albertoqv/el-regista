@@ -1,21 +1,21 @@
 @import "tailwindcss";
 
-/* El Regista: green slate, chalk and a yellow card. Flat surfaces, no glass, no glow. */
+/* El Regista: claret, bone and sky blue, like an old football club. Flat, no glow. */
 :root {
-  --bg: #1f3b2d;
-  --bg-deep: #173024;
-  --surface: #213f30;
-  --surface-strong: #284a39;
-  --border: #36594a;
-  --border-strong: #4d7563;
-  --text: #f2efe6;
-  --muted: #b9c4b8;
-  --brand: #f2c230;
-  --brand-2: #9ed7b3;
-  --grass: #5fa37a;
-  --side-a: #7cc0ff;
-  --side-b: #ff8a4c;
-  --gold: #f2c230;
+  --bg: #26131a;
+  --bg-deep: #1d0e14;
+  --surface: #301920;
+  --surface-strong: #3b2029;
+  --border: #4c2c36;
+  --border-strong: #6a4350;
+  --text: #f3ebe3;
+  --muted: #c7b3b0;
+  --brand: #9ccfea;
+  --brand-2: #b9ddf0;
+  --grass: #8fcf9c;
+  --side-a: #9ccfea;
+  --side-b: #f28c6b;
+  --gold: #9ccfea;
 }
 
 @theme inline {
@@ -36,6 +36,11 @@
   --font-sans: var(--font-chivo);
   --font-display: var(--font-regista);
   --font-hand: var(--font-chivo);
+  /* Nothing tiny: small print is where a page starts to look machine-made. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.35;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.45;
 }
 
 html {
@@ -58,8 +63,8 @@ body {
 }
 
 ::selection {
-  background: rgba(242, 194, 48, 0.4);
-  color: #1f3b2d;
+  background: rgba(156, 207, 234, 0.45);
+  color: #26131a;
 }
 
 /* Cards: flat slate panels with a thin line (the old "glass" name is kept for markup). */
@@ -109,7 +114,7 @@ body {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(23, 48, 36, 0.35) 0%, rgba(23, 48, 36, 0.96) 100%);
+  background: linear-gradient(180deg, rgba(29, 14, 20, 0.35) 0%, rgba(29, 14, 20, 0.95) 100%);
 }
 
 /* A very slow push-in on the home photo: movement without the weight of a video. */
@@ -167,7 +172,7 @@ body {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(242, 239, 230, 0.06), transparent);
+  background: linear-gradient(90deg, transparent, rgba(243, 235, 227, 0.06), transparent);
   animation: shimmer 1.4s infinite;
 }
 

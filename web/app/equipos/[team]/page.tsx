@@ -49,8 +49,8 @@ function XgChart({ matches }: { matches: TeamMatch[] }) {
         const colour = match.result === "w" ? "#34d399" : match.result === "d" ? "#9ca3af" : "#fb7185";
         return (
           <g key={match.match_id}>
-            <rect x={round(x - bar / 2)} y={round(mid - scale(match.xg_for))} width={round(bar)} height={scale(match.xg_for)} rx="3" fill="#7cc0ff" />
-            <rect x={round(x - bar / 2)} y={mid} width={round(bar)} height={scale(match.xg_against)} rx="3" fill="#ff8a4c" opacity="0.85" />
+            <rect x={round(x - bar / 2)} y={round(mid - scale(match.xg_for))} width={round(bar)} height={scale(match.xg_for)} rx="3" fill="#9ccfea" />
+            <rect x={round(x - bar / 2)} y={mid} width={round(bar)} height={scale(match.xg_against)} rx="3" fill="#f28c6b" opacity="0.85" />
             <circle cx={x} cy={H - 6} r="3" fill={colour} />
             <title>{`vs ${match.opponent} · ${match.goals_for}-${match.goals_against} · xG ${match.xg_for.toFixed(2)}-${match.xg_against.toFixed(2)}`}</title>
           </g>

@@ -41,11 +41,11 @@ export function CompareVerdict({ playerA, playerB }: { playerA: Player; playerB:
   return (
     <section className="glass flex flex-col gap-5 rounded-lg p-6">
       <div className="text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted">Veredicto</p>
+        <p className="text-xs font-semibold text-muted">Veredicto</p>
         <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           {leader ? (
             <>
-              <span style={{ color: leader === playerA ? "#7cc0ff" : "#ff8a4c" }}>{leader.name}</span>{" "}
+              <span style={{ color: leader === playerA ? "#9ccfea" : "#f28c6b" }}>{leader.name}</span>{" "}
               gana en {Math.max(winsA.length, winsB.length)} de {metrics.length} métricas
             </>
           ) : (

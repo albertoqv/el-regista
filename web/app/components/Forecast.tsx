@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Forecast } from "@/lib/api";
-import { competitionColor } from "@/lib/format";
 
 const RESULT_LABEL: Record<string, string> = { w: "V", d: "E", l: "D" };
 const RESULT_COLOR: Record<string, string> = {
@@ -83,7 +82,6 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
     <article className="glass flex flex-col gap-4 rounded-lg p-5">
       <div className="flex items-center justify-between text-xs text-muted">
         <span className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: competitionColor(forecast.competition) }} />
           {forecast.competition}
         </span>
         <span>
@@ -101,7 +99,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
           <span className="whitespace-nowrap font-display text-xl font-bold tabular-nums">
             {forecast.expected_home.toFixed(1)} – {forecast.expected_away.toFixed(1)}
           </span>
-          <span className="text-[10px] uppercase tracking-wider text-muted">goles esperados</span>
+          <span className="text-xs text-muted">goles esperados</span>
         </div>
         <Link
           href={teamHref(forecast.away_team, forecast.competition)}
@@ -117,7 +115,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
       <ProbabilityBar home={forecast.home_win} draw={forecast.draw} away={forecast.away_win} />
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span className="font-hand text-lg text-[#f2c230]">{verdict(forecast)}</span>
+        <span className="font-hand text-lg text-[#9ccfea]">{verdict(forecast)}</span>
         <span className="flex flex-wrap gap-1.5">
           {forecast.scorelines.slice(0, 3).map((score) => (
             <span key={`${score.home}-${score.away}`} className="rounded-md bg-white/5 px-2 py-1 tabular-nums">

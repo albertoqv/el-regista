@@ -33,7 +33,7 @@ function MinuteChart({ goals, xg, color }: { goals: number[]; xg: number[]; colo
             <motion.div
               className="relative w-3/5 rounded-t-md"
               style={{
-                background: index === best && goals[index] > 0 ? "#f2c230" : color,
+                background: index === best && goals[index] > 0 ? "#9ccfea" : color,
               }}
               initial={{ height: 0 }}
               whileInView={{ height: `${(goals[index] / max) * 100}%` }}
@@ -41,7 +41,7 @@ function MinuteChart({ goals, xg, color }: { goals: number[]; xg: number[]; colo
               transition={{ duration: 0.8, delay: 0.1 + index * 0.06 }}
             />
           </div>
-          <span className={`text-[10px] ${index === 5 ? "font-bold text-ink" : "text-muted"}`}>{label}</span>
+          <span className={`text-xs ${index === 5 ? "font-bold text-ink" : "text-muted"}`}>{label}</span>
         </div>
       ))}
     </div>
@@ -51,7 +51,7 @@ function MinuteChart({ goals, xg, color }: { goals: number[]; xg: number[]; colo
 function Stat({ value, label, highlight = false }: { value: string | number; label: string; highlight?: boolean }) {
   return (
     <div className="flex flex-col">
-      <span className={`font-display text-3xl font-bold tabular-nums ${highlight ? "text-[#f2c230]" : ""}`}>
+      <span className={`font-display text-3xl font-bold tabular-nums ${highlight ? "text-[#9ccfea]" : ""}`}>
         {value}
       </span>
       <span className="text-xs text-muted">{label}</span>
@@ -59,7 +59,7 @@ function Stat({ value, label, highlight = false }: { value: string | number; lab
   );
 }
 
-export function ShotProfile({ shots, color = "#7cc0ff" }: { shots: PlayerShot[]; color?: string }) {
+export function ShotProfile({ shots, color = "#9ccfea" }: { shots: PlayerShot[]; color?: string }) {
   if (shots.length === 0) return null;
   const summary = summarize(shots);
   const finishing = summary.npGoals - summary.npXg;

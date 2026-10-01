@@ -4,7 +4,6 @@ import { IconAttack, IconCard, IconCreate, IconTarget, IconTrophy } from "@/app/
 import { kickoffDate } from "@/app/components/Forecast";
 import { ScoutNote, Sticker } from "@/app/components/ScoutNote";
 import type { Highlights, Pick } from "@/lib/api";
-import { competitionColor } from "@/lib/format";
 
 const CATEGORIES: {
   key: Pick["category"];
@@ -38,12 +37,11 @@ function PickRow({ pick, top }: { pick: Pick; top: boolean }) {
     >
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm font-semibold">{pick.label}</span>
-        <span className="flex items-center gap-1.5 truncate text-[11px] text-muted">
-          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: competitionColor(pick.competition) }} />
+        <span className="flex items-center gap-1.5 truncate text-xs text-muted">
           {pick.home_team} – {pick.away_team} · {when(pick.kickoff)}
         </span>
       </span>
-      <span className={`font-display text-xl font-bold tabular-nums ${top ? "text-[#f2c230]" : ""}`}>
+      <span className={`font-display text-xl font-bold tabular-nums ${top ? "text-[#9ccfea]" : ""}`}>
         {percent(pick.probability)}
       </span>
     </Link>
@@ -77,7 +75,7 @@ export function RoundHighlights({ highlights, compact = false }: { highlights: H
           return (
             <div key={category.key} className="glass flex flex-col rounded-lg p-3">
               <h3 className="flex items-center gap-2 px-3 pb-1 pt-2 font-display text-lg font-bold">
-                <category.icon size={18} color="#f2c230" />
+                <category.icon size={18} color="#9ccfea" />
                 {category.title}
               </h3>
               {picks.slice(0, compact ? 3 : 5).map((pick, index) => (

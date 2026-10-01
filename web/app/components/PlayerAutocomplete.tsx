@@ -15,7 +15,7 @@ export function PlayerAutocomplete({
   onSelect,
   placeholder,
   size = "md",
-  accent = "#7cc0ff",
+  accent = "#9ccfea",
   autoFocus = false,
 }: {
   initialPlayer?: PlayerSummary | null;
@@ -139,7 +139,7 @@ export function PlayerAutocomplete({
                 >
                   <Avatar name={player.name} photoUrl={player.photo_url} size={34} />
                   <span className="flex-1 truncate font-medium">{player.name}</span>
-                  <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-[10px] font-semibold tracking-wider text-muted">
+                  <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-xs font-semibold text-muted">
                     {positionShort(player.position)}
                   </span>
                   {player.latest_season_year && (

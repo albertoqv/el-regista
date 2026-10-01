@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { SITE_HOST } from "@/lib/site";
 import { LOGO_DARK, LOGO_RATIO, OG_COLORS, OG_FONTS } from "@/lib/og-brand";
 import { getHotPlayers, type HotMetric } from "@/lib/api";
-import { bigPhoto, competitionColor } from "@/lib/format";
+import { bigPhoto } from "@/lib/format";
 
 const WIDTH = 1080;
 const HEIGHT = 1350;
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
           display: "flex",
           flexDirection: "column",
           background: OG_COLORS.slate,
-          color: "#eef2ff",
+          color: "#f3ebe3",
           padding: 64,
           fontFamily: "Regista",
         }}
@@ -53,8 +53,8 @@ export async function GET(request: Request) {
           <div
             style={{
               display: "flex",
-              background: "#f2c230",
-              color: "#1f3b2d",
+              background: "#9ccfea",
+              color: "#26131a",
               padding: "8px 18px",
               fontSize: 24,
               fontWeight: 400,
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
           </div>
         </div>
         <div style={{ display: "flex", fontSize: 96, fontWeight: 400, letterSpacing: -3, marginTop: 36 }}>En racha</div>
-        <div style={{ display: "flex", fontSize: 34, color: "#aab3c7", marginTop: 4 }}>
+        <div style={{ display: "flex", fontSize: 34, color: "#c7b3b0", marginTop: 4 }}>
           {`${TITLES[metric]} · ${competition ?? "5 grandes ligas"}`}
         </div>
 
@@ -80,16 +80,16 @@ export async function GET(request: Request) {
                   display: "flex",
                   alignItems: "center",
                   gap: 28,
-                  background: index === 0 ? "rgba(255,215,106,0.12)" : "rgba(255,255,255,0.05)",
-                  border: `1px solid ${index === 0 ? "rgba(255,215,106,0.5)" : "rgba(255,255,255,0.1)"}`,
+                  background: index === 0 ? "rgba(156,207,234,0.12)" : "rgba(255,255,255,0.05)",
+                  border: `1px solid ${index === 0 ? "rgba(156,207,234,0.5)" : "rgba(255,255,255,0.1)"}`,
                   borderRadius: 28,
                   padding: "16px 28px",
                 }}
               >
-                <span style={{ display: "flex", width: 56, fontSize: 52, fontWeight: 400, color: index === 0 ? "#f2c230" : "#8b93a7" }}>
+                <span style={{ display: "flex", width: 56, fontSize: 52, fontWeight: 400, color: index === 0 ? "#9ccfea" : "#c7b3b0" }}>
                   {String(index + 1)}
                 </span>
-                <div style={{ display: "flex", width: 112, height: 112, borderRadius: 56, overflow: "hidden", background: "#173024" }}>
+                <div style={{ display: "flex", width: 112, height: 112, borderRadius: 56, overflow: "hidden", background: "#1d0e14" }}>
                   {photo && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photo} width={112} height={112} style={{ objectFit: "cover", objectPosition: "center top" }} alt="" />
@@ -97,18 +97,17 @@ export async function GET(request: Request) {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
                   <span style={{ fontSize: 42, fontWeight: 400 }}>{player.name}</span>
-                  <span style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 24, color: "#aab3c7" }}>
-                    <span style={{ display: "flex", width: 12, height: 12, borderRadius: 6, background: competitionColor(player.competition) }} />
+                  <span style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 24, color: "#c7b3b0" }}>
                     {`${player.team} · ${player.matches} partidos`}
                   </span>
                 </div>
-                <span style={{ fontSize: 50, fontWeight: 400, color: "#f2c230" }}>{value(index)}</span>
+                <span style={{ fontSize: 50, fontWeight: 400, color: "#9ccfea" }}>{value(index)}</span>
               </div>
             );
           })}
         </div>
 
-        <div style={{ display: "flex", marginTop: "auto", justifyContent: "space-between", fontSize: 22, color: "#8b93a7" }}>
+        <div style={{ display: "flex", marginTop: "auto", justifyContent: "space-between", fontSize: 22, color: "#c7b3b0" }}>
           <span>Datos: Understat · mínimo 180 minutos</span>
           <span>{`${SITE_HOST}/en-racha`}</span>
         </div>

@@ -27,8 +27,8 @@ export function SimilarityMeter({
         <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
           <defs>
             <linearGradient id="similarity-gradient" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#7cc0ff" />
-              <stop offset="100%" stopColor="#ff8a4c" />
+              <stop offset="0%" stopColor="#9ccfea" />
+              <stop offset="100%" stopColor="#f28c6b" />
             </linearGradient>
           </defs>
           <circle cx="60" cy="60" r={RADIUS} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="9" />
@@ -54,7 +54,7 @@ export function SimilarityMeter({
             <CountUp value={percentage} />
             <span className="text-xl text-muted">%</span>
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
+          <span className="text-xs font-semibold text-muted">
             similitud
           </span>
         </div>

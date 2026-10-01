@@ -62,15 +62,11 @@ export function TwinCard({
         </div>
         <div className="absolute right-3 top-3 flex h-14 w-14 flex-col items-center justify-center rounded-full border border-white/15 bg-black/65">
           <span className="font-display text-lg font-bold leading-none">{twin.similarity}%</span>
-          <span className="text-[8px] font-semibold uppercase tracking-wider text-muted">igual</span>
+          <span className="text-[8px] font-semibold text-muted">igual</span>
         </div>
         <div className="absolute inset-x-0 bottom-0 p-4">
           <h3 className="font-display text-xl font-bold leading-tight">{twin.name}</h3>
           <p className="flex items-center gap-1.5 text-xs text-ink/75">
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: competitionColor(twin.competition) }}
-            />
             {twin.team ?? twin.competition} · {seasonDisplay(twin.season_label)}
             {twin.detailed_position && ` · ${roleLabel(twin)}`}
             {age && ` · ${age} años`}
@@ -81,7 +77,7 @@ export function TwinCard({
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-end justify-between gap-2">
           <div>
-            <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+            <span className="block text-xs font-semibold text-muted">
               Valor
             </span>
             <span className="font-display text-2xl font-bold">
@@ -96,7 +92,7 @@ export function TwinCard({
             </span>
           )}
           {value.kind === "unknown" && twin.market_value_eur === null && (
-            <span className="text-right text-[11px] text-muted">precio aún sin cargar</span>
+            <span className="text-right text-xs text-muted">precio aún sin cargar</span>
           )}
         </div>
 

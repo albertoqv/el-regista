@@ -29,7 +29,7 @@ const RESULT_LABEL: Record<string, string> = {
   OwnGoal: "Autogol",
 };
 
-export function ShotMap({ shots, color = "#7cc0ff" }: { shots: PlayerShot[]; color?: string }) {
+export function ShotMap({ shots, color = "#9ccfea" }: { shots: PlayerShot[]; color?: string }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const visible = shots.filter((shot) => shot.x >= 0.5 && shot.result !== "OwnGoal");
   const active = hovered !== null ? visible[hovered] : null;

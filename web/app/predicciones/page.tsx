@@ -135,7 +135,7 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
         {[undefined, ...COMPETITIONS].map((option) => {
           const active = league === option;
-          const color = option ? competitionColor(option) : "#7cc0ff";
+          const color = option ? competitionColor(option) : "#9ccfea";
           return (
             <Link
               key={option ?? "all"}
@@ -144,10 +144,9 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
               style={{
                 borderColor: active ? color : "rgba(255,255,255,0.08)",
                 background: active ? `${color}22` : "transparent",
-                color: active ? "#fff" : "#8b93a7",
+                color: active ? "#fff" : "#c7b3b0",
               }}
             >
-              <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
               {option ?? "Todas"}
             </Link>
           );

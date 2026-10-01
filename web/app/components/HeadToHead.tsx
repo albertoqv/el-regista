@@ -11,8 +11,8 @@ import {
   type MetricKey,
 } from "@/lib/metrics";
 
-const COLOR_A = "#7cc0ff";
-const COLOR_B = "#ff8a4c";
+const COLOR_A = "#9ccfea";
+const COLOR_B = "#f28c6b";
 
 /** Metrics a source may not track this season: hide them when both are 0. */
 const OPTIONAL: MetricKey[] = [
@@ -145,7 +145,7 @@ export function HeadToHead({ playerA, playerB }: { playerA: Player; playerB: Pla
         if (metrics.length === 0) return null;
         return (
           <div key={group.key} className="flex flex-col gap-3">
-            <h3 className="text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-muted">
+            <h3 className="text-center text-xs font-semibold text-muted">
               {group.title}
             </h3>
             <ul className="flex flex-col gap-3">

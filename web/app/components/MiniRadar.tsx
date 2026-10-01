@@ -48,7 +48,7 @@ export function MiniRadar({
         />
       ))}
       <polygon points={polygon(target)} fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" />
-      <polygon points={polygon(twin)} fill="rgba(255,215,106,0.25)" stroke="#f2c230" strokeWidth="1.5" />
+      <polygon points={polygon(twin)} fill="rgba(156,207,234,0.25)" stroke="#9ccfea" strokeWidth="1.5" />
     </svg>
   );
 }

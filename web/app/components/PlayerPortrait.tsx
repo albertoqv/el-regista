@@ -30,7 +30,7 @@ function Silhouette({ color }: { color: string }) {
 export function PlayerPortrait({
   name,
   photoUrl,
-  accent = "#7cc0ff",
+  accent = "#9ccfea",
   mirrored = false,
   className = "",
   rounded = "rounded-lg",
@@ -58,7 +58,7 @@ export function PlayerPortrait({
     <div
       className={`relative overflow-hidden ${rounded} ${className}`}
       style={{
-        background: `radial-gradient(120% 90% at 50% 0%, ${accent}55, transparent 60%), linear-gradient(180deg, #0d1426, #173024)`,
+        background: `radial-gradient(120% 90% at 50% 0%, ${accent}55, transparent 60%), linear-gradient(180deg, #0d1426, #1d0e14)`,
         boxShadow: "0 0 0 1px rgba(242,239,230,0.12)",
       }}
     >
@@ -95,7 +95,7 @@ export function PlayerPortrait({
       )}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3"
-        style={{ background: "linear-gradient(0deg, #05070dee, transparent)" }}
+        style={{ background: "linear-gradient(0deg, #1d0e14ee, transparent)" }}
       />
     </div>
   );

@@ -94,7 +94,7 @@ export function RadarChart({
               y={label.y}
               textAnchor={anchor}
               dominantBaseline="middle"
-              className="fill-[#aab3c7] text-[12px] font-medium"
+              className="fill-[#c7b3b0] text-[12px] font-medium"
             >
               <title>{METRICS[axis].help}</title>
               {METRICS[axis].short}
@@ -134,7 +134,7 @@ export function RadarChart({
                 cx={p.x}
                 cy={p.y}
                 r={3.5}
-                fill="#05070d"
+                fill="#1d0e14"
                 stroke={entry.color}
                 strokeWidth={2}
               >

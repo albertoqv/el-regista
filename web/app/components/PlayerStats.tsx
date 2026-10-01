@@ -40,7 +40,7 @@ export function PlayerStats({ player }: { player: Player }) {
           return (
             <Reveal key={group.key} delay={groupIndex * 0.06}>
               <div className="glass h-full rounded-lg p-5">
-                <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+                <h3 className="mb-4 text-xs font-semibold text-muted">
                   {group.title}
                 </h3>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-5 sm:grid-cols-3">

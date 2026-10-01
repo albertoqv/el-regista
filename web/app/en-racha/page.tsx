@@ -6,7 +6,7 @@ import { Avatar } from "@/app/components/Avatar";
 import { PlayerPortrait } from "@/app/components/PlayerPortrait";
 import { ShareCard } from "@/app/components/ShareCard";
 import { getHotPlayers, type HotMetric, type HotPlayer } from "@/lib/api";
-import { COMPETITIONS, competitionColor } from "@/lib/format";
+import { COMPETITIONS } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "En racha · El Regista",
@@ -125,7 +125,7 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
                   <PlayerPortrait
                     name={player.name}
                     photoUrl={player.photo_url}
-                    accent={rank === 1 ? "#f2c230" : "#7cc0ff"}
+                    accent={rank === 1 ? "#9ccfea" : "#9ccfea"}
                     rounded="rounded-lg sm:rounded-lg"
                     className="aspect-[3/4] transition duration-500 group-hover:-translate-y-1"
                   />
@@ -134,9 +134,9 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
                   </span>
                   <div className="absolute inset-x-0 bottom-0 p-2 sm:p-4">
                     <span className="block truncate text-xs font-bold sm:text-base">{player.name}</span>
-                    <span className="block truncate text-[10px] text-ink/70 sm:text-xs">{player.team}</span>
-                    <span className="font-display text-xl font-bold text-[#f2c230] sm:text-3xl">{main.value}</span>
-                    <span className="ml-1 text-[10px] text-ink/70 sm:text-xs">{main.unit}</span>
+                    <span className="block truncate text-xs text-ink/70 sm:text-xs">{player.team}</span>
+                    <span className="font-display text-xl font-bold text-[#9ccfea] sm:text-3xl">{main.value}</span>
+                    <span className="ml-1 text-xs text-ink/70 sm:text-xs">{main.unit}</span>
                   </div>
                 </PlayerLink>
               );
@@ -168,14 +168,13 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-semibold">{player.name}</span>
                         <span className="flex items-center gap-1.5 truncate text-xs text-muted">
-                          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: competitionColor(player.competition) }} />
                           {player.team} · {player.matches} partidos · {player.goals} G · {player.assists} A
                           <span className="hidden sm:inline"> · xG {player.xg.toFixed(1)} · xA {player.xa.toFixed(1)}</span>
                         </span>
                       </span>
                       <span className="shrink-0 text-right">
-                        <span className="block font-display text-xl font-bold tabular-nums text-[#f2c230]">{main.value}</span>
-                        <span className="block text-[10px] text-muted">{main.unit}</span>
+                        <span className="block font-display text-xl font-bold tabular-nums text-[#9ccfea]">{main.value}</span>
+                        <span className="block text-xs text-muted">{main.unit}</span>
                       </span>
                     </PlayerLink>
                   </li>

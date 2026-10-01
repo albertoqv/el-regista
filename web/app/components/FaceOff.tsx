@@ -43,7 +43,7 @@ function Fighter({ side, color, fromLeft }: { side: FaceOffSide; color: string; 
           className="aspect-[3/4] w-full transition duration-500 group-hover:scale-[1.02]"
         />
         <div className={`absolute inset-x-0 bottom-0 flex flex-col p-4 sm:p-5 ${fromLeft ? "items-start" : "items-end"}`}>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.2em]" style={{ color }}>
+          <span className="text-xs font-semibold" style={{ color }}>
             {side.context}
           </span>
           <span className="font-display text-2xl font-bold leading-tight sm:text-4xl">{player.name}</span>
@@ -77,7 +77,7 @@ export function FaceOff({
   return (
     <section className="relative -mx-4 overflow-x-clip px-4 py-2 sm:mx-0 sm:px-0">
       <div className="grid grid-cols-2 items-start gap-4 sm:gap-8 md:grid-cols-[1fr_auto_1fr]">
-        <Fighter side={a} color="#7cc0ff" fromLeft />
+        <Fighter side={a} color="#9ccfea" fromLeft />
         <motion.div
           initial={{ opacity: 0, scale: 0.4 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -91,7 +91,7 @@ export function FaceOff({
           </div>
           <SimilarityMeter percentage={similarity} size={140} />
         </motion.div>
-        <Fighter side={b} color="#ff8a4c" fromLeft={false} />
+        <Fighter side={b} color="#f28c6b" fromLeft={false} />
       </div>
     </section>
   );

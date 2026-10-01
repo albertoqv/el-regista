@@ -3,7 +3,6 @@ import { Avatar } from "@/app/components/Avatar";
 import { Reveal } from "@/app/components/motion";
 import { HandArrow, ScoutNote } from "@/app/components/ScoutNote";
 import type { Partnership } from "@/lib/api";
-import { competitionColor } from "@/lib/format";
 
 /** Who feeds whom: assister → scorer pairs with the most goals together. */
 export function Partnerships({ pairs }: { pairs: Partnership[] }) {
@@ -32,7 +31,7 @@ export function Partnerships({ pairs }: { pairs: Partnership[] }) {
                   <Avatar name={pair.assister_name} size={52} />
                 )}
               </div>
-              <HandArrow direction="right" className="shrink-0 text-[#f2c230]" />
+              <HandArrow direction="right" className="shrink-0 text-[#9ccfea]" />
               <Link href={`/players/${pair.scorer.player_id}`}>
                 <Avatar name={pair.scorer.name} photoUrl={pair.scorer.photo_url} size={52} />
               </Link>
@@ -41,13 +40,12 @@ export function Partnerships({ pairs }: { pairs: Partnership[] }) {
                   {pair.assister_name.split(" ").slice(-1)[0]} → {pair.scorer.name.split(" ").slice(-1)[0]}
                 </p>
                 <p className="flex items-center gap-1.5 truncate text-xs text-muted">
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: competitionColor(pair.competition) }} />
                   {pair.team}
                 </p>
               </div>
               <div className="text-right">
                 <span className="block font-display text-3xl font-bold leading-none">{pair.goals}</span>
-                <span className="text-[10px] uppercase tracking-wider text-muted">goles</span>
+                <span className="text-xs text-muted">goles</span>
               </div>
             </div>
           </Reveal>

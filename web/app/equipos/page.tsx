@@ -50,10 +50,9 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
                 style={{
                   borderColor: active ? color : "rgba(255,255,255,0.08)",
                   background: active ? `${color}22` : "transparent",
-                  color: active ? "#fff" : "#8b93a7",
+                  color: active ? "#fff" : "#c7b3b0",
                 }}
               >
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
                 {option}
               </Link>
             );
@@ -119,11 +118,11 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
             </Reveal>
           </div>
 
-          <p className="-mb-2 text-right text-[11px] text-muted sm:hidden">Desliza la tabla para ver más →</p>
+          <p className="-mb-2 text-right text-xs text-muted sm:hidden">Desliza la tabla para ver más →</p>
           <div className="glass overflow-x-auto rounded-lg">
             <table className="w-full min-w-[860px] text-sm">
               <thead>
-                <tr className="border-b border-line text-left text-[11px] uppercase tracking-[0.12em] text-muted">
+                <tr className="border-b border-line text-left text-xs text-muted">
                   <th className="px-4 py-3">#</th>
                   <th className="px-2 py-3">Equipo</th>
                   <th className="px-2 py-3 text-center">PJ</th>

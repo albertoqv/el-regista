@@ -44,7 +44,7 @@ function decimal(value: number): string {
 function OutcomeRow({ label, outcome, note }: { label: string; outcome: Outcome; note?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="flex justify-between text-xs font-semibold uppercase tracking-[0.15em] text-muted">
+      <span className="flex justify-between text-xs font-semibold text-muted">
         {label}
         {note && <span className="normal-case tracking-normal">{note}</span>}
       </span>
@@ -64,7 +64,7 @@ function Histogram({ values, highlight }: { values: number[]; highlight: number 
           className="flex-1 rounded-t-sm"
           style={{
             height: `${(value / max) * 100}%`,
-            background: index > highlight ? "#f2c230" : "rgba(255,255,255,0.18)",
+            background: index > highlight ? "#9ccfea" : "rgba(255,255,255,0.18)",
           }}
           title={`${index}: ${percent(value)}`}
         />
@@ -88,7 +88,7 @@ function StatCard({ stat, home, away }: { stat: StatForecast; home: string; away
       </div>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-sm">
         <span className="font-display text-xl font-bold tabular-nums text-side-a">{decimal(stat.expected_home)}</span>
-        <span className="text-[10px] uppercase tracking-wider text-muted">esperados</span>
+        <span className="text-xs text-muted">esperados</span>
         <span className="text-right font-display text-xl font-bold tabular-nums text-side-b">
           {decimal(stat.expected_away)}
         </span>
@@ -116,7 +116,7 @@ function MatchTable({ title, rows }: { title: string; rows: MatchLine[] }) {
       <h3 className="mb-2 font-display text-lg font-bold">{title}</h3>
       <table className="w-full min-w-[460px] text-sm">
         <thead>
-          <tr className="text-left text-[10px] uppercase tracking-[0.15em] text-muted">
+          <tr className="text-left text-xs text-muted">
             <th className="py-1">Fecha</th>
             <th>Partido</th>
             <th className="text-center">Res.</th>
@@ -170,7 +170,7 @@ export default async function MatchPage(props: PageProps<"/predicciones/[match]"
         <Link href="/predicciones" className="text-sm text-muted hover:text-ink">
           ← Predicciones
         </Link>
-        <p className="mt-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em]" style={{ color }}>
+        <p className="mt-3 flex items-center gap-2 text-xs font-semibold" style={{ color }}>
           {insights.competition} ·{" "}
           {kickoff.toLocaleString("es-ES", {
             weekday: "long",
@@ -188,7 +188,7 @@ export default async function MatchPage(props: PageProps<"/predicciones/[match]"
           </span>
           <span className="text-right">{insights.away_team}</span>
         </h1>
-        <p className="mt-1 text-center text-[10px] uppercase tracking-[0.2em] text-muted">goles esperados</p>
+        <p className="mt-1 text-center text-xs text-muted">goles esperados</p>
       </Reveal>
 
       <Reveal>
@@ -214,7 +214,7 @@ export default async function MatchPage(props: PageProps<"/predicciones/[match]"
             <div className="grid grid-cols-5 gap-2 text-center">
               {insights.goals_over.map((line) => (
                 <div key={line.line} className="rounded-lg bg-white/5 p-2">
-                  <span className="block text-[10px] text-muted">+{String(line.line).replace(".", ",")}</span>
+                  <span className="block text-xs text-muted">+{String(line.line).replace(".", ",")}</span>
                   <span className="font-display text-lg font-bold tabular-nums">{percent(line.over)}</span>
                 </div>
               ))}
@@ -234,7 +234,7 @@ export default async function MatchPage(props: PageProps<"/predicciones/[match]"
               </div>
             </div>
             <div>
-              <span className="text-xs font-semibold uppercase tracking-[0.15em] text-muted">Marcadores más probables</span>
+              <span className="text-xs font-semibold text-muted">Marcadores más probables</span>
               <div className="mt-2 flex flex-wrap gap-2">
                 {insights.scorelines.map((score, index) => (
                   <span key={`${score.home}-${score.away}`} className="rounded-xl bg-white/5 px-3 py-2 font-display font-bold tabular-nums">

@@ -4,7 +4,7 @@ import { PHOTOS } from "@/lib/photos";
 import Link from "next/link";
 import { kickoffDate } from "@/app/components/Forecast";
 import { getTrackRecord, type RecordTotals, type ScoredPick, type WeekRecord } from "@/lib/api";
-import { competitionColor, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
+import { currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Historial de aciertos · El Regista",
@@ -27,7 +27,7 @@ function weekLabel(iso: string): string {
 function Kpi({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: string }) {
   return (
     <div className="glass rounded-lg p-4">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted">{label}</p>
+      <p className="text-xs font-semibold text-muted">{label}</p>
       <p className="mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl" style={tone ? { color: tone } : undefined}>
         {value}
       </p>
@@ -44,13 +44,13 @@ function Totals({ totals, withMarket }: { totals: RecordTotals; withMarket: bool
         label="Acierto 1X2"
         value={percent(totals.hits, totals.matches)}
         hint={`${totals.hits} de ${totals.matches} · al azar ~33%`}
-        tone="#9ed7b3"
+        tone="#8fcf9c"
       />
       <Kpi
         label="Con 60% o más"
         value={percent(totals.confident_hits, totals.confident)}
         hint={`${totals.confident_hits} de ${totals.confident} picks seguros`}
-        tone="#f2c230"
+        tone="#9ccfea"
       />
       {withMarket && totals.market_brier !== null ? (
         <Kpi
@@ -80,16 +80,16 @@ function WeeklyChart({ weeks }: { weeks: WeekRecord[] }) {
             const rate = week.matches ? week.hits / week.matches : 0;
             return (
               <div key={week.week_start} className="flex h-full min-w-[38px] flex-1 flex-col items-center justify-end gap-1">
-                <span className="text-[10px] font-semibold tabular-nums">{Math.round(rate * 100)}%</span>
+                <span className="text-xs font-semibold tabular-nums">{Math.round(rate * 100)}%</span>
                 <div
                   className="w-full rounded-t-lg"
                   style={{
                     height: `${Math.max(rate * 100, 2)}%`,
-                    background: rate >= 0.5 ? "#f2c230" : rate >= 0.34 ? "#9ed7b3" : "#4d7563",
+                    background: rate >= 0.5 ? "#9ccfea" : rate >= 0.34 ? "#8fcf9c" : "#4d7563",
                   }}
                   title={`${week.hits} de ${week.matches}`}
                 />
-                <span className="text-[10px] text-muted">{weekLabel(week.week_start)}</span>
+                <span className="text-xs text-muted">{weekLabel(week.week_start)}</span>
               </div>
             );
           })}
@@ -118,7 +118,6 @@ function PickRow({ pick }: { pick: ScoredPick }) {
           {pick.home_team} {pick.home_goals}-{pick.away_goals} {pick.away_team}
         </span>
         <span className="flex items-center gap-1.5 text-xs text-muted">
-          <span className="h-1.5 w-1.5 rounded-full" style={{ background: competitionColor(pick.competition) }} />
           {kickoff.toLocaleDateString("es-ES", { day: "numeric", month: "short", timeZone: "Europe/Madrid" })} · dijimos{" "}
           {OUTCOMES[best]} ({pickLabel}) al {Math.round(pick.model[best] * 100)}%
         </span>
@@ -143,7 +142,7 @@ export default async function TrackRecordPage() {
         <>
           <section className="flex flex-col gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-2">En vivo</p>
+              <p className="text-xs font-semibold text-brand-2">En vivo</p>
               <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Predicciones registradas</h2>
             </div>
             {record.live_total.matches === 0 ? (
@@ -171,7 +170,7 @@ export default async function TrackRecordPage() {
 
           <section className="flex flex-col gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-2">Reconstruido</p>
+              <p className="text-xs font-semibold text-brand-2">Reconstruido</p>
               <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
                 Temporada {seasonDisplay(record.season_label)}, jornada a jornada
               </h2>

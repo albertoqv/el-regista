@@ -19,8 +19,10 @@ reales de las 5 grandes ligas. Proyecto personal: **todo debe ser 100% gratis**
   - `presentation/api/` — routers `players` e `ingestion` (todo `/ingestion/*`
     exige cabecera `X-Ingestion-Key` si `INGESTION_API_KEY` está configurada).
 - Web: `web/` Next.js 16 (App Router, lee `web/AGENTS.md`: APIs cambiadas respecto
-  a lo conocido), Tailwind. **Marca El Regista**: pizarra #1F3B2D, tiza #F2EFE6, césped
-  #5FA37A, amarillo #F2C230 (tokens en `globals.css`; `side-a`/`side-b` para comparar).
+  a lo conocido), Tailwind. **Marca El Regista**: granate #26131A, hueso #F3EBE3, celeste #9CCFEA (acento,
+  Scout) y coral #F28C6B (Pronósticos) (tokens en `globals.css`). Nada de verde+amarillo
+  (parece una casa de apuestas), ni iconos en menús, ni puntitos de color, ni rótulos
+  pequeños en mayúsculas espaciadas; texto mínimo 13 px (`--text-xs`).
   Tipografía propia **Regista Display** (solo mayúsculas, titulares) + Chivo (texto);
   logo, iconos y fuente se generan con `scripts/brand/*.py` (shapely + fontTools) →
   `web/app/fonts/`, `web/public/brand/`, `web/app/components/icons.tsx` (no editar a mano).

@@ -123,7 +123,7 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 ### Marca
 
 La tipografía, el logo y los iconos se generan con código en `scripts/brand/` (shapely +
-fontTools). Paleta: pizarra `#1F3B2D`, tiza `#F2EFE6`, césped `#5FA37A` y tarjeta `#F2C230`.
+fontTools). Paleta de club clásico: granate `#26131A`, hueso `#F3EBE3`, celeste `#9CCFEA` y coral `#F28C6B`.
 
 </details>
 

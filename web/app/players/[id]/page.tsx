@@ -46,7 +46,7 @@ function param(value: string | string[] | undefined): string | undefined {
 function Badge({ label, value }: { label: string; value: string }) {
   return (
     <div className="glass flex flex-col rounded-lg px-4 py-2.5">
-      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+      <span className="text-xs font-semibold text-muted">
         {label}
       </span>
       <span className="font-display text-base font-semibold">{value}</span>
@@ -102,7 +102,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
 
   const age = formatAge(player);
   const team = season ? seasons.find((s) => s.label === season.label && s.competition === season.competition)?.team : null;
-  const accent = season ? competitionColor(season.competition) : "#7cc0ff";
+  const accent = season ? competitionColor(season.competition) : "#9ccfea";
   const contributions = player.goals + player.assists;
 
   return (
@@ -127,7 +127,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
 
           <div className="flex flex-col gap-5">
             <Reveal delay={0.05}>
-              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.25em]" style={{ color: accent }}>
+              <p className="flex items-center gap-2 text-xs font-semibold" style={{ color: accent }}>
                 {roleLabel(player)}
                 {team && <span className="text-muted">· {team}</span>}
               </p>
@@ -228,7 +228,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
 
       {marketValue.history.length > 0 && (
         <Reveal>
-          <MarketValueChart series={[{ name: player.name, color: "#9ed7b3", history: marketValue.history }]} />
+          <MarketValueChart series={[{ name: player.name, color: "#8fcf9c", history: marketValue.history }]} />
         </Reveal>
       )}
 
@@ -246,7 +246,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
           </div>
           <Link
             href={`/gemelos?p=${player.player_id}`}
-            className="rounded-full bg-[#f2c230] px-4 py-2 text-sm font-bold text-bg transition hover:brightness-105"
+            className="rounded-full bg-[#9ccfea] px-4 py-2 text-sm font-bold text-bg transition hover:brightness-105"
           >
             Buscar gemelos baratos →
           </Link>

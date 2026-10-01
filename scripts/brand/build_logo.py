@@ -8,7 +8,8 @@ out = Path("out")
 words = json.load(open(out / "words.json"))
 R, E, L, RR = words["REGISTA"], words["E"], words["L"], words["R"]
 
-SLATE, CHALK, YELLOW, GRASS = "#1F3B2D", "#F2EFE6", "#F2C230", "#5FA37A"
+# Claret, bone and sky blue: an old football club, nothing like a betting brand.
+SLATE, CHALK, YELLOW, GRASS = "#26131A", "#F3EBE3", "#9CCFEA", "#F28C6B"
 LABEL_W = 44
 GAP = 12
 

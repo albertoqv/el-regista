@@ -20,7 +20,7 @@ import {
   type TrackRecord,
   type TwinReport,
 } from "@/lib/api";
-import { competitionColor, currentSeasonStartYear, formatMarketValue, seasonDisplay } from "@/lib/format";
+import { currentSeasonStartYear, formatMarketValue, seasonDisplay } from "@/lib/format";
 import { PHOTOS } from "@/lib/photos";
 
 async function loadHome(startYear: number) {
@@ -130,11 +130,8 @@ function HotTeaser({ board }: { board: HotBoard }) {
       <div className="glass rounded-xl p-5 sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <Sticker tone="yellow" rotate={-2} className="w-fit">
-              En racha
-            </Sticker>
             <h3 className="mt-2 font-display text-2xl font-bold tracking-tight sm:text-3xl">
-              En racha · último mes
+              En racha
             </h3>
           </div>
           <Link href="/en-racha" className="text-sm font-semibold text-brand-2 hover:underline">
@@ -150,14 +147,10 @@ function HotTeaser({ board }: { board: HotBoard }) {
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">{player.name}</span>
                   <span className="flex items-center gap-1 truncate text-xs text-muted">
-                    <span
-                      className="h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ background: competitionColor(player.competition) }}
-                    />
                     {player.team}
                   </span>
                 </span>
-                <span className="font-display text-xl font-bold text-[#f2c230]">
+                <span className="font-display text-xl font-bold text-[#9ccfea]">
                   {player.goals + player.assists}
                 </span>
               </>
@@ -198,7 +191,7 @@ function RecordTeaser({ record }: { record: TrackRecord }) {
         className="glass glass-hover grid grid-cols-1 items-center gap-5 rounded-xl p-5 sm:grid-cols-[1fr_auto_auto] sm:p-7"
       >
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-2">
+          <p className="text-xs font-semibold text-brand-2">
             Historial de aciertos
           </p>
           <h3 className="font-display text-2xl font-bold tracking-tight">
@@ -216,7 +209,7 @@ function RecordTeaser({ record }: { record: TrackRecord }) {
         </div>
         {confident !== null ? (
           <div className="text-center">
-            <span className="block font-display text-5xl font-bold text-[#f2c230]">{confident}%</span>
+            <span className="block font-display text-5xl font-bold text-[#9ccfea]">{confident}%</span>
             <span className="text-xs text-muted">cuando damos 60% o más</span>
           </div>
         ) : null}
@@ -243,11 +236,11 @@ function TwinTeaser({ report }: { report: TwinReport }) {
                 ¿{target.name}
                 {target.market_value_eur ? ` por ${formatMarketValue(target.market_value_eur)}` : ""}?
                 <br />
-                <span className="text-[#f2c230]">Tenemos gemelos.</span>
+                <span className="text-[#9ccfea]">Tenemos gemelos.</span>
               </h2>
               <Link
                 href={`/gemelos?p=${target.player_id}`}
-                className="w-fit rounded-full bg-[#f2c230] px-6 py-3 font-bold text-bg transition hover:brightness-105"
+                className="w-fit rounded-full bg-[#9ccfea] px-6 py-3 font-bold text-bg transition hover:brightness-105"
               >
                 Ver todos sus gemelos →
               </Link>
@@ -258,7 +251,7 @@ function TwinTeaser({ report }: { report: TwinReport }) {
                   <PlayerPortrait
                     name={twin.name}
                     photoUrl={twin.photo_url}
-                    accent="#f2c230"
+                    accent="#9ccfea"
                     rounded="rounded-lg"
                     className="aspect-[3/4] transition duration-500 group-hover:-translate-y-1"
                   />

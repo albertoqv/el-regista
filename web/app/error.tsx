@@ -22,7 +22,7 @@ export default function Error({
         <button
           type="button"
           onClick={() => retry()}
-          className="rounded-full bg-[#f2c230] px-5 py-2.5 text-sm font-bold text-bg transition hover:brightness-105"
+          className="rounded-full bg-[#9ccfea] px-5 py-2.5 text-sm font-bold text-bg transition hover:brightness-105"
         >
           Reintentar
         </button>
@@ -30,7 +30,7 @@ export default function Error({
           Ir a la portada
         </Link>
       </div>
-      {error.digest ? <p className="text-[11px] text-muted/60">Código: {error.digest}</p> : null}
+      {error.digest ? <p className="text-xs text-muted/60">Código: {error.digest}</p> : null}
     </div>
   );
 }

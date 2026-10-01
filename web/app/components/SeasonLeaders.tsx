@@ -17,7 +17,7 @@ import { LEADER_TABS, METRICS } from "@/lib/metrics";
 
 const LIMIT = 10;
 const PODIUM_ORDER = [1, 0, 2];
-const MEDALS = ["#f5c451", "#cfd6e4", "#e0935a"];
+const MEDALS = ["#f5c451", "#f3ebe3", "#e0935a"];
 
 function valueOf(leader: SeasonLeader, metric: LeaderMetric): number {
   return leader[metric];
@@ -70,10 +70,6 @@ function PodiumCard({
             {leader.name}
           </span>
           <span className="flex items-center gap-1.5 truncate text-xs text-muted">
-            <span
-              className="h-1.5 w-1.5 shrink-0 rounded-full"
-              style={{ background: competitionColor(leader.competition) }}
-            />
             {leader.team ?? leader.competition}
           </span>
         </div>
@@ -125,7 +121,7 @@ export function SeasonLeaders({
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-brand-2">
+          <p className="text-xs font-semibold text-brand-2">
             Temporada {seasonDisplay(String(startYear))} · en directo
           </p>
           <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
@@ -157,7 +153,7 @@ export function SeasonLeaders({
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         {[null, ...COMPETITIONS].map((option) => {
           const active = competition === option;
-          const color = option ? competitionColor(option) : "#7cc0ff";
+          const color = option ? competitionColor(option) : "#9ccfea";
           return (
             <button
               key={option ?? "all"}
@@ -167,10 +163,9 @@ export function SeasonLeaders({
               style={{
                 borderColor: active ? color : "rgba(255,255,255,0.08)",
                 background: active ? `${color}22` : "transparent",
-                color: active ? "#fff" : "#8b93a7",
+                color: active ? "#fff" : "#c7b3b0",
               }}
             >
-              <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
               {option ?? "Las 5 ligas"}
             </button>
           );
@@ -226,10 +221,6 @@ export function SeasonLeaders({
                       <span className="relative flex min-w-0 flex-1 flex-col">
                         <span className="truncate text-sm font-semibold">{leader.name}</span>
                         <span className="flex items-center gap-1.5 truncate text-xs text-muted">
-                          <span
-                            className="h-1.5 w-1.5 shrink-0 rounded-full"
-                            style={{ background: competitionColor(leader.competition) }}
-                          />
                           {leader.team ?? leader.competition} · {positionShort(leader.position)}
                         </span>
                       </span>

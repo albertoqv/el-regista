@@ -33,7 +33,7 @@ function Column({
   const max = Math.max(...sorted.map(chance), 0.01);
   return (
     <div className="flex flex-col gap-2">
-      <h4 className="text-xs font-semibold uppercase tracking-[0.18em]" style={{ color }}>
+      <h4 className="text-xs font-semibold" style={{ color }}>
         {team}
       </h4>
       <ol className="flex flex-col gap-1.5">
@@ -51,7 +51,7 @@ function Column({
               </span>
               <span className="relative flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-semibold">{player.name}</span>
-                <span className="text-[10px] text-muted">
+                <span className="text-xs text-muted">
                   {player.position} · juega {percent(player.plays)} · si juega {percent(ifPlays)}
                 </span>
               </span>
@@ -103,8 +103,8 @@ export function PlayerMarketsTable({ markets }: { markets: PlayerMarkets }) {
         </div>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Column team={markets.home_team} players={markets.home} market={market} color="#7cc0ff" />
-        <Column team={markets.away_team} players={markets.away} market={market} color="#ff8a4c" />
+        <Column team={markets.home_team} players={markets.home} market={market} color="#9ccfea" />
+        <Column team={markets.away_team} players={markets.away} market={market} color="#f28c6b" />
       </div>
     </section>
   );

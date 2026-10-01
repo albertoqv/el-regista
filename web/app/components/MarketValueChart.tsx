@@ -40,7 +40,7 @@ export function MarketValueChart({ series }: { series: ValueSeries[] }) {
   return (
     <div className="glass rounded-lg p-5">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
-        <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
+        <h3 className="text-xs font-semibold text-muted">
           Valor de mercado
         </h3>
         <div className="flex flex-wrap gap-4">
@@ -52,7 +52,7 @@ export function MarketValueChart({ series }: { series: ValueSeries[] }) {
                 <span className="font-display text-2xl font-bold" style={{ color: entry.color }}>
                   {formatMarketValue(latest.amount_eur)}
                 </span>
-                <span className="text-[11px] text-muted">
+                <span className="text-xs text-muted">
                   {withData.length > 1 ? `${entry.name} · ` : ""}máximo {formatMarketValue(peak)}
                 </span>
               </div>

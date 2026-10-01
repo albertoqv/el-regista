@@ -7,7 +7,7 @@ import { Avatar } from "@/app/components/Avatar";
 import { PlayerPortrait } from "@/app/components/PlayerPortrait";
 import { ScoutNote } from "@/app/components/ScoutNote";
 import { listShotLeaders, type ShotLeader, type ShotMetric } from "@/lib/api";
-import { competitionColor, seasonDisplay } from "@/lib/format";
+import { seasonDisplay } from "@/lib/format";
 import { SHOT_METRICS } from "@/lib/shots";
 
 function format(value: number, metric: ShotMetric, decimals: number): string {
@@ -70,7 +70,7 @@ export function SeasonMoments({
             onClick={() => load(entry.metric)}
             className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
               metric === entry.metric
-                ? "border-[#f2c230] bg-[#f2c230] text-bg"
+                ? "border-[#9ccfea] bg-[#9ccfea] text-bg"
                 : "border-line text-muted hover:border-line-strong hover:text-ink"
             }`}
           >
@@ -98,11 +98,11 @@ export function SeasonMoments({
                   <PlayerPortrait
                     name={first.name}
                     photoUrl={first.photo_url}
-                    accent="#f2c230"
+                    accent="#9ccfea"
                     className="aspect-[4/5] w-full"
                   />
                   <div className="absolute inset-x-0 bottom-0 p-5">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f2c230]">
+                    <p className="text-xs font-semibold text-[#9ccfea]">
                       {info.title}
                     </p>
                     <p className="font-display text-6xl font-bold leading-none">
@@ -137,10 +137,6 @@ export function SeasonMoments({
                       <span className="flex min-w-0 flex-1 flex-col">
                         <span className="truncate text-sm font-semibold">{leader.name}</span>
                         <span className="flex items-center gap-1.5 truncate text-xs text-muted">
-                          <span
-                            className="h-1.5 w-1.5 shrink-0 rounded-full"
-                            style={{ background: competitionColor(leader.competition) }}
-                          />
                           {leader.team ?? leader.competition}
                         </span>
                       </span>

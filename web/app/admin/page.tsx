@@ -57,7 +57,7 @@ function shortDate(iso: string): string {
 function Kpi({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="glass rounded-lg p-5">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{label}</p>
+      <p className="text-xs font-semibold text-muted">{label}</p>
       <p className="mt-1 font-display text-3xl font-bold tabular-nums">{value}</p>
       {hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null}
     </div>
@@ -81,8 +81,8 @@ function VisitsChart({ daily }: { daily: AdminDashboard["daily"] }) {
         return (
           <g key={day.day}>
             <title>{label}</title>
-            <rect x={x} y={height - viewsHeight} width={bar} height={viewsHeight} rx={3} fill="#7cc0ff" opacity={0.35} />
-            <rect x={x} y={height - peopleHeight} width={bar} height={peopleHeight} rx={3} fill="#7cc0ff" />
+            <rect x={x} y={height - viewsHeight} width={bar} height={viewsHeight} rx={3} fill="#9ccfea" opacity={0.35} />
+            <rect x={x} y={height - peopleHeight} width={bar} height={peopleHeight} rx={3} fill="#9ccfea" />
             {index % 5 === 0 || index === daily.length - 1 ? (
               <text
                 x={index === 0 ? x : index === daily.length - 1 ? x + bar : x + Math.round(bar / 2)}
@@ -143,7 +143,7 @@ function LoginForm({ error }: { error?: string }) {
           placeholder="Clave"
           className="glass flex-1 rounded-xl px-3 py-2 text-sm text-ink outline-none"
         />
-        <button type="submit" className="rounded-full bg-[#f2c230] px-5 py-2 text-sm font-bold text-bg">
+        <button type="submit" className="rounded-full bg-[#9ccfea] px-5 py-2 text-sm font-bold text-bg">
           Entrar
         </button>
       </form>
@@ -197,8 +197,8 @@ export default async function AdminPage() {
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-lg font-bold">Visitas por día</h2>
           <span className="text-xs text-muted">
-            <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-[#7cc0ff]" />personas
-            <span className="ml-3 mr-1 inline-block h-2 w-2 rounded-sm bg-[#7cc0ff]/35" />páginas vistas
+            <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-[#9ccfea]" />personas
+            <span className="ml-3 mr-1 inline-block h-2 w-2 rounded-sm bg-[#9ccfea]/35" />páginas vistas
           </span>
         </div>
         <VisitsChart daily={dashboard.daily} />
@@ -223,7 +223,7 @@ export default async function AdminPage() {
               <ul className="flex flex-col gap-1.5">
                 {lineItems.map(([label, value]) => (
                   <li key={label} className="relative overflow-hidden rounded-xl px-3 py-1.5 text-sm">
-                    <span className="absolute inset-y-0 left-0 rounded-xl bg-[#ff8a4c]/20" style={{ width: `${(value / lineMax) * 100}%` }} />
+                    <span className="absolute inset-y-0 left-0 rounded-xl bg-[#f28c6b]/20" style={{ width: `${(value / lineMax) * 100}%` }} />
                     <span className="relative flex justify-between">
                       <span>{label}</span>
                       <span className="tabular-nums">{dollars(value)}</span>
@@ -261,12 +261,12 @@ export default async function AdminPage() {
           </div>
           {api.slow_routes.length ? (
             <div className="text-sm">
-              <p className="text-xs uppercase tracking-[0.15em] text-muted">Lentas (&gt;2 s)</p>
+              <p className="text-xs text-muted">Lentas (&gt;2 s)</p>
               <ul>{api.slow_routes.map(([route, count]) => <li key={route} className="flex justify-between"><code className="truncate">{route}</code><span className="tabular-nums">{count}</span></li>)}</ul>
             </div>
           ) : null}
           <div className="text-sm">
-            <p className="text-xs uppercase tracking-[0.15em] text-muted">Más pedidas</p>
+            <p className="text-xs text-muted">Más pedidas</p>
             <ul>{api.top_routes.slice(0, 6).map(([route, count]) => <li key={route} className="flex justify-between gap-3"><code className="truncate">{route}</code><span className="tabular-nums text-muted">{number(count)}</span></li>)}</ul>
           </div>
         </section>

@@ -45,12 +45,12 @@ export function SimilarPlayers({ report }: { report: TwinReport | null }) {
               </span>
               <div className="absolute inset-x-0 bottom-0 p-3">
                 <span className="block truncate text-sm font-semibold">{twin.name}</span>
-                <span className="block truncate text-[11px] text-muted">
+                <span className="block truncate text-xs text-muted">
                   {twin.team ?? twin.competition} {seasonDisplay(twin.season_label)}
                 </span>
                 {twin.market_value_eur !== null && (
                   <span
-                    className={`mt-1 inline-block rounded-md px-1.5 py-0.5 text-[11px] font-bold ${value.kind === "cheaper" ? "bg-grass/15 text-brand-2" : "bg-white/10 text-ink/80"}`}
+                    className={`mt-1 inline-block rounded-md px-1.5 py-0.5 text-xs font-bold ${value.kind === "cheaper" ? "bg-grass/15 text-brand-2" : "bg-white/10 text-ink/80"}`}
                   >
                     {formatMarketValue(twin.market_value_eur)}
                     {value.kind === "cheaper" && ` · −${value.share}%`}

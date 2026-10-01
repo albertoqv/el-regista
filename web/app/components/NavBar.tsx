@@ -5,41 +5,48 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { IconChevron, IconClose, IconMenu } from "@/app/components/icons";
 import { Logo } from "@/app/components/Logo";
-import { ProductIcon } from "@/app/components/ProductIcon";
 import { locate, PRODUCTS, type Product } from "@/lib/products";
+
+/** One tool in a menu: its name in our own lettering and one plain line below. */
+function ToolLink({
+  href,
+  label,
+  description,
+  onClick,
+}: {
+  href: string;
+  label: string;
+  description: string;
+  onClick?: () => void;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className="group/tool block border-l-2 border-transparent px-4 py-2.5 transition hover:border-brand hover:bg-white/[0.04]"
+    >
+      <span className="block font-display text-2xl leading-none text-ink transition group-hover/tool:text-brand">{label}</span>
+      <span className="mt-1 block text-sm text-muted">{description}</span>
+    </Link>
+  );
+}
 
 function ProductMenu({ product, active }: { product: Product; active: boolean }) {
   return (
     <div className="group relative">
       <button
         type="button"
-        className={`flex items-center gap-1 rounded-full px-3 py-1.5 text-sm font-medium transition hover:bg-white/5 ${active ? "text-ink" : "text-muted hover:text-ink"}`}
+        className={`flex items-center gap-1 px-3 py-1.5 font-display text-xl transition ${active ? "text-brand" : "text-ink hover:text-brand"}`}
         aria-haspopup="true"
       >
-        <span className="h-1.5 w-1.5 rounded-full" style={{ background: product.color }} />
         {product.name}
         <IconChevron size={14} color="currentColor" />
       </button>
       {/* Opens on hover and on keyboard focus; the padding bridges the gap. */}
       <div className="invisible absolute left-0 top-full z-50 pt-2 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
-        <div className="w-80 rounded-lg border border-line bg-bg-deep p-2">
-          <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: product.color }}>
-            {product.subject}
-          </p>
+        <div className="w-80 border border-line bg-bg-deep py-2">
           {product.tools.map((tool) => (
-            <Link
-              key={tool.href}
-              href={tool.href}
-              className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition hover:bg-white/5"
-            >
-              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/5">
-                <ProductIcon name={tool.icon} color={product.color} />
-              </span>
-              <span>
-                <span className="block text-sm font-semibold text-ink">{tool.label}</span>
-                <span className="block text-xs text-muted">{tool.description}</span>
-              </span>
-            </Link>
+            <ToolLink key={tool.href} href={tool.href} label={tool.label} description={tool.description} />
           ))}
         </div>
       </div>
@@ -48,50 +55,29 @@ function ProductMenu({ product, active }: { product: Product; active: boolean })
 }
 
 function MobileMenu({ onClose }: { onClose: () => void }) {
-  // Outside the header on purpose: its backdrop blur would clip a fixed child.
+  // Outside the header on purpose: a fixed child of the sticky header gets clipped.
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#1f3b2d] px-4 pb-10 md:hidden" role="dialog" aria-modal="true" aria-label="Menú">
-      <div className="sticky top-0 -mx-4 mb-4 flex items-center justify-between border-b border-line bg-[#1f3b2d] px-4 py-3">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-bg-deep pb-10 md:hidden" role="dialog" aria-modal="true" aria-label="Menú">
+      <div className="sticky top-0 flex items-center justify-between border-b border-line bg-bg-deep px-4 py-3">
         <Link href="/" onClick={onClose} aria-label="El Regista, inicio">
           <Logo size={22} />
         </Link>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Cerrar menú"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-line"
-        >
+        <button type="button" onClick={onClose} aria-label="Cerrar menú" className="flex h-9 w-9 items-center justify-center border border-line">
           <IconClose size={18} color="currentColor" />
         </button>
       </div>
       {PRODUCTS.map((product) => (
-        <section key={product.key} className="mb-6">
-          <p className="mb-1 flex items-center gap-2 px-1 text-xs font-semibold uppercase tracking-[0.18em]" style={{ color: product.color }}>
-            <span className="h-1.5 w-1.5 rounded-full" style={{ background: product.color }} />
-            {product.name} · {product.subject}
-          </p>
-          <div className="flex flex-col">
-            {product.tools.map((tool) => (
-              <Link
-                key={tool.href}
-                href={tool.href}
-                onClick={onClose}
-                className="flex items-center gap-3 rounded-lg px-2 py-3 active:bg-white/5"
-              >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5">
-                  <ProductIcon name={tool.icon} color={product.color} />
-                </span>
-                <span className="min-w-0">
-                  <span className="block font-semibold">{tool.label}</span>
-                  <span className="block truncate text-xs text-muted">{tool.description}</span>
-                </span>
-              </Link>
-            ))}
-          </div>
+        <section key={product.key} className="mt-6">
+          <h2 className="px-4 pb-1 font-display text-4xl" style={{ color: product.color }}>
+            {product.name}
+          </h2>
+          {product.tools.map((tool) => (
+            <ToolLink key={tool.href} href={tool.href} label={tool.label} description={tool.description} onClick={onClose} />
+          ))}
         </section>
       ))}
-      <Link href="/como-funciona" onClick={onClose} className="block px-2 py-3 text-sm text-muted">
-        Cómo funciona →
+      <Link href="/como-funciona" onClick={onClose} className="mt-6 block px-4 py-3 font-display text-2xl text-muted">
+        Cómo funciona
       </Link>
     </div>
   );
@@ -99,11 +85,8 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
 
 function ProductTabs({ product, activeHref }: { product: Product; activeHref: string }) {
   return (
-    <div className="border-t border-line/60">
-      <div className="no-scrollbar mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto px-4 py-1.5 sm:px-6">
-        <span className="mr-2 shrink-0 text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: product.color }}>
-          {product.name}
-        </span>
+    <div className="border-t border-line">
+      <div className="no-scrollbar mx-auto flex max-w-6xl items-end gap-5 overflow-x-auto px-4 sm:px-6">
         {product.tools.map((tool) => {
           const active = tool.href === activeHref;
           return (
@@ -113,9 +96,8 @@ function ProductTabs({ product, activeHref }: { product: Product; activeHref: st
               aria-current={active ? "page" : undefined}
               // On phones the tab row scrolls: bring the current tool into view.
               ref={active ? (element) => element?.scrollIntoView({ block: "nearest", inline: "center" }) : undefined}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition ${active ? "bg-white/10 text-ink" : "text-muted hover:text-ink"}`}
+              className={`shrink-0 border-b-2 py-2 font-display text-lg transition ${active ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink"}`}
             >
-              <ProductIcon name={tool.icon} size={14} color={active ? product.color : "currentColor"} />
               {tool.label}
             </Link>
           );
@@ -140,7 +122,7 @@ export function NavBar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-line bg-bg/95">
+      <header className="sticky top-0 z-40 border-b border-line bg-bg">
         <nav className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6">
           <Link href="/" aria-label="El Regista, inicio" className="shrink-0">
             <Logo size={22} />
@@ -149,21 +131,12 @@ export function NavBar() {
             {PRODUCTS.map((product) => (
               <ProductMenu key={product.key} product={product} active={here?.product.key === product.key} />
             ))}
-            <Link href="/como-funciona" className="rounded-full px-3 py-1.5 text-sm text-muted transition hover:bg-white/5 hover:text-ink">
+            <Link href="/como-funciona" className="px-3 py-1.5 font-display text-xl text-muted transition hover:text-ink">
               Cómo funciona
             </Link>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <Link
-              href="/gemelos"
-              className="hidden shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold text-[#f2c230] transition hover:bg-[#f2c230]/10 sm:block"
-            >
-              Gemelos
-            </Link>
-            <Link
-              href="/predicciones"
-              className="shrink-0 rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-bg transition hover:brightness-110"
-            >
+            <Link href="/predicciones" className="shrink-0 bg-brand px-4 py-1.5 font-display text-lg text-bg transition hover:brightness-110">
               Pronósticos
             </Link>
             <button
@@ -171,7 +144,7 @@ export function NavBar() {
               onClick={() => setOpen((value) => !value)}
               aria-label={open ? "Cerrar menú" : "Abrir menú"}
               aria-expanded={open}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-line md:hidden"
+              className="flex h-9 w-9 items-center justify-center border border-line md:hidden"
             >
               {open ? <IconClose size={18} color="currentColor" /> : <IconMenu size={18} color="currentColor" />}
             </button>

@@ -17,10 +17,10 @@ export const OG_FONTS = [
 ];
 
 export const OG_COLORS = {
-  slate: "#1f3b2d",
-  deep: "#173024",
-  chalk: "#f2efe6",
-  dim: "#b9c4b8",
-  yellow: "#f2c230",
-  grass: "#9ed7b3",
+  slate: "#26131a",
+  deep: "#1d0e14",
+  chalk: "#f3ebe3",
+  dim: "#c7b3b0",
+  yellow: "#9ccfea",
+  grass: "#8fcf9c",
 };

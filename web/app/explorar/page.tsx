@@ -4,15 +4,7 @@ import { Avatar } from "@/app/components/Avatar";
 import { Reveal } from "@/app/components/motion";
 import { ScoutNote } from "@/app/components/ScoutNote";
 import { explorePlayers, type ExploreRow } from "@/lib/api";
-import {
-  COMPETITIONS,
-  OTHER_COMPETITIONS,
-  competitionColor,
-  currentSeasonStartYear,
-  formatMarketValue,
-  positionLabel,
-  seasonDisplay,
-} from "@/lib/format";
+import { COMPETITIONS, OTHER_COMPETITIONS, currentSeasonStartYear, formatMarketValue, positionLabel, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Explorador · El Regista",
@@ -98,7 +90,7 @@ function show(row: ExploreRow, sort: string, perNinety: boolean): string {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="flex flex-col gap-1 text-xs">
-      <span className="font-semibold uppercase tracking-[0.15em] text-muted">{label}</span>
+      <span className="font-semibold text-muted">{label}</span>
       {children}
     </label>
   );
@@ -159,7 +151,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
             style={{ transform: `rotate(${index % 2 ? 1 : -1}deg)` }}
           >
             <span className="block text-sm font-semibold">{recipe.label}</span>
-            <span className="font-hand text-base text-[#f2c230]">{recipe.note}</span>
+            <span className="font-hand text-base text-[#9ccfea]">{recipe.note}</span>
           </Link>
         ))}
       </div>
@@ -263,14 +255,14 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
             type="checkbox"
             value="true"
             defaultChecked={values.per_90}
-            className="h-4 w-4 accent-[#f2c230]"
+            className="h-4 w-4 accent-[#9ccfea]"
           />
           Por 90 minutos
         </label>
         <div className="col-span-2 flex items-end gap-2 sm:col-span-1 lg:col-span-2">
           <button
             type="submit"
-            className="flex-1 rounded-full bg-[#f2c230] px-5 py-2.5 text-sm font-bold text-bg transition hover:brightness-105"
+            className="flex-1 rounded-full bg-[#9ccfea] px-5 py-2.5 text-sm font-bold text-bg transition hover:brightness-105"
           >
             Buscar
           </button>
@@ -317,7 +309,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
         <div className="glass overflow-x-auto rounded-lg">
           <table className="w-full min-w-[720px] text-sm">
             <thead>
-              <tr className="border-b border-line text-left text-[11px] uppercase tracking-[0.15em] text-muted">
+              <tr className="border-b border-line text-left text-xs text-muted">
                 <th className="px-4 py-3">#</th>
                 <th className="px-2 py-3">Jugador</th>
                 <th className="px-2 py-3">Edad</th>
@@ -327,7 +319,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
                 <th className="px-2 py-3">A</th>
                 <th className="px-2 py-3">xG</th>
                 <th className="px-2 py-3">xA</th>
-                <th className="px-4 py-3 text-right text-[#f2c230]">
+                <th className="px-4 py-3 text-right text-[#9ccfea]">
                   {sortLabel}
                   {perNinetyShown ? " /90" : ""}
                 </th>
@@ -349,10 +341,6 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
                       <span className="flex flex-col">
                         <span className="font-semibold">{row.name}</span>
                         <span className="flex items-center gap-1.5 text-xs text-muted">
-                          <span
-                            className="h-1.5 w-1.5 rounded-full"
-                            style={{ background: competitionColor(row.competition) }}
-                          />
                           {row.team ?? row.competition} · {positionLabel(row.position)}
                         </span>
                       </span>
@@ -371,7 +359,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
                   <td className="px-2 py-2.5 tabular-nums text-muted">
                     {row.expected_assists.toFixed(1)}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-display text-base font-bold tabular-nums text-[#f2c230]">
+                  <td className="px-4 py-2.5 text-right font-display text-base font-bold tabular-nums text-[#9ccfea]">
                     {show(row, values.sort, values.per_90)}
                   </td>
                 </tr>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Season } from "@/lib/api";
-import { competitionColor, seasonDisplay } from "@/lib/format";
+import { seasonDisplay } from "@/lib/format";
 import { CAREER } from "@/lib/seasons";
 
 function pill(active: boolean): string {
@@ -32,10 +32,6 @@ export function SeasonSelector({
             className={pill(active)}
             scroll={false}
           >
-            <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: competitionColor(season.competition) }}
-            />
             {seasonDisplay(season.label)} · {season.team ?? season.competition}
           </Link>
         );
