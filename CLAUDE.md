@@ -1,4 +1,4 @@
-# TalentScope (player-scouting)
+# El Regista (player-scouting, antes TalentScope)
 
 App de usuario para comparar futbolistas y encontrar jugadores parecidos, con datos
 reales de las 5 grandes ligas. Proyecto personal: **todo debe ser 100% gratis**
@@ -19,8 +19,13 @@ reales de las 5 grandes ligas. Proyecto personal: **todo debe ser 100% gratis**
   - `presentation/api/` — routers `players` e `ingestion` (todo `/ingestion/*`
     exige cabecera `X-Ingestion-Key` si `INGESTION_API_KEY` está configurada).
 - Web: `web/` Next.js 16 (App Router, lee `web/AGENTS.md`: APIs cambiadas respecto
-  a lo conocido), Tailwind, iconos SVG propios en `web/app/components/icons.tsx`,
-  estética oscura (tokens en `globals.css`: `brand`, `side-a` azul, `side-b` naranja),
+  a lo conocido), Tailwind. **Marca El Regista**: pizarra #1F3B2D, tiza #F2EFE6, césped
+  #5FA37A, amarillo #F2C230 (tokens en `globals.css`; `side-a`/`side-b` para comparar).
+  Tipografía propia **Regista Display** (solo mayúsculas, titulares) + Chivo (texto);
+  logo, iconos y fuente se generan con `scripts/brand/*.py` (shapely + fontTools) →
+  `web/app/fonts/`, `web/public/brand/`, `web/app/components/icons.tsx` (no editar a mano).
+  Nada de efectos "de IA" (notas manuscritas, brillos, degradados, cristal) y poco texto.
+  Fotos libres en `web/public/photos` con créditos en `lib/photos.ts` (pie de página).
   animaciones con `motion` (`motion/react`), fotos grandes vía `bigPhoto()`
   (Transfermarkt `/portrait/big/`). Métricas y textos explicativos en `web/lib/metrics.ts`.
   No hay pantalla de ingesta (es solo API).
