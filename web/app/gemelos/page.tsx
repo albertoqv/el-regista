@@ -19,7 +19,7 @@ import {
 import { AGES, BUDGETS } from "@/lib/twins";
 
 export const metadata: Metadata = {
-  title: "Gemelos · TalentScope",
+  title: "Gemelos · El Regista",
   description: "Encuentra jugadores con el mismo perfil que tu favorito, por mucho menos dinero.",
 };
 
@@ -44,7 +44,7 @@ function Chip({ active, href: to, children }: { active: boolean; href: string; c
       href={to}
       scroll={false}
       className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-        active ? "border-[#ffd76a] bg-[#ffd76a] text-black" : "border-line text-muted hover:border-line-strong hover:text-ink"
+        active ? "border-[#f2c230] bg-[#f2c230] text-bg" : "border-line text-muted hover:border-line-strong hover:text-ink"
       }`}
     >
       {children}
@@ -65,18 +65,15 @@ function Landing({ stars }: { stars: SeasonLeader[] }) {
         <Reveal>
           <ScoutNote rotate={-4}>el truco de los ojeadores</ScoutNote>
           <h1 className="mt-2 font-display text-5xl font-bold leading-[1.02] tracking-tight sm:text-7xl">
-            Encuentra al <Marker color="#ffd76a">gemelo</Marker>.
+            Encuentra al <Marker color="#f2c230">gemelo</Marker>.
           </h1>
         </Reveal>
         <Reveal delay={0.08}>
-          <p className="max-w-2xl text-base text-muted sm:text-lg">
-            ¿Quieres un Lamine pero no tienes 200 millones? Dinos a quién quieres fichar y te
-            enseñamos jugadores que juegan igual, cuánto cuestan y cuánto te ahorras.
-          </p>
+          <p className="max-w-2xl text-base text-muted sm:text-lg">Mismo estilo de juego, menos dinero.</p>
         </Reveal>
         <Reveal delay={0.14} className="relative w-full max-w-2xl">
           <TwinSearch autoFocus />
-          <span className="pointer-events-none absolute -right-28 -top-12 hidden text-[#ffd76a] lg:flex lg:items-end">
+          <span className="pointer-events-none absolute -right-28 -top-12 hidden text-[#f2c230] lg:flex lg:items-end">
             <ScoutNote rotate={6}>prueba con tu crack</ScoutNote>
             <HandArrow direction="down-left" />
           </span>
@@ -94,7 +91,7 @@ function Landing({ stars }: { stars: SeasonLeader[] }) {
                     name={star.name}
                     photoUrl={star.photo_url}
                     accent={competitionColor(star.competition)}
-                    rounded="rounded-2xl"
+                    rounded="rounded-lg"
                     className="aspect-[3/4] transition duration-500 group-hover:-translate-y-1 group-hover:rotate-[-1deg]"
                   />
                   <div className="absolute inset-x-0 bottom-0 p-3">
@@ -115,8 +112,8 @@ function Landing({ stars }: { stars: SeasonLeader[] }) {
           ["3", "Te damos gemelos", "Jugadores que hacen lo mismo, con su precio, el ahorro y en qué se parecen de verdad."],
         ].map(([step, title, text], index) => (
           <Reveal key={step} delay={index * 0.06}>
-            <div className="glass h-full rounded-3xl p-6">
-              <span className="font-hand text-4xl text-[#ffd76a]">{step}.</span>
+            <div className="glass h-full rounded-lg p-6">
+              <span className="font-hand text-4xl text-[#f2c230]">{step}.</span>
               <h3 className="font-display text-lg font-bold">{title}</h3>
               <p className="mt-1 text-sm text-muted">{text}</p>
             </div>
@@ -161,7 +158,7 @@ export default async function TwinsPage(props: PageProps<"/gemelos">) {
     return (
       <div className="flex flex-col gap-6 pt-10">
         <TwinSearch />
-        <p className="glass rounded-2xl p-5 text-sm text-red-300">{error}</p>
+        <p className="glass rounded-lg p-5 text-sm text-red-300">{error}</p>
       </div>
     );
   }
@@ -184,7 +181,7 @@ export default async function TwinsPage(props: PageProps<"/gemelos">) {
           <PlayerPortrait
             name={target.name}
             photoUrl={target.photo_url}
-            accent="#ffd76a"
+            accent="#f2c230"
             className="mx-auto aspect-[3/4] w-full max-w-[260px]"
           />
         </Reveal>
@@ -210,7 +207,7 @@ export default async function TwinsPage(props: PageProps<"/gemelos">) {
               </span>
             </div>
             {best && best.market_value_eur !== null && target.market_value_eur && (
-              <div className="glass rounded-2xl px-4 py-3">
+              <div className="glass rounded-lg px-4 py-3">
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.2em] text-muted">
                   Mejor alternativa
                 </span>
@@ -231,7 +228,7 @@ export default async function TwinsPage(props: PageProps<"/gemelos">) {
         </div>
       </section>
 
-      <section className="glass flex flex-col gap-3 rounded-3xl p-4">
+      <section className="glass flex flex-col gap-3 rounded-lg p-4">
         <div className="no-scrollbar -mx-1 flex items-center gap-2 overflow-x-auto px-1">
           <span className="shrink-0 pr-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted">Presupuesto</span>
           {BUDGETS.map((budget) => (
@@ -262,7 +259,7 @@ export default async function TwinsPage(props: PageProps<"/gemelos">) {
       </section>
 
       {twins.length === 0 ? (
-        <p className="glass rounded-3xl p-8 text-center text-muted">
+        <p className="glass rounded-lg p-8 text-center text-muted">
           <ScoutNote rotate={-2}>nada por aquí…</ScoutNote>
           <br />
           Ningún jugador cumple esos filtros. Prueba a subir el presupuesto o quitar la edad.

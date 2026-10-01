@@ -7,7 +7,7 @@ import { getLeagueTable, type TableRow } from "@/lib/api";
 import { COMPETITIONS, competitionColor, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Equipos · TalentScope",
+  title: "Equipos · El Regista",
   description: "Clasificación real frente a la merecida (xPts), xG, presión y forma de cada equipo.",
 };
 
@@ -34,10 +34,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
       <Reveal>
         <ScoutNote rotate={-2}>la tabla que no miente</ScoutNote>
         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Equipos</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
-          La clasificación de siempre junto a la que cada equipo <em>merece</em> por sus ocasiones
-          (puntos esperados, xPts), cuánto presiona y cómo llega.
-        </p>
+        <p className="mt-1 max-w-2xl text-sm text-muted">La tabla real y la que cada equipo merece.</p>
       </Reveal>
 
       <div className="flex flex-col gap-3">
@@ -67,7 +64,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
             <Link
               key={option}
               href={`/equipos?liga=${encodeURIComponent(league)}&temporada=${option}`}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${option === season ? "bg-white text-black" : "text-muted hover:text-ink"}`}
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${option === season ? "bg-white text-bg" : "text-muted hover:text-ink"}`}
             >
               {seasonDisplay(option)}
             </Link>
@@ -76,12 +73,12 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
       </div>
 
       {rows.length === 0 ? (
-        <p className="glass rounded-3xl p-8 text-center text-muted">Todavía no hay datos de esta liga.</p>
+        <p className="glass rounded-lg p-8 text-center text-muted">Todavía no hay datos de esta liga.</p>
       ) : (
         <>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Reveal>
-              <div className="glass h-full rounded-3xl p-5">
+              <div className="glass h-full rounded-lg p-5">
                 <h2 className="font-display text-lg font-bold">Los que más aprietan</h2>
                 <p className="mb-3 text-xs text-muted">
                   PPDA: pases que dejan dar al rival antes de intentar robar. Cuanto más bajo, más presión.
@@ -100,7 +97,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
               </div>
             </Reveal>
             <Reveal delay={0.05}>
-              <div className="glass h-full rounded-3xl p-5">
+              <div className="glass h-full rounded-lg p-5">
                 <h2 className="font-display text-lg font-bold">Suerte y mala suerte</h2>
                 <p className="mb-3 text-xs text-muted">
                   Puntos reales menos puntos esperados. Muy positivo = está sacando más de lo que genera.
@@ -111,7 +108,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
                     return (
                       <li key={row.team} className="flex justify-between">
                         <span>{row.team}</span>
-                        <span className={`font-display font-bold tabular-nums ${luck >= 0 ? "text-emerald-300" : "text-rose-300"}`}>
+                        <span className={`font-display font-bold tabular-nums ${luck >= 0 ? "text-brand-2" : "text-rose-300"}`}>
                           {signed(luck)}
                         </span>
                       </li>
@@ -123,7 +120,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
           </div>
 
           <p className="-mb-2 text-right text-[11px] text-muted sm:hidden">Desliza la tabla para ver más →</p>
-          <div className="glass overflow-x-auto rounded-3xl">
+          <div className="glass overflow-x-auto rounded-lg">
             <table className="w-full min-w-[860px] text-sm">
               <thead>
                 <tr className="border-b border-line text-left text-[11px] uppercase tracking-[0.12em] text-muted">
@@ -166,7 +163,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
                       <td className="px-2 py-2.5 text-center font-display text-base font-bold tabular-nums">{row.points}</td>
                       <td className="px-2 py-2.5 text-center tabular-nums">
                         {row.xpts.toFixed(1)}{" "}
-                        <span className={`text-xs ${luck >= 0 ? "text-emerald-300" : "text-rose-300"}`}>({signed(luck)})</span>
+                        <span className={`text-xs ${luck >= 0 ? "text-brand-2" : "text-rose-300"}`}>({signed(luck)})</span>
                       </td>
                       <td className="px-2 py-2.5 text-center tabular-nums">{row.ppda?.toFixed(1) ?? "—"}</td>
                       <td className="px-4 py-2.5">

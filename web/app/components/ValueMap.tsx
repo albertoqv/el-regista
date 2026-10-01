@@ -40,7 +40,7 @@ export function ValueMap({ target, twins }: { target: TwinProfile; twins: Twin[]
   const active = priced.find((twin) => twin.player_id === hovered);
 
   return (
-    <div className="glass relative rounded-3xl p-4 sm:p-6">
+    <div className="glass relative rounded-lg p-4 sm:p-6">
       <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
         <div>
           <h2 className="font-display text-xl font-bold tracking-tight">Mapa de fichajes</h2>
@@ -76,7 +76,7 @@ export function ValueMap({ target, twins }: { target: TwinProfile; twins: Twin[]
           stroke="rgba(255,215,106,0.25)"
           strokeDasharray="6 6"
         />
-        <text x={PAD.left + 12} y={PAD.top + 30} className="fill-[#ffd76a] font-hand text-[26px]">
+        <text x={PAD.left + 12} y={PAD.top + 30} className="fill-[#f2c230] font-hand text-[26px]">
           zona ganga
         </text>
 
@@ -101,7 +101,7 @@ export function ValueMap({ target, twins }: { target: TwinProfile; twins: Twin[]
               x2={x(target.market_value_eur)}
               y1={PAD.top}
               y2={HEIGHT - PAD.bottom}
-              stroke="#ff6b3d"
+              stroke="#ff8a4c"
               strokeDasharray="4 5"
               strokeWidth="1.5"
             />
@@ -132,7 +132,7 @@ export function ValueMap({ target, twins }: { target: TwinProfile; twins: Twin[]
                 onMouseEnter={() => setHovered(twin.player_id)}
                 onMouseLeave={() => setHovered(null)}
               >
-                <circle cx={cx} cy={cy} r={R + 3} fill="#05070d" stroke={isActive ? "#ffd76a" : "rgba(255,255,255,0.35)"} strokeWidth={isActive ? 3 : 1.5} />
+                <circle cx={cx} cy={cy} r={R + 3} fill="#05070d" stroke={isActive ? "#f2c230" : "rgba(255,255,255,0.35)"} strokeWidth={isActive ? 3 : 1.5} />
                 {photo ? (
                   <image
                     href={photo}

@@ -57,8 +57,8 @@ function PodiumCard({
           className={`w-full transition duration-500 group-hover:-translate-y-1 ${first ? "aspect-[3/4]" : "aspect-[3/4] sm:aspect-[4/5]"}`}
         />
         <div
-          className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full font-display text-lg font-bold text-black"
-          style={{ background: MEDALS[rank], boxShadow: `0 0 20px ${MEDALS[rank]}aa` }}
+          className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full font-display text-lg font-bold text-bg"
+          style={{ background: MEDALS[rank] }}
         >
           {rank + 1}
         </div>
@@ -131,7 +131,6 @@ export function SeasonLeaders({
           <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
             Los mejores en <span className="text-gradient">{info.short}</span>
           </h2>
-          <p className="mt-1 max-w-xl text-sm text-muted">{info.help}</p>
         </div>
       </div>
 
@@ -141,13 +140,12 @@ export function SeasonLeaders({
             key={tab.metric}
             type="button"
             onClick={() => load(tab.metric, competition)}
-            className={`relative shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${metric === tab.metric ? "text-white" : "text-muted hover:text-ink"}`}
+            className={`relative shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${metric === tab.metric ? "text-bg" : "text-muted hover:text-ink"}`}
           >
             {metric === tab.metric && (
               <motion.span
                 layoutId="leader-tab"
-                className="absolute inset-0 rounded-full bg-gradient-to-r from-brand to-brand-2"
-                style={{ boxShadow: "0 0 24px rgba(61,139,255,0.5)" }}
+                className="absolute inset-0 rounded-full bg-brand"
                 transition={{ type: "spring", stiffness: 400, damping: 32 }}
               />
             )}
@@ -159,7 +157,7 @@ export function SeasonLeaders({
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         {[null, ...COMPETITIONS].map((option) => {
           const active = competition === option;
-          const color = option ? competitionColor(option) : "#3d8bff";
+          const color = option ? competitionColor(option) : "#7cc0ff";
           return (
             <button
               key={option ?? "all"}
@@ -181,7 +179,7 @@ export function SeasonLeaders({
 
       <div className={`transition-opacity duration-300 ${loading ? "opacity-40" : "opacity-100"}`}>
         {leaders.length === 0 ? (
-          <p className="glass rounded-2xl p-8 text-center text-sm text-muted">
+          <p className="glass rounded-lg p-8 text-center text-sm text-muted">
             Todavía no hay datos de esta temporada.
           </p>
         ) : (
@@ -199,7 +197,7 @@ export function SeasonLeaders({
               </AnimatePresence>
             </div>
 
-            <ol className="glass grid grid-cols-1 gap-1 rounded-3xl p-3 md:grid-cols-2 md:gap-x-4">
+            <ol className="glass grid grid-cols-1 gap-1 rounded-lg p-3 md:grid-cols-2 md:gap-x-4">
               {rest.map((leader, index) => {
                 const value = valueOf(leader, metric);
                 return (
@@ -211,10 +209,10 @@ export function SeasonLeaders({
                   >
                     <Link
                       href={`/players/${leader.player_id}`}
-                      className="relative flex items-center gap-3 overflow-hidden rounded-2xl px-3 py-2.5 transition hover:bg-white/5"
+                      className="relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 transition hover:bg-white/5"
                     >
                       <motion.span
-                        className="absolute inset-y-1 left-0 rounded-2xl bg-gradient-to-r from-brand/15 to-transparent"
+                        className="absolute inset-y-1 left-0 rounded-lg bg-surface-strong"
                         initial={{ width: 0 }}
                         animate={{ width: `${(value / maxValue) * 100}%` }}
                         transition={{ duration: 0.8, delay: 0.3 + index * 0.05 }}

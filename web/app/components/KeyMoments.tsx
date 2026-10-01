@@ -46,7 +46,7 @@ export function KeyMoments({
   const b = summarize(shotsB);
 
   return (
-    <section className="glass flex flex-col gap-5 rounded-3xl p-5 sm:p-7">
+    <section className="glass flex flex-col gap-5 rounded-lg p-5 sm:p-7">
       <div>
         <h2 className="font-display text-2xl font-bold tracking-tight">Momentos clave</h2>
         <p className="text-sm text-muted">

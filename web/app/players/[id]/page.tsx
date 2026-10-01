@@ -45,7 +45,7 @@ function param(value: string | string[] | undefined): string | undefined {
 
 function Badge({ label, value }: { label: string; value: string }) {
   return (
-    <div className="glass flex flex-col rounded-2xl px-4 py-2.5">
+    <div className="glass flex flex-col rounded-lg px-4 py-2.5">
       <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
         {label}
       </span>
@@ -59,9 +59,9 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const { id } = await props.params;
   const player = await getPlayer(Number(id)).catch(() => null);
-  if (!player) return { title: "TalentScope" };
+  if (!player) return { title: "El Regista" };
   return {
-    title: `${player.name} · TalentScope`,
+    title: `${player.name} · El Regista`,
     description: `Perfil de scouting, gemelos y estadísticas de ${player.name}.`,
     openGraph: { images: [`/players/${id}/card`] },
     twitter: { card: "summary_large_image", images: [`/players/${id}/card`] },
@@ -102,7 +102,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
 
   const age = formatAge(player);
   const team = season ? seasons.find((s) => s.label === season.label && s.competition === season.competition)?.team : null;
-  const accent = season ? competitionColor(season.competition) : "#3d8bff";
+  const accent = season ? competitionColor(season.competition) : "#7cc0ff";
   const contributions = player.goals + player.assists;
 
   return (
@@ -155,7 +155,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
                 { label: "Asistencias", value: player.assists, decimals: 0 },
                 { label: "Goles + asist.", value: contributions, decimals: 0 },
               ].map((stat) => (
-                <div key={stat.label} className="glass rounded-3xl p-4">
+                <div key={stat.label} className="glass rounded-lg p-4">
                   <span className="block font-display text-4xl font-bold tabular-nums sm:text-5xl">
                     <CountUp value={stat.value} decimals={stat.decimals} />
                   </span>
@@ -167,7 +167,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
             <Reveal delay={0.2} className="flex flex-wrap gap-3">
               <Link
                 href={`/compare?a=${player.player_id}${season ? `&sac=${encodeURIComponent(season.competition)}&sal=${encodeURIComponent(season.label)}` : ""}`}
-                className="rounded-full bg-gradient-to-r from-brand to-brand-2 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_0_24px_rgba(61,139,255,0.45)] transition hover:brightness-110"
+                className="rounded-full bg-brand px-5 py-2.5 text-sm font-semibold text-bg transition hover:brightness-110"
               >
                 Comparar con otro jugador
               </Link>
@@ -189,7 +189,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
 
       {percentiles && (
         <Reveal>
-          <section className="glass grid grid-cols-1 gap-8 rounded-3xl p-6 lg:grid-cols-2">
+          <section className="glass grid grid-cols-1 gap-8 rounded-lg p-6 lg:grid-cols-2">
             <div className="flex flex-col gap-3">
               <div>
                 <h2 className="font-display text-2xl font-bold tracking-tight">
@@ -228,7 +228,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
 
       {marketValue.history.length > 0 && (
         <Reveal>
-          <MarketValueChart series={[{ name: player.name, color: "#22d3ee", history: marketValue.history }]} />
+          <MarketValueChart series={[{ name: player.name, color: "#9ed7b3", history: marketValue.history }]} />
         </Reveal>
       )}
 
@@ -246,7 +246,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
           </div>
           <Link
             href={`/gemelos?p=${player.player_id}`}
-            className="rounded-full bg-[#ffd76a] px-4 py-2 text-sm font-bold text-black transition hover:brightness-105"
+            className="rounded-full bg-[#f2c230] px-4 py-2 text-sm font-bold text-bg transition hover:brightness-105"
           >
             Buscar gemelos baratos →
           </Link>

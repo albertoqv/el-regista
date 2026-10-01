@@ -15,7 +15,7 @@ export function PlayerAutocomplete({
   onSelect,
   placeholder,
   size = "md",
-  accent = "#3d8bff",
+  accent = "#7cc0ff",
   autoFocus = false,
 }: {
   initialPlayer?: PlayerSummary | null;
@@ -84,7 +84,7 @@ export function PlayerAutocomplete({
   return (
     <div className="relative w-full" ref={containerRef}>
       <div
-        className={`glass flex items-center gap-3 rounded-2xl transition focus-within:border-white/25 ${large ? "px-5 py-4" : "px-4 py-2.5"}`}
+        className={`glass flex items-center gap-3 rounded-lg transition focus-within:border-white/25 ${large ? "px-5 py-4" : "px-4 py-2.5"}`}
         style={{ boxShadow: open ? `0 0 0 3px ${accent}33` : undefined }}
       >
         <IconSearch size={large ? 22 : 18} color={accent} />
@@ -127,7 +127,7 @@ export function PlayerAutocomplete({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full z-50 mt-2 max-h-96 w-full overflow-auto rounded-2xl border border-line bg-[#0a0f1c]/95 p-1.5 shadow-2xl backdrop-blur-xl"
+            className="absolute top-full z-50 mt-2 max-h-96 w-full overflow-auto rounded-lg border border-line bg-bg-deep p-1.5 shadow-2xl"
           >
             {results.map((player, index) => (
               <li key={player.player_id}>

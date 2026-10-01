@@ -17,7 +17,7 @@ import {
 import { COMPETITIONS, competitionColor, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Predicciones · TalentScope",
+  title: "Predicciones · El Regista",
   description: "Pronósticos de los próximos partidos de las 5 grandes ligas con un modelo evaluado en público.",
 };
 
@@ -48,7 +48,7 @@ function TrustPanel({
 }) {
   const edge = backtest.accuracy - backtest.baseline_accuracy;
   return (
-    <section className="glass grid grid-cols-2 gap-4 rounded-3xl p-5 sm:grid-cols-4">
+    <section className="glass grid grid-cols-2 gap-4 rounded-lg p-5 sm:grid-cols-4">
       <div className="col-span-2 sm:col-span-4">
         <h2 className="font-display text-lg font-bold">¿Cuánto acierta el modelo?</h2>
         <p className="text-sm text-muted">
@@ -65,7 +65,7 @@ function TrustPanel({
         <span className="text-xs text-muted">acierta el resultado (1X2)</span>
       </div>
       <div>
-        <span className="block font-display text-3xl font-bold text-emerald-300">
+        <span className="block font-display text-3xl font-bold text-brand-2">
           +{Math.round(edge * 100)} pts
         </span>
         <span className="text-xs text-muted">sobre apostar siempre por lo más habitual</span>
@@ -86,7 +86,7 @@ function TrustPanel({
         <span className="text-xs text-muted">desvío medio entre lo que dice y lo que pasa</span>
       </div>
       {benchmark && benchmark.matches > 0 && (
-        <p className="col-span-2 rounded-2xl bg-white/[0.04] p-3 text-sm sm:col-span-4">
+        <p className="col-span-2 rounded-lg bg-white/[0.04] p-3 text-sm sm:col-span-4">
           <strong>Frente a las casas de apuestas</strong> en los mismos{" "}
           {benchmark.matches.toLocaleString("es-ES")} partidos (Brier, menos es mejor): nuestro modelo{" "}
           <strong>{benchmark.model_brier.toFixed(3)}</strong>, cuotas de cierre{" "}
@@ -122,10 +122,7 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
       <Reveal>
         <ScoutNote rotate={-2}>números, no corazonadas</ScoutNote>
         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Próximos partidos</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
-          Probabilidades de cada resultado, goles esperados y marcadores más probables de los próximos
-          partidos, calculados con el rendimiento real de cada equipo (xG) y su forma reciente.
-        </p>
+        <p className="mt-1 max-w-2xl text-sm text-muted">Probabilidades de cada partido.</p>
       </Reveal>
 
       {highlights && (
@@ -143,7 +140,7 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
         {[undefined, ...COMPETITIONS].map((option) => {
           const active = league === option;
-          const color = option ? competitionColor(option) : "#3d8bff";
+          const color = option ? competitionColor(option) : "#7cc0ff";
           return (
             <Link
               key={option ?? "all"}
@@ -163,7 +160,7 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
       </div>
 
       {forecasts.length === 0 ? (
-        <p className="glass rounded-3xl p-8 text-center text-muted">
+        <p className="glass rounded-lg p-8 text-center text-muted">
           No hay partidos en las próximas tres semanas.
         </p>
       ) : (
@@ -180,8 +177,7 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
       )}
 
       <p className="text-center text-xs text-muted">
-        Pronósticos orientativos basados en estadística. No tienen en cuenta lesiones, sanciones ni
-        rotaciones de última hora.
+        Orientativo: no incluye lesiones, sanciones ni rotaciones.
       </p>
     </div>
   );

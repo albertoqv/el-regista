@@ -57,12 +57,12 @@ export async function generateMetadata(props: PageProps<"/compare">): Promise<Me
   const players = await Promise.all(ids.map((id) => (id ? getPlayer(id).catch(() => null) : null)));
   if (players[0] && players[1]) {
     return {
-      title: `${players[0].name} vs ${players[1].name} · TalentScope`,
+      title: `${players[0].name} vs ${players[1].name} · El Regista`,
       description: `Cara a cara con datos reales: ${players[0].name} contra ${players[1].name}.`,
     };
   }
   return {
-    title: "Comparar jugadores · TalentScope",
+    title: "Comparar jugadores · El Regista",
     description: "Enfrenta a dos futbolistas con radar, percentiles, tiros y valor de mercado.",
   };
 }
@@ -134,10 +134,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
           <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
             Enfrenta a <span className="text-side-a">dos</span> jugadores
           </h1>
-          <p className="mt-1 text-sm text-muted">
-            Elige dos jugadores. Por defecto se usa su última temporada; puedes cambiarla o
-            comparar carreras completas.
-          </p>
+          <p className="mt-1 text-sm text-muted">Dos jugadores, cara a cara.</p>
         </Reveal>
         <ComparePicker
           defaultA={summaryA}
@@ -149,7 +146,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
         />
       </section>
 
-      {error && <p className="glass rounded-2xl p-5 text-sm text-red-300">{error}</p>}
+      {error && <p className="glass rounded-lg p-5 text-sm text-red-300">{error}</p>}
 
       {content && (
         <>
@@ -173,7 +170,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
 
           {(content.percentilesA || content.percentilesB) && (
             <Reveal>
-              <section className="glass flex flex-col gap-4 rounded-3xl p-6">
+              <section className="glass flex flex-col gap-4 rounded-lg p-6">
                 <div className="text-center">
                   <h2 className="font-display text-2xl font-bold tracking-tight">Radar de percentiles</h2>
                   <p className="mx-auto max-w-2xl text-sm text-muted">
@@ -184,8 +181,8 @@ export default async function ComparePage(props: PageProps<"/compare">) {
                 <RadarChart
                   axes={RADAR_METRICS}
                   series={[
-                    { name: content.playerA.name, color: "#3d8bff", values: toValues(content.percentilesA) },
-                    { name: content.playerB.name, color: "#ff6b3d", values: toValues(content.percentilesB) },
+                    { name: content.playerA.name, color: "#7cc0ff", values: toValues(content.percentilesA) },
+                    { name: content.playerB.name, color: "#ff8a4c", values: toValues(content.percentilesB) },
                   ]}
                 />
                 <div className="flex flex-col items-center gap-2">
@@ -216,8 +213,8 @@ export default async function ComparePage(props: PageProps<"/compare">) {
             <Reveal>
               <MarketValueChart
                 series={[
-                  { name: content.playerA.name, color: "#3d8bff", history: content.valueA.history },
-                  { name: content.playerB.name, color: "#ff6b3d", history: content.valueB.history },
+                  { name: content.playerA.name, color: "#7cc0ff", history: content.valueA.history },
+                  { name: content.playerB.name, color: "#ff8a4c", history: content.valueB.history },
                 ]}
               />
             </Reveal>

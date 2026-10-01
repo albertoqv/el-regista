@@ -15,7 +15,7 @@ import {
 } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Explorador · TalentScope",
+  title: "Explorador · El Regista",
   description:
     "Filtra jugadores por posición, edad, liga y precio, y ordénalos por cualquier métrica.",
 };
@@ -147,10 +147,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
       <Reveal>
         <ScoutNote rotate={-2}>como un Wyscout, pero gratis</ScoutNote>
         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Explorador</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted">
-          Filtra por lo que te importa y ordena por cualquier métrica. &quot;Por 90&apos;&quot;
-          compara de forma justa aunque hayan jugado minutos distintos.
-        </p>
+        <p className="mt-1 max-w-2xl text-sm text-muted">Filtra y ordena por cualquier métrica.</p>
       </Reveal>
 
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
@@ -158,18 +155,18 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
           <Link
             key={recipe.label}
             href={`/explorar?${new URLSearchParams({ season: values.season, ...recipe.params }).toString()}`}
-            className="glass glass-hover shrink-0 rounded-2xl px-4 py-2.5"
+            className="glass glass-hover shrink-0 rounded-lg px-4 py-2.5"
             style={{ transform: `rotate(${index % 2 ? 1 : -1}deg)` }}
           >
             <span className="block text-sm font-semibold">{recipe.label}</span>
-            <span className="font-hand text-base text-[#ffd76a]">{recipe.note}</span>
+            <span className="font-hand text-base text-[#f2c230]">{recipe.note}</span>
           </Link>
         ))}
       </div>
 
       <form
         method="get"
-        className="glass grid grid-cols-2 gap-3 rounded-3xl p-4 sm:grid-cols-3 lg:grid-cols-5"
+        className="glass grid grid-cols-2 gap-3 rounded-lg p-4 sm:grid-cols-3 lg:grid-cols-5"
       >
         <Field label="Temporada">
           <select name="season" defaultValue={values.season} className={INPUT}>
@@ -266,14 +263,14 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
             type="checkbox"
             value="true"
             defaultChecked={values.per_90}
-            className="h-4 w-4 accent-[#ffd76a]"
+            className="h-4 w-4 accent-[#f2c230]"
           />
           Por 90 minutos
         </label>
         <div className="col-span-2 flex items-end gap-2 sm:col-span-1 lg:col-span-2">
           <button
             type="submit"
-            className="flex-1 rounded-full bg-[#ffd76a] px-5 py-2.5 text-sm font-bold text-black transition hover:brightness-105"
+            className="flex-1 rounded-full bg-[#f2c230] px-5 py-2.5 text-sm font-bold text-bg transition hover:brightness-105"
           >
             Buscar
           </button>
@@ -294,7 +291,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
       ) : null}
 
       {rows.length === 0 ? (
-        <p className="glass rounded-3xl p-8 text-center text-muted">
+        <p className="glass rounded-lg p-8 text-center text-muted">
           {otherLeague && values.season === current ? (
             <>
               <ScoutNote rotate={-2}>todavía sin datos</ScoutNote>
@@ -317,7 +314,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
           )}
         </p>
       ) : (
-        <div className="glass overflow-x-auto rounded-3xl">
+        <div className="glass overflow-x-auto rounded-lg">
           <table className="w-full min-w-[720px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-[11px] uppercase tracking-[0.15em] text-muted">
@@ -330,7 +327,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
                 <th className="px-2 py-3">A</th>
                 <th className="px-2 py-3">xG</th>
                 <th className="px-2 py-3">xA</th>
-                <th className="px-4 py-3 text-right text-[#ffd76a]">
+                <th className="px-4 py-3 text-right text-[#f2c230]">
                   {sortLabel}
                   {perNinetyShown ? " /90" : ""}
                 </th>
@@ -374,7 +371,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
                   <td className="px-2 py-2.5 tabular-nums text-muted">
                     {row.expected_assists.toFixed(1)}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-display text-base font-bold tabular-nums text-[#ffd76a]">
+                  <td className="px-4 py-2.5 text-right font-display text-base font-bold tabular-nums text-[#f2c230]">
                     {show(row, values.sort, values.per_90)}
                   </td>
                 </tr>

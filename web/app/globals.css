@@ -1,22 +1,26 @@
 @import "tailwindcss";
 
+/* El Regista: green slate, chalk and a yellow card. Flat surfaces, no glass, no glow. */
 :root {
-  --bg: #04060c;
-  --surface: rgba(255, 255, 255, 0.035);
-  --surface-strong: rgba(255, 255, 255, 0.07);
-  --border: rgba(255, 255, 255, 0.08);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --text: #eef2ff;
-  --muted: #8b93a7;
-  --brand: #3d8bff;
-  --brand-2: #22d3ee;
-  --side-a: #3d8bff;
-  --side-b: #ff6b3d;
-  --gold: #f5c451;
+  --bg: #1f3b2d;
+  --bg-deep: #173024;
+  --surface: #213f30;
+  --surface-strong: #284a39;
+  --border: #36594a;
+  --border-strong: #4d7563;
+  --text: #f2efe6;
+  --muted: #b9c4b8;
+  --brand: #f2c230;
+  --brand-2: #9ed7b3;
+  --grass: #5fa37a;
+  --side-a: #7cc0ff;
+  --side-b: #ff8a4c;
+  --gold: #f2c230;
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-bg-deep: var(--bg-deep);
   --color-surface: var(--surface);
   --color-surface-strong: var(--surface-strong);
   --color-line: var(--border);
@@ -25,12 +29,13 @@
   --color-muted: var(--muted);
   --color-brand: var(--brand);
   --color-brand-2: var(--brand-2);
+  --color-grass: var(--grass);
   --color-side-a: var(--side-a);
   --color-side-b: var(--side-b);
   --color-gold: var(--gold);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-grotesk);
-  --font-hand: var(--font-caveat);
+  --font-sans: var(--font-chivo);
+  --font-display: var(--font-regista);
+  --font-hand: var(--font-chivo);
 }
 
 html {
@@ -39,179 +44,93 @@ html {
 }
 
 body {
-  /* Entrance animations start off-screen: never let them widen the page. */
   overflow-x: clip;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-inter), system-ui, sans-serif;
+  font-family: var(--font-chivo), system-ui, sans-serif;
+}
+
+/* Regista Display is drawn in capitals only: headings always read upright and tight. */
+.font-display {
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-weight: 400;
 }
 
 ::selection {
-  background: rgba(61, 139, 255, 0.35);
+  background: rgba(242, 194, 48, 0.4);
+  color: #1f3b2d;
 }
 
-/* Glass surfaces */
+/* Cards: flat slate panels with a thin line (the old "glass" name is kept for markup). */
 .glass {
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.055),
-    rgba(255, 255, 255, 0.02)
-  );
+  background: var(--surface);
   border: 1px solid var(--border);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
 }
 
 .glass-hover {
   transition:
-    border-color 200ms ease,
-    background 200ms ease,
-    transform 200ms ease;
+    border-color 160ms ease,
+    background 160ms ease;
 }
 
 .glass-hover:hover {
   border-color: var(--border-strong);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.08),
-    rgba(255, 255, 255, 0.03)
-  );
+  background: var(--surface-strong);
 }
 
-.text-gradient {
-  background: linear-gradient(100deg, #ffffff 10%, #9cc3ff 45%, #22d3ee 90%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
+.text-gradient,
 .text-gradient-gold {
-  background: linear-gradient(100deg, #fff4cf 0%, #f5c451 50%, #d98f16 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-/* Coach's whiteboard backdrop */
-.tactics {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-  background: radial-gradient(120% 80% at 50% -10%, #0c1426 0%, #05070d 55%);
-}
-
-.tactics-glow {
-  position: absolute;
-  left: 50%;
-  top: -30vh;
-  width: 90vw;
-  height: 70vh;
-  transform: translateX(-50%);
-  background: radial-gradient(closest-side, rgba(61, 139, 255, 0.22), transparent);
-  filter: blur(20px);
-}
-
-.tactics-pitch {
-  position: absolute;
-  inset: -4%;
-  width: 108%;
-  height: 108%;
-  transform: rotate(-4deg);
-  opacity: 0.8;
-}
-
-.chalk {
-  stroke: rgba(226, 232, 255, 0.11);
-  stroke-width: 2.2;
-  /* uneven dashes read as chalk rather than a vector line */
-  stroke-dasharray: 38 3 21 2 55 4;
-}
-
-.chalk-dot {
-  fill: rgba(226, 232, 255, 0.12);
-}
-
-.play .run,
-.play .pass {
-  stroke-width: 2.4;
-  stroke-linecap: round;
-  fill: none;
-}
-
-.play .run {
-  stroke: rgba(255, 215, 106, 0.22);
-  stroke-dasharray: 10 9;
-}
-
-.play .pass {
-  stroke: rgba(126, 240, 176, 0.2);
-  stroke-dasharray: 600;
-  stroke-dashoffset: 600;
-  animation: draw-pass 9s ease-in-out infinite;
-}
-
-.play-2 .pass {
-  animation-delay: 4.5s;
-}
-
-.play .mark {
-  fill: rgba(255, 255, 255, 0.14);
-  font: 700 26px var(--font-caveat), cursive;
-}
-
-.play .mark-o {
-  stroke: rgba(255, 255, 255, 0.14);
-  stroke-width: 2.4;
-}
-
-@keyframes draw-pass {
-  0% {
-    stroke-dashoffset: 600;
-  }
-  45%,
-  80% {
-    stroke-dashoffset: 0;
-  }
-  100% {
-    stroke-dashoffset: -600;
-  }
-}
-
-/* Paper/film grain so flat colours stop looking computer-generated */
-.grain {
-  position: absolute;
-  inset: 0;
-  opacity: 0.09;
-  mix-blend-mode: overlay;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  color: var(--brand);
 }
 
 .sticker {
   border-radius: 3px;
-  box-shadow:
-    0 1px 0 rgba(0, 0, 0, 0.25),
-    0 6px 14px -6px rgba(0, 0, 0, 0.6);
 }
 
-.marker-stroke {
-  stroke-dasharray: 260;
-  stroke-dashoffset: 260;
-  animation: marker-in 0.9s 0.4s ease-out forwards;
+/* Photo headers: the picture sits behind, darkened towards the text. */
+.photo-header {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
 }
 
-@keyframes marker-in {
+.photo-header > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+}
+
+.photo-header::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(23, 48, 36, 0.35) 0%, rgba(23, 48, 36, 0.96) 100%);
+}
+
+/* A very slow push-in on the home photo: movement without the weight of a video. */
+@keyframes slow-zoom {
+  from {
+    transform: scale(1);
+  }
   to {
-    stroke-dashoffset: 0;
+    transform: scale(1.12);
   }
 }
 
-/* Reveal: fade + lift. Never hides content without JS. */
+.slow-zoom {
+  animation: slow-zoom 26s ease-in-out infinite alternate;
+}
+
+/* Reveal: a short fade. Never hides content without JS. */
 @keyframes reveal-in {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -220,13 +139,13 @@ body {
 }
 
 .reveal {
-  animation: reveal-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: reveal-in 0.45s ease-out both;
 }
 
 @supports (animation-timeline: view()) {
   .reveal {
     animation-timeline: view();
-    animation-range: entry 0% entry 35%;
+    animation-range: entry 0% entry 30%;
     animation-delay: 0s !important;
   }
 }
@@ -240,7 +159,7 @@ body {
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--surface);
 }
 
 .skeleton::after {
@@ -248,23 +167,8 @@ body {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.08),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(242, 239, 230, 0.06), transparent);
   animation: shimmer 1.4s infinite;
-}
-
-@keyframes spin-slow {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.spin-slow {
-  animation: spin-slow 14s linear infinite;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -277,10 +181,11 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .reveal,
-  .play .pass,
-  .marker-stroke,
-  .spin-slow,
+  .slow-zoom,
   .skeleton::after {
     animation: none;
   }
 }
+
+/* One weight only: never let the browser fake a bold. */
+.font-display { font-synthesis: none; }

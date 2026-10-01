@@ -9,7 +9,7 @@ import { saving } from "@/lib/twins";
 export function SimilarPlayers({ report }: { report: TwinReport | null }) {
   if (!report || report.twins.length === 0) {
     return (
-      <p className="glass rounded-3xl p-6 text-sm text-muted">
+      <p className="glass rounded-lg p-6 text-sm text-muted">
         Aún no hay suficientes jugadores comparables.
       </p>
     );
@@ -37,10 +37,10 @@ export function SimilarPlayers({ report }: { report: TwinReport | null }) {
                 name={twin.name}
                 photoUrl={twin.photo_url}
                 accent={competitionColor(twin.competition)}
-                rounded="rounded-2xl"
+                rounded="rounded-lg"
                 className="aspect-[3/4] transition duration-500 group-hover:-translate-y-1"
               />
-              <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 font-display text-sm font-bold backdrop-blur">
+              <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2 py-0.5 font-display text-sm font-bold">
                 {twin.similarity}%
               </span>
               <div className="absolute inset-x-0 bottom-0 p-3">
@@ -50,7 +50,7 @@ export function SimilarPlayers({ report }: { report: TwinReport | null }) {
                 </span>
                 {twin.market_value_eur !== null && (
                   <span
-                    className={`mt-1 inline-block rounded-md px-1.5 py-0.5 text-[11px] font-bold ${value.kind === "cheaper" ? "bg-emerald-400/15 text-emerald-300" : "bg-white/10 text-ink/80"}`}
+                    className={`mt-1 inline-block rounded-md px-1.5 py-0.5 text-[11px] font-bold ${value.kind === "cheaper" ? "bg-grass/15 text-brand-2" : "bg-white/10 text-ink/80"}`}
                   >
                     {formatMarketValue(twin.market_value_eur)}
                     {value.kind === "cheaper" && ` · −${value.share}%`}

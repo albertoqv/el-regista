@@ -4,7 +4,7 @@ import { competitionColor } from "@/lib/format";
 
 const RESULT_LABEL: Record<string, string> = { w: "V", d: "E", l: "D" };
 const RESULT_COLOR: Record<string, string> = {
-  w: "bg-emerald-400/85 text-black",
+  w: "bg-grass/85 text-bg",
   d: "bg-white/25 text-ink",
   l: "bg-rose-500/80 text-white",
 };
@@ -80,7 +80,7 @@ export function kickoffDate(iso: string): Date {
 export function ForecastCard({ forecast }: { forecast: Forecast }) {
   const kickoff = kickoffDate(forecast.kickoff);
   return (
-    <article className="glass flex flex-col gap-4 rounded-3xl p-5">
+    <article className="glass flex flex-col gap-4 rounded-lg p-5">
       <div className="flex items-center justify-between text-xs text-muted">
         <span className="flex items-center gap-1.5">
           <span className="h-1.5 w-1.5 rounded-full" style={{ background: competitionColor(forecast.competition) }} />
@@ -117,7 +117,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
       <ProbabilityBar home={forecast.home_win} draw={forecast.draw} away={forecast.away_win} />
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span className="font-hand text-lg text-[#ffd76a]">{verdict(forecast)}</span>
+        <span className="font-hand text-lg text-[#f2c230]">{verdict(forecast)}</span>
         <span className="flex flex-wrap gap-1.5">
           {forecast.scorelines.slice(0, 3).map((score) => (
             <span key={`${score.home}-${score.away}`} className="rounded-md bg-white/5 px-2 py-1 tabular-nums">
@@ -136,7 +136,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
       </div>
       <Link
         href={`/predicciones/${forecast.match_id}`}
-        className="mt-auto rounded-full bg-white px-4 py-2 text-center text-xs font-bold text-black transition hover:bg-white/85"
+        className="mt-auto rounded-full bg-white px-4 py-2 text-center text-xs font-bold text-bg transition hover:bg-white/85"
       >
         Análisis completo: córners, tarjetas, goleadores…
       </Link>

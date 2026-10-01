@@ -79,7 +79,7 @@ export function PlayerMarketsTable({ markets }: { markets: PlayerMarkets }) {
   const [market, setMarket] = useState<keyof PlayerMarket>("goal");
   const info = MARKETS.find((entry) => entry.key === market) ?? MARKETS[0];
   return (
-    <section className="glass flex flex-col gap-4 rounded-3xl p-5 sm:p-6">
+    <section className="glass flex flex-col gap-4 rounded-lg p-5 sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl font-bold tracking-tight">Jugadores</h2>
@@ -95,7 +95,7 @@ export function PlayerMarketsTable({ markets }: { markets: PlayerMarkets }) {
               key={entry.key}
               type="button"
               onClick={() => setMarket(entry.key)}
-              className={`rounded-full px-3 py-1.5 transition ${market === entry.key ? "bg-white text-black" : "text-muted hover:text-ink"}`}
+              className={`rounded-full px-3 py-1.5 transition ${market === entry.key ? "bg-white text-bg" : "text-muted hover:text-ink"}`}
             >
               {entry.label}
             </button>
@@ -103,8 +103,8 @@ export function PlayerMarketsTable({ markets }: { markets: PlayerMarkets }) {
         </div>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Column team={markets.home_team} players={markets.home} market={market} color="#3d8bff" />
-        <Column team={markets.away_team} players={markets.away} market={market} color="#ff6b3d" />
+        <Column team={markets.home_team} players={markets.home} market={market} color="#7cc0ff" />
+        <Column team={markets.away_team} players={markets.away} market={market} color="#ff8a4c" />
       </div>
     </section>
   );

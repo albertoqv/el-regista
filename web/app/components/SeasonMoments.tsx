@@ -70,7 +70,7 @@ export function SeasonMoments({
             onClick={() => load(entry.metric)}
             className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
               metric === entry.metric
-                ? "border-[#ffd76a] bg-[#ffd76a] text-black"
+                ? "border-[#f2c230] bg-[#f2c230] text-bg"
                 : "border-line text-muted hover:border-line-strong hover:text-ink"
             }`}
           >
@@ -81,7 +81,7 @@ export function SeasonMoments({
 
       <div className={`transition-opacity duration-300 ${loading ? "opacity-40" : ""}`}>
         {!first ? (
-          <p className="glass rounded-3xl p-8 text-center text-sm text-muted">
+          <p className="glass rounded-lg p-8 text-center text-sm text-muted">
             Aún no hay tiros cargados de esta temporada.
           </p>
         ) : (
@@ -98,11 +98,11 @@ export function SeasonMoments({
                   <PlayerPortrait
                     name={first.name}
                     photoUrl={first.photo_url}
-                    accent="#ffd76a"
+                    accent="#f2c230"
                     className="aspect-[4/5] w-full"
                   />
                   <div className="absolute inset-x-0 bottom-0 p-5">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#ffd76a]">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#f2c230]">
                       {info.title}
                     </p>
                     <p className="font-display text-6xl font-bold leading-none">
@@ -116,7 +116,7 @@ export function SeasonMoments({
               </motion.div>
             </AnimatePresence>
 
-            <div className="glass flex flex-col rounded-3xl p-3">
+            <div className="glass flex flex-col rounded-lg p-3">
               <p className="px-3 pb-2 pt-1 text-sm text-muted">{info.help}</p>
               <ol className="flex flex-col gap-1">
                 {rest.map((leader, index) => (
@@ -128,7 +128,7 @@ export function SeasonMoments({
                   >
                     <Link
                       href={`/players/${leader.player_id}`}
-                      className="flex items-center gap-3 rounded-2xl px-3 py-2 transition hover:bg-white/5"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-white/5"
                     >
                       <span className="w-5 text-center font-display text-sm font-bold text-muted">
                         {index + 2}

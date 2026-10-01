@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { LOGO_DARK, LOGO_RATIO, OG_COLORS, OG_FONTS } from "@/lib/og-brand";
 import {
   getMarketValue,
   getPlayerPercentiles,
@@ -60,24 +61,23 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          background: `radial-gradient(circle at 50% 0%, ${accent}66, #070a14 55%)`,
+          background: OG_COLORS.slate,
           color: "#eef2ff",
           padding: 64,
-          fontFamily: "sans-serif",
+          fontFamily: "Regista",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", fontSize: 34, fontWeight: 800, letterSpacing: -1 }}>
-            Talent<span style={{ color: "#22d3ee" }}>Scope</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LOGO_DARK} height={46} width={Math.round(46 * LOGO_RATIO)} alt="" />
           <div
             style={{
               display: "flex",
-              background: "#ffd76a",
-              color: "#2a1d00",
+              background: "#f2c230",
+              color: "#1f3b2d",
               padding: "8px 18px",
               fontSize: 24,
-              fontWeight: 900,
+              fontWeight: 400,
               transform: "rotate(-3deg)",
               borderRadius: 4,
             }}
@@ -94,8 +94,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
               height: 546,
               borderRadius: 36,
               overflow: "hidden",
-              background: "#0d1426",
-              boxShadow: `0 0 80px ${accent}88`,
+              background: "#173024",
             }}
           >
             {photo && (
@@ -107,14 +106,14 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
             <div style={{ display: "flex", fontSize: 26, color: accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: 4 }}>
               {positionLabel(player.position)}
             </div>
-            <div style={{ display: "flex", fontSize: 76, fontWeight: 800, lineHeight: 1, letterSpacing: -2, marginTop: 8 }}>
+            <div style={{ display: "flex", fontSize: 76, fontWeight: 400, lineHeight: 1, letterSpacing: -2, marginTop: 8 }}>
               {player.name}
             </div>
             <div style={{ display: "flex", fontSize: 28, color: "#aab3c7", marginTop: 16 }}>
               {[season.team, age ? `${age} años` : null].filter(Boolean).join(" · ")}
             </div>
             {value.current && (
-              <div style={{ display: "flex", fontSize: 64, fontWeight: 800, color: "#ff9b78", marginTop: 24 }}>
+              <div style={{ display: "flex", fontSize: 64, fontWeight: 400, color: "#ff9b78", marginTop: 24 }}>
                 {formatMarketValue(value.current.amount_eur)}
               </div>
             )}
@@ -135,7 +134,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
                 padding: "18px 20px",
               }}
             >
-              <span style={{ fontSize: 52, fontWeight: 800 }}>{number.value}</span>
+              <span style={{ fontSize: 52, fontWeight: 400 }}>{number.value}</span>
               <span style={{ fontSize: 22, color: "#8b93a7" }}>{number.label}</span>
             </div>
           ))}
@@ -155,7 +154,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
                   }}
                 />
               </div>
-              <span style={{ width: 70, fontSize: 32, fontWeight: 800, color: percentileColor(strength.percentile), textAlign: "right" }}>
+              <span style={{ width: 70, fontSize: 32, fontWeight: 400, color: percentileColor(strength.percentile), textAlign: "right" }}>
                 {strength.percentile}
               </span>
             </div>
@@ -171,6 +170,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
     {
       width: WIDTH,
       height: HEIGHT,
+      fonts: OG_FONTS,
       headers: { "Cache-Control": "public, max-age=3600, s-maxage=86400" },
     },
   );

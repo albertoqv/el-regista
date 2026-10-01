@@ -26,14 +26,14 @@ export type Product = {
   tools: ProductTool[];
 };
 
-/** The two products of TalentScope: one about players, one about matches. */
+/** The two products of El Regista: one about players, one about matches. */
 export const PRODUCTS: Product[] = [
   {
     key: "scout",
     name: "Scout",
     subject: "Jugadores",
     pitch: "Encuentra, compara y ficha jugadores con datos reales de 14 ligas.",
-    color: "#3d8bff",
+    color: "#f2c230",
     tools: [
       {
         href: "/buscar",
@@ -73,7 +73,7 @@ export const PRODUCTS: Product[] = [
     name: "Pronósticos",
     subject: "Partidos",
     pitch: "Probabilidades de cada partido y un historial de aciertos que no se puede maquillar.",
-    color: "#22c55e",
+    color: "#9ed7b3",
     tools: [
       {
         href: "/predicciones",

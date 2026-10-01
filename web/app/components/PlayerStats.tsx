@@ -23,7 +23,7 @@ export function PlayerStats({ player }: { player: Player }) {
                 key={option.label}
                 type="button"
                 onClick={() => setPerNinety(option.value)}
-                className={`rounded-full px-3 py-1.5 transition ${perNinety === option.value ? "bg-white text-black" : "text-muted hover:text-ink"}`}
+                className={`rounded-full px-3 py-1.5 transition ${perNinety === option.value ? "bg-white text-bg" : "text-muted hover:text-ink"}`}
               >
                 {option.label}
               </button>
@@ -39,7 +39,7 @@ export function PlayerStats({ player }: { player: Player }) {
           );
           return (
             <Reveal key={group.key} delay={groupIndex * 0.06}>
-              <div className="glass h-full rounded-3xl p-5">
+              <div className="glass h-full rounded-lg p-5">
                 <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-muted">
                   {group.title}
                 </h3>

@@ -1,26 +1,25 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
+import { Chivo } from "next/font/google";
+import localFont from "next/font/local";
 import Link from "next/link";
-import { Caveat, Inter, Space_Grotesk } from "next/font/google";
 import { NavBar } from "@/app/components/NavBar";
-import { TacticsBackground } from "@/app/components/TacticsBackground";
 import { VisitTracker } from "@/app/components/VisitTracker";
+import { PHOTOS } from "@/lib/photos";
 import { PRODUCTS } from "@/lib/products";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const chivo = Chivo({
+  variable: "--font-chivo",
   subsets: ["latin"],
 });
 
-const caveat = Caveat({
-  variable: "--font-caveat",
-  subsets: ["latin"],
-});
-
-const grotesk = Space_Grotesk({
-  variable: "--font-grotesk",
-  subsets: ["latin"],
+// Our own typeface, drawn for El Regista (scripts/brand/regista_font.py).
+const regista = localFont({
+  src: "./fonts/RegistaDisplay.woff2",
+  variable: "--font-regista",
+  display: "swap",
+  fallback: ["Arial Narrow", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -30,42 +29,48 @@ export const metadata: Metadata = {
       ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
       : "http://localhost:3000",
   ),
-  title: "TalentScope",
-  description:
-    "Compara futbolistas, descubre talento parecido y analiza su rendimiento con datos reales de las 5 grandes ligas",
+  title: "El Regista",
+  description: "Scout y pronósticos de fútbol con datos reales.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="es"
-      className={`${inter.variable} ${grotesk.variable} ${caveat.variable} h-full antialiased`}
-    >
+    <html lang="es" className={`${chivo.variable} ${regista.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
-        <TacticsBackground />
         <NavBar />
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 sm:px-6">
-          {children}
-        </main>
-        <footer className="border-t border-line py-10 text-center text-xs text-muted">
-          <p className="font-hand text-lg text-ink/70">
-            Hecho por gente que ve demasiado fútbol.
-          </p>
-          <nav className="mx-auto mt-4 flex max-w-2xl flex-wrap justify-center gap-x-5 gap-y-2 px-4 text-sm">
-            {PRODUCTS.flatMap((product) =>
-              product.tools.map((tool) => (
-                <Link key={tool.href} href={tool.href} className="hover:text-ink">
-                  {tool.label}
-                </Link>
-              )),
-            )}
-          </nav>
-          <p className="mt-4">
-            Datos: FBref, Understat, Transfermarkt y football-data · Se actualiza dos veces por semana ·{" "}
-            <a href="/como-funciona" className="text-brand-2 hover:underline">
-              Cómo funciona
-            </a>
-          </p>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 sm:px-6">{children}</main>
+        <footer className="border-t border-line bg-bg-deep py-10 text-xs text-muted">
+          <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6">
+            <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
+              {PRODUCTS.flatMap((product) =>
+                product.tools.map((tool) => (
+                  <Link key={tool.href} href={tool.href} className="hover:text-ink">
+                    {tool.label}
+                  </Link>
+                )),
+              )}
+              <Link href="/como-funciona" className="hover:text-ink">
+                Cómo funciona
+              </Link>
+            </nav>
+            <p>Datos: FBref, Understat, Transfermarkt y football-data. Se actualiza martes y viernes.</p>
+            <p>
+              Fotos:{" "}
+              {Object.values(PHOTOS).map((photo, index) => (
+                <span key={photo.src}>
+                  {index > 0 ? " · " : ""}
+                  <a href={photo.source} target="_blank" rel="noreferrer" className="hover:text-ink">
+                    {photo.author}
+                  </a>{" "}
+                  (
+                  <a href={photo.licenseUrl} target="_blank" rel="noreferrer" className="hover:text-ink">
+                    {photo.license}
+                  </a>
+                  )
+                </span>
+              ))}
+            </p>
+          </div>
         </footer>
         <VisitTracker />
         <Analytics />

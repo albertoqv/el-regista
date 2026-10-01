@@ -38,7 +38,7 @@ export function MarketValueChart({ series }: { series: ValueSeries[] }) {
   const lastYear = new Date(maxTime).getFullYear();
 
   return (
-    <div className="glass rounded-3xl p-5">
+    <div className="glass rounded-lg p-5">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-3">
         <h3 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted">
           Valor de mercado
@@ -103,7 +103,6 @@ export function MarketValueChart({ series }: { series: ValueSeries[] }) {
                 strokeWidth={2.5}
                 strokeLinejoin="round"
                 strokeLinecap="round"
-                style={{ filter: `drop-shadow(0 0 6px ${entry.color})` }}
                 initial={{ pathLength: 0 }}
                 whileInView={{ pathLength: 1 }}
                 viewport={{ once: true }}

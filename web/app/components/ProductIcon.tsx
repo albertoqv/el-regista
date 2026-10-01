@@ -1,7 +1,7 @@
 import {
   IconCalendar,
   IconChecks,
-  IconDefense,
+  IconShield,
   IconFilter,
   IconFlame,
   IconScale,
@@ -18,7 +18,7 @@ const ICONS = {
   flame: IconFlame,
   calendar: IconCalendar,
   checks: IconChecks,
-  shield: IconDefense,
+  shield: IconShield,
 } as const;
 
 export function ProductIcon({

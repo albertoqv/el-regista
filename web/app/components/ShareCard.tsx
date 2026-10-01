@@ -18,7 +18,7 @@ export function ShareCard({
 }) {
   const [busy, setBusy] = useState(false);
   const url = imageUrl ?? `/players/${playerId}/card`;
-  const fileName = `${name.replace(/\s+/g, "-").toLowerCase()}-talentscope.png`;
+  const fileName = `${name.replace(/\s+/g, "-").toLowerCase()}-elregista.png`;
 
   async function share() {
     setBusy(true);
@@ -28,8 +28,8 @@ export function ShareCard({
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: `${name} · TalentScope`,
-          text: shareText ?? `Mira el perfil de ${name} en TalentScope`,
+          title: `${name} · El Regista`,
+          text: shareText ?? `Mira el perfil de ${name} en El Regista`,
         });
       } else {
         const link = document.createElement("a");

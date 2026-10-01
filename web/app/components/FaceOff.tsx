@@ -76,16 +76,8 @@ export function FaceOff({
 }) {
   return (
     <section className="relative -mx-4 overflow-x-clip px-4 py-2 sm:mx-0 sm:px-0">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            "radial-gradient(40% 60% at 20% 40%, rgba(61,139,255,0.18), transparent), radial-gradient(40% 60% at 80% 40%, rgba(255,107,61,0.16), transparent)",
-        }}
-      />
       <div className="grid grid-cols-2 items-start gap-4 sm:gap-8 md:grid-cols-[1fr_auto_1fr]">
-        <Fighter side={a} color="#3d8bff" fromLeft />
+        <Fighter side={a} color="#7cc0ff" fromLeft />
         <motion.div
           initial={{ opacity: 0, scale: 0.4 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -93,14 +85,13 @@ export function FaceOff({
           className="order-last col-span-2 flex flex-col items-center gap-5 md:order-none md:col-span-1 md:pt-24"
         >
           <div className="relative flex h-20 w-20 items-center justify-center">
-            <div className="spin-slow absolute inset-0 rounded-full bg-[conic-gradient(from_0deg,#3d8bff,#22d3ee,#ff6b3d,#3d8bff)] opacity-80 blur-md" />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-[#05070d] font-display text-2xl font-black italic">
+            <div className="relative flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-brand font-display text-2xl text-bg">
               VS
             </div>
           </div>
           <SimilarityMeter percentage={similarity} size={140} />
         </motion.div>
-        <Fighter side={b} color="#ff6b3d" fromLeft={false} />
+        <Fighter side={b} color="#ff8a4c" fromLeft={false} />
       </div>
     </section>
   );

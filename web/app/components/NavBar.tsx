@@ -22,7 +22,7 @@ function ProductMenu({ product, active }: { product: Product; active: boolean })
       </button>
       {/* Opens on hover and on keyboard focus; the padding bridges the gap. */}
       <div className="invisible absolute left-0 top-full z-50 pt-2 opacity-0 transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
-        <div className="w-80 rounded-3xl border border-line bg-[#0a0e18]/95 p-2 shadow-2xl backdrop-blur-xl">
+        <div className="w-80 rounded-lg border border-line bg-bg-deep p-2">
           <p className="px-3 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: product.color }}>
             {product.subject}
           </p>
@@ -30,7 +30,7 @@ function ProductMenu({ product, active }: { product: Product; active: boolean })
             <Link
               key={tool.href}
               href={tool.href}
-              className="flex items-start gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-white/5"
+              className="flex items-start gap-3 rounded-lg px-3 py-2.5 transition hover:bg-white/5"
             >
               <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/5">
                 <ProductIcon name={tool.icon} color={product.color} />
@@ -50,9 +50,9 @@ function ProductMenu({ product, active }: { product: Product; active: boolean })
 function MobileMenu({ onClose }: { onClose: () => void }) {
   // Outside the header on purpose: its backdrop blur would clip a fixed child.
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#04060c] px-4 pb-10 md:hidden" role="dialog" aria-modal="true" aria-label="Menú">
-      <div className="sticky top-0 -mx-4 mb-4 flex items-center justify-between border-b border-line bg-[#04060c] px-4 py-3">
-        <Link href="/" onClick={onClose} aria-label="TalentScope, inicio">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-[#1f3b2d] px-4 pb-10 md:hidden" role="dialog" aria-modal="true" aria-label="Menú">
+      <div className="sticky top-0 -mx-4 mb-4 flex items-center justify-between border-b border-line bg-[#1f3b2d] px-4 py-3">
+        <Link href="/" onClick={onClose} aria-label="El Regista, inicio">
           <Logo size={22} />
         </Link>
         <button
@@ -76,7 +76,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
                 key={tool.href}
                 href={tool.href}
                 onClick={onClose}
-                className="flex items-center gap-3 rounded-2xl px-2 py-3 active:bg-white/5"
+                className="flex items-center gap-3 rounded-lg px-2 py-3 active:bg-white/5"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/5">
                   <ProductIcon name={tool.icon} color={product.color} />
@@ -140,9 +140,9 @@ export function NavBar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-line bg-[#04060c]/75 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-line bg-bg/95">
         <nav className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3 sm:px-6">
-          <Link href="/" aria-label="TalentScope, inicio" className="shrink-0">
+          <Link href="/" aria-label="El Regista, inicio" className="shrink-0">
             <Logo size={22} />
           </Link>
           <div className="ml-4 hidden items-center gap-1 md:flex">
@@ -156,13 +156,13 @@ export function NavBar() {
           <div className="ml-auto flex items-center gap-2">
             <Link
               href="/gemelos"
-              className="hidden shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold text-[#ffd76a] transition hover:bg-[#ffd76a]/10 sm:block"
+              className="hidden shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold text-[#f2c230] transition hover:bg-[#f2c230]/10 sm:block"
             >
               Gemelos
             </Link>
             <Link
               href="/predicciones"
-              className="shrink-0 rounded-full bg-gradient-to-r from-brand to-brand-2 px-4 py-1.5 text-sm font-semibold text-white shadow-[0_0_20px_rgba(61,139,255,0.45)] transition hover:brightness-110"
+              className="shrink-0 rounded-full bg-brand px-4 py-1.5 text-sm font-semibold text-bg transition hover:brightness-110"
             >
               Pronósticos
             </Link>

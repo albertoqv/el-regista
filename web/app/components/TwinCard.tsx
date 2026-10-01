@@ -43,7 +43,7 @@ export function TwinCard({
   const tilt = rank % 2 === 0 ? -3 : 3;
 
   return (
-    <article className="glass glass-hover group relative flex h-full flex-col overflow-hidden rounded-3xl">
+    <article className="glass glass-hover group relative flex h-full flex-col overflow-hidden rounded-lg">
       <div className="relative">
         <PlayerPortrait
           name={twin.name}
@@ -60,7 +60,7 @@ export function TwinCard({
             </Sticker>
           ))}
         </div>
-        <div className="absolute right-3 top-3 flex h-14 w-14 flex-col items-center justify-center rounded-full border border-white/15 bg-black/65 backdrop-blur">
+        <div className="absolute right-3 top-3 flex h-14 w-14 flex-col items-center justify-center rounded-full border border-white/15 bg-black/65">
           <span className="font-display text-lg font-bold leading-none">{twin.similarity}%</span>
           <span className="text-[8px] font-semibold uppercase tracking-wider text-muted">igual</span>
         </div>
@@ -90,7 +90,7 @@ export function TwinCard({
           </div>
           {label && (
             <span
-              className={`rounded-lg px-2 py-1 text-right text-xs font-semibold ${value.kind === "cheaper" ? "bg-emerald-400/12 text-emerald-300" : "bg-white/5 text-muted"}`}
+              className={`rounded-lg px-2 py-1 text-right text-xs font-semibold ${value.kind === "cheaper" ? "bg-grass/12 text-brand-2" : "bg-white/5 text-muted"}`}
             >
               {label}
             </span>
@@ -120,7 +120,7 @@ export function TwinCard({
         <div className="mt-auto flex gap-2 pt-1">
           <Link
             href={compareHref(target, twin)}
-            className="flex-1 rounded-full bg-white px-3 py-2 text-center text-xs font-bold text-black transition hover:bg-white/85"
+            className="flex-1 rounded-full bg-white px-3 py-2 text-center text-xs font-bold text-bg transition hover:bg-white/85"
           >
             Cara a cara
           </Link>

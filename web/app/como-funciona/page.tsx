@@ -13,7 +13,7 @@ import {
 import { currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Cómo funciona · TalentScope",
+  title: "Cómo funciona · El Regista",
   description: "De dónde salen los datos y cómo se calculan comparativas, gemelos y predicciones.",
 };
 
@@ -39,7 +39,7 @@ function CalibrationChart({ backtest }: { backtest: Backtest }) {
           cx={scale(bucket.predicted)}
           cy={flip(bucket.observed)}
           r={round(3 + 7 * Math.sqrt(bucket.count / maxCount))}
-          fill="#ffd76a"
+          fill="#f2c230"
           fillOpacity="0.85"
         >
           <title>{`Dice ${Math.round(bucket.predicted * 100)}% → pasó ${Math.round(bucket.observed * 100)}% (${bucket.count} casos)`}</title>
@@ -58,7 +58,7 @@ function CalibrationChart({ backtest }: { backtest: Backtest }) {
 function Section({ id, title, note, children }: { id: string; title: string; note?: string; children: React.ReactNode }) {
   return (
     <Reveal>
-      <section id={id} className="glass scroll-mt-24 rounded-3xl p-6 sm:p-8">
+      <section id={id} className="glass scroll-mt-24 rounded-lg p-6 sm:p-8">
         {note && <ScoutNote rotate={-2} className="text-lg">{note}</ScoutNote>}
         <h2 className="font-display text-2xl font-bold tracking-tight">{title}</h2>
         <div className="mt-3 flex flex-col gap-3 text-[15px] leading-relaxed text-ink/85 [&_strong]:text-ink">{children}</div>
@@ -80,7 +80,7 @@ export default async function HowItWorksPage() {
       <Reveal>
         <ScoutNote rotate={-3}>sin trucos ni cajas negras</ScoutNote>
         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
-          Cómo <Marker color="#ffd76a">funciona</Marker>
+          Cómo <Marker color="#f2c230">funciona</Marker>
         </h1>
         <p className="mt-2 text-muted">
           Todo lo que ves sale de datos públicos y de cálculos que puedes entender. Aquí está cada uno
@@ -233,7 +233,7 @@ export default async function HowItWorksPage() {
         </p>
 
         {backtest && backtest.matches > 0 && (
-          <div className="mt-2 grid grid-cols-1 items-center gap-6 rounded-2xl bg-white/[0.03] p-4 sm:grid-cols-[1fr_300px]">
+          <div className="mt-2 grid grid-cols-1 items-center gap-6 rounded-lg bg-white/[0.03] p-4 sm:grid-cols-[1fr_300px]">
             <div className="flex flex-col gap-2 text-sm">
               <p>
                 <strong>Examen real</strong>: los {backtest.matches.toLocaleString("es-ES")} partidos de
@@ -290,7 +290,7 @@ export default async function HowItWorksPage() {
           nuestro modelo queda como opinión independiente.
         </p>
         {statsBacktest.length > 0 && (
-          <div className="overflow-x-auto rounded-2xl bg-white/[0.03] p-4">
+          <div className="overflow-x-auto rounded-lg bg-white/[0.03] p-4">
             <p className="mb-2 text-sm">
               <strong>Examen real</strong> en La Liga {seasonDisplay(season)}: error medio del total del
               partido, frente a usar siempre la media de la liga (menos es mejor).
@@ -313,7 +313,7 @@ export default async function HowItWorksPage() {
                       <td className="text-right tabular-nums">{row.model_mae.toFixed(2)}</td>
                       <td className="text-right tabular-nums text-muted">{row.baseline_mae.toFixed(2)}</td>
                       <td
-                        className={`text-right text-xs ${gain > 0.02 ? "text-emerald-300" : gain > 0 ? "text-ink/80" : "text-rose-300"}`}
+                        className={`text-right text-xs ${gain > 0.02 ? "text-brand-2" : gain > 0 ? "text-ink/80" : "text-rose-300"}`}
                       >
                         {gain > 0.02 ? "mejor" : gain > 0 ? "algo mejor" : "igual o peor"}
                       </td>
@@ -355,7 +355,7 @@ export default async function HowItWorksPage() {
           (igual para asistencia, tarjeta y tiros).
         </p>
         {playersBacktest && playersBacktest.predictions > 0 && (
-          <p className="rounded-2xl bg-white/[0.03] p-4 text-sm">
+          <p className="rounded-lg bg-white/[0.03] p-4 text-sm">
             <strong>Examen real</strong> en La Liga {seasonDisplay(season)}:{" "}
             {playersBacktest.predictions.toLocaleString("es-ES")} pronósticos de &quot;marca&quot; hechos
             solo con datos anteriores. Brier <strong>{playersBacktest.brier.toFixed(3)}</strong> frente a{" "}

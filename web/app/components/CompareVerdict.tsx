@@ -39,13 +39,13 @@ export function CompareVerdict({ playerA, playerB }: { playerA: Player; playerB:
       .join(", ");
 
   return (
-    <section className="glass flex flex-col gap-5 rounded-3xl p-6">
+    <section className="glass flex flex-col gap-5 rounded-lg p-6">
       <div className="text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted">Veredicto</p>
         <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
           {leader ? (
             <>
-              <span style={{ color: leader === playerA ? "#3d8bff" : "#ff6b3d" }}>{leader.name}</span>{" "}
+              <span style={{ color: leader === playerA ? "#7cc0ff" : "#ff8a4c" }}>{leader.name}</span>{" "}
               gana en {Math.max(winsA.length, winsB.length)} de {metrics.length} métricas
             </>
           ) : (
@@ -62,7 +62,6 @@ export function CompareVerdict({ playerA, playerB }: { playerA: Player; playerB:
         <div className="relative h-4 flex-1 overflow-hidden rounded-full bg-side-b/80">
           <motion.div
             className="absolute inset-y-0 left-0 rounded-full bg-side-a"
-            style={{ boxShadow: "0 0 20px #3d8bff" }}
             initial={{ width: "50%" }}
             whileInView={{ width: `${shareA}%` }}
             viewport={{ once: true }}
@@ -75,12 +74,12 @@ export function CompareVerdict({ playerA, playerB }: { playerA: Player; playerB:
 
       <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
         {winsA.length > 0 && (
-          <p className="rounded-2xl bg-side-a/10 p-3 text-ink/90">
+          <p className="rounded-lg bg-side-a/10 p-3 text-ink/90">
             <strong className="text-side-a">{playerA.name}</strong> destaca en {highlights(winsA)}.
           </p>
         )}
         {winsB.length > 0 && (
-          <p className="rounded-2xl bg-side-b/10 p-3 text-ink/90">
+          <p className="rounded-lg bg-side-b/10 p-3 text-ink/90">
             <strong className="text-side-b">{playerB.name}</strong> destaca en {highlights(winsB)}.
           </p>
         )}

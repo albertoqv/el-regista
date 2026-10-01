@@ -22,7 +22,7 @@ function param(value: string | string[] | undefined): string | undefined {
 
 export async function generateMetadata(props: PageProps<"/equipos/[team]">): Promise<Metadata> {
   const { team } = await props.params;
-  return { title: `${decodeURIComponent(team)} · TalentScope` };
+  return { title: `${decodeURIComponent(team)} · El Regista` };
 }
 
 const W = 720;
@@ -49,8 +49,8 @@ function XgChart({ matches }: { matches: TeamMatch[] }) {
         const colour = match.result === "w" ? "#34d399" : match.result === "d" ? "#9ca3af" : "#fb7185";
         return (
           <g key={match.match_id}>
-            <rect x={round(x - bar / 2)} y={round(mid - scale(match.xg_for))} width={round(bar)} height={scale(match.xg_for)} rx="3" fill="#3d8bff" />
-            <rect x={round(x - bar / 2)} y={mid} width={round(bar)} height={scale(match.xg_against)} rx="3" fill="#ff6b3d" opacity="0.85" />
+            <rect x={round(x - bar / 2)} y={round(mid - scale(match.xg_for))} width={round(bar)} height={scale(match.xg_for)} rx="3" fill="#7cc0ff" />
+            <rect x={round(x - bar / 2)} y={mid} width={round(bar)} height={scale(match.xg_against)} rx="3" fill="#ff8a4c" opacity="0.85" />
             <circle cx={x} cy={H - 6} r="3" fill={colour} />
             <title>{`vs ${match.opponent} · ${match.goals_for}-${match.goals_against} · xG ${match.xg_for.toFixed(2)}-${match.xg_against.toFixed(2)}`}</title>
           </g>
@@ -62,7 +62,7 @@ function XgChart({ matches }: { matches: TeamMatch[] }) {
 
 function Stat({ value, label, tone }: { value: string; label: string; tone?: string }) {
   return (
-    <div className="glass rounded-2xl p-4">
+    <div className="glass rounded-lg p-4">
       <span className={`block font-display text-3xl font-bold tabular-nums ${tone ?? ""}`}>{value}</span>
       <span className="text-xs text-muted">{label}</span>
     </div>
@@ -111,7 +111,7 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
 
       {row && (
         <Reveal className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat value={`${row.points}`} label={`puntos (merece ${row.xpts.toFixed(1)})`} tone={luck >= 2 ? "text-emerald-300" : luck <= -2 ? "text-rose-300" : ""} />
+          <Stat value={`${row.points}`} label={`puntos (merece ${row.xpts.toFixed(1)})`} tone={luck >= 2 ? "text-brand-2" : luck <= -2 ? "text-rose-300" : ""} />
           <Stat value={(row.xg_for / played).toFixed(2)} label="xG a favor por partido" />
           <Stat value={(row.xg_against / played).toFixed(2)} label="xG en contra por partido" />
           <Stat value={row.ppda?.toFixed(1) ?? "—"} label={pressingRank ? `PPDA · ${pressingRank}º que más presiona` : "PPDA"} />
@@ -119,7 +119,7 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
       )}
 
       {row && Math.abs(luck) >= 2 && (
-        <p className="glass rounded-2xl p-4 text-sm">
+        <p className="glass rounded-lg p-4 text-sm">
           <ScoutNote rotate={-2} className="text-base">
             {luck > 0 ? "ojo, puede venir bajón:" : "debería ir a más:"}
           </ScoutNote>{" "}
@@ -130,7 +130,7 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
 
       {matches.length > 0 && (
         <Reveal>
-          <section className="glass rounded-3xl p-5">
+          <section className="glass rounded-lg p-5">
             <h2 className="font-display text-xl font-bold">Ocasiones partido a partido</h2>
             <p className="mb-2 text-xs text-muted">
               Arriba, xG creado; abajo, xG concedido. El punto indica el resultado (verde victoria, gris
@@ -160,7 +160,7 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
               <Link
                 key={player.player_id}
                 href={`/players/${player.player_id}`}
-                className="glass glass-hover flex items-center gap-3 rounded-2xl p-3"
+                className="glass glass-hover flex items-center gap-3 rounded-lg p-3"
               >
                 <Avatar name={player.name} photoUrl={player.photo_url} size={42} />
                 <span className="flex-1 truncate font-semibold">{player.name}</span>
@@ -178,7 +178,7 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
       {matches.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="font-display text-2xl font-bold">Resultados</h2>
-          <ul className="glass divide-y divide-line/60 rounded-3xl">
+          <ul className="glass divide-y divide-line/60 rounded-lg">
             {[...matches].reverse().map((match) => (
               <li key={match.match_id} className="grid grid-cols-[90px_1fr_auto_auto] items-center gap-3 px-4 py-2.5 text-sm">
                 <span className="text-xs text-muted">{new Date(match.played_on).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</span>

@@ -5,7 +5,7 @@ import { login, logout } from "@/app/admin/actions";
 import { ADMIN_COOKIE, getAdminDashboard, type AdminDashboard, type RankedCount } from "@/lib/admin";
 
 export const metadata: Metadata = {
-  title: "Panel · TalentScope",
+  title: "Panel · El Regista",
   robots: { index: false, follow: false },
 };
 
@@ -56,7 +56,7 @@ function shortDate(iso: string): string {
 
 function Kpi({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="glass rounded-3xl p-5">
+    <div className="glass rounded-lg p-5">
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted">{label}</p>
       <p className="mt-1 font-display text-3xl font-bold tabular-nums">{value}</p>
       {hint ? <p className="mt-1 text-xs text-muted">{hint}</p> : null}
@@ -81,8 +81,8 @@ function VisitsChart({ daily }: { daily: AdminDashboard["daily"] }) {
         return (
           <g key={day.day}>
             <title>{label}</title>
-            <rect x={x} y={height - viewsHeight} width={bar} height={viewsHeight} rx={3} fill="#3d8bff" opacity={0.35} />
-            <rect x={x} y={height - peopleHeight} width={bar} height={peopleHeight} rx={3} fill="#3d8bff" />
+            <rect x={x} y={height - viewsHeight} width={bar} height={viewsHeight} rx={3} fill="#7cc0ff" opacity={0.35} />
+            <rect x={x} y={height - peopleHeight} width={bar} height={peopleHeight} rx={3} fill="#7cc0ff" />
             {index % 5 === 0 || index === daily.length - 1 ? (
               <text
                 x={index === 0 ? x : index === daily.length - 1 ? x + bar : x + Math.round(bar / 2)}
@@ -101,7 +101,7 @@ function VisitsChart({ daily }: { daily: AdminDashboard["daily"] }) {
 function Ranking({ title, rows, label }: { title: string; rows: RankedCount[]; label: (name: string) => string }) {
   const max = Math.max(1, ...rows.map((row) => row.views));
   return (
-    <section className="glass rounded-3xl p-5">
+    <section className="glass rounded-lg p-5">
       <h2 className="font-display text-lg font-bold">{title}</h2>
       {rows.length === 0 ? (
         <p className="mt-3 text-sm text-muted">Todavía nada.</p>
@@ -143,7 +143,7 @@ function LoginForm({ error }: { error?: string }) {
           placeholder="Clave"
           className="glass flex-1 rounded-xl px-3 py-2 text-sm text-ink outline-none"
         />
-        <button type="submit" className="rounded-full bg-[#ffd76a] px-5 py-2 text-sm font-bold text-black">
+        <button type="submit" className="rounded-full bg-[#f2c230] px-5 py-2 text-sm font-bold text-bg">
           Entrar
         </button>
       </form>
@@ -193,12 +193,12 @@ export default async function AdminPage() {
         <Kpi label="Web (Vercel Hobby)" value="0,00 $" hint="Plan gratuito" />
       </div>
 
-      <section className="glass rounded-3xl p-5">
+      <section className="glass rounded-lg p-5">
         <div className="flex items-baseline justify-between">
           <h2 className="font-display text-lg font-bold">Visitas por día</h2>
           <span className="text-xs text-muted">
-            <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-[#3d8bff]" />personas
-            <span className="ml-3 mr-1 inline-block h-2 w-2 rounded-sm bg-[#3d8bff]/35" />páginas vistas
+            <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-[#7cc0ff]" />personas
+            <span className="ml-3 mr-1 inline-block h-2 w-2 rounded-sm bg-[#7cc0ff]/35" />páginas vistas
           </span>
         </div>
         <VisitsChart daily={dashboard.daily} />
@@ -210,7 +210,7 @@ export default async function AdminPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <section className="glass flex flex-col gap-3 rounded-3xl p-5">
+        <section className="glass flex flex-col gap-3 rounded-lg p-5">
           <h2 className="font-display text-lg font-bold">Servidor (Railway)</h2>
           {hosting ? (
             <>
@@ -223,7 +223,7 @@ export default async function AdminPage() {
               <ul className="flex flex-col gap-1.5">
                 {lineItems.map(([label, value]) => (
                   <li key={label} className="relative overflow-hidden rounded-xl px-3 py-1.5 text-sm">
-                    <span className="absolute inset-y-0 left-0 rounded-xl bg-[#ff6b3d]/20" style={{ width: `${(value / lineMax) * 100}%` }} />
+                    <span className="absolute inset-y-0 left-0 rounded-xl bg-[#ff8a4c]/20" style={{ width: `${(value / lineMax) * 100}%` }} />
                     <span className="relative flex justify-between">
                       <span>{label}</span>
                       <span className="tabular-nums">{dollars(value)}</span>
@@ -250,7 +250,7 @@ export default async function AdminPage() {
           </a>
         </section>
 
-        <section className="glass flex flex-col gap-3 rounded-3xl p-5">
+        <section className="glass flex flex-col gap-3 rounded-lg p-5">
           <h2 className="font-display text-lg font-bold">Salud de la API</h2>
           <p className="text-sm text-muted">Desde el último despliegue ({shortDate(api.since)}).</p>
           <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
@@ -272,7 +272,7 @@ export default async function AdminPage() {
         </section>
       </div>
 
-      <section className="glass rounded-3xl p-5">
+      <section className="glass rounded-lg p-5">
         <h2 className="font-display text-lg font-bold">Datos</h2>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {Object.entries(dashboard.data).map(([key, value]) => (

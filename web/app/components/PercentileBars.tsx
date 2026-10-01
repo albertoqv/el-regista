@@ -28,7 +28,6 @@ export function PercentileBars({ report }: { report: PercentileReport }) {
                 className="h-full rounded-full"
                 style={{
                   background: `linear-gradient(90deg, ${color}66, ${color})`,
-                  boxShadow: `0 0 12px ${color}88`,
                 }}
                 initial={{ width: 0 }}
                 whileInView={{ width: `${Math.max(percentile, 2)}%` }}

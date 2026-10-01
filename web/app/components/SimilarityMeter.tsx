@@ -27,8 +27,8 @@ export function SimilarityMeter({
         <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
           <defs>
             <linearGradient id="similarity-gradient" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#3d8bff" />
-              <stop offset="100%" stopColor="#ff6b3d" />
+              <stop offset="0%" stopColor="#7cc0ff" />
+              <stop offset="100%" stopColor="#ff8a4c" />
             </linearGradient>
           </defs>
           <circle cx="60" cy="60" r={RADIUS} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="9" />
@@ -47,7 +47,6 @@ export function SimilarityMeter({
             }}
             viewport={{ once: true }}
             transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1], delay: 0.3 }}
-            style={{ filter: "drop-shadow(0 0 8px rgba(120,140,255,0.6))" }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">

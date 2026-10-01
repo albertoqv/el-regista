@@ -127,7 +127,6 @@ export function RadarChart({
               stroke={entry.color}
               strokeWidth={2.5}
               strokeLinejoin="round"
-              style={{ filter: `drop-shadow(0 0 10px ${entry.color}aa)` }}
             />
             {coords.map((p, index) => (
               <circle

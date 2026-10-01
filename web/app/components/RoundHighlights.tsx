@@ -34,7 +34,7 @@ function PickRow({ pick, top }: { pick: Pick; top: boolean }) {
   return (
     <Link
       href={`/predicciones/${pick.match_id}`}
-      className="group flex items-center gap-3 rounded-2xl px-3 py-2.5 transition hover:bg-white/5"
+      className="group flex items-center gap-3 rounded-lg px-3 py-2.5 transition hover:bg-white/5"
     >
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm font-semibold">{pick.label}</span>
@@ -43,7 +43,7 @@ function PickRow({ pick, top }: { pick: Pick; top: boolean }) {
           {pick.home_team} – {pick.away_team} · {when(pick.kickoff)}
         </span>
       </span>
-      <span className={`font-display text-xl font-bold tabular-nums ${top ? "text-[#ffd76a]" : ""}`}>
+      <span className={`font-display text-xl font-bold tabular-nums ${top ? "text-[#f2c230]" : ""}`}>
         {percent(pick.probability)}
       </span>
     </Link>
@@ -63,8 +63,7 @@ export function RoundHighlights({ highlights, compact = false }: { highlights: H
             Lo más probable de la jornada
           </h2>
           <p className="text-sm text-muted">
-            Del {kickoffDate(highlights.window_start).toLocaleDateString("es-ES", { day: "numeric", month: "long" })} en
-            adelante, las opciones con más probabilidad en cada tipo de pronóstico.
+            Desde el {kickoffDate(highlights.window_start).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}
           </p>
         </div>
         <Sticker tone="yellow" rotate={3}>
@@ -76,9 +75,9 @@ export function RoundHighlights({ highlights, compact = false }: { highlights: H
           const picks = highlights.picks.filter((pick) => pick.category === category.key);
           if (picks.length === 0) return null;
           return (
-            <div key={category.key} className="glass flex flex-col rounded-3xl p-3">
+            <div key={category.key} className="glass flex flex-col rounded-lg p-3">
               <h3 className="flex items-center gap-2 px-3 pb-1 pt-2 font-display text-lg font-bold">
-                <category.icon size={18} color="#ffd76a" />
+                <category.icon size={18} color="#f2c230" />
                 {category.title}
               </h3>
               {picks.slice(0, compact ? 3 : 5).map((pick, index) => (

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
+import { PageHeader } from "@/app/components/PageHeader";
+import { PHOTOS } from "@/lib/photos";
 import Link from "next/link";
 import { kickoffDate } from "@/app/components/Forecast";
-import { Reveal } from "@/app/components/motion";
-import { ScoutNote } from "@/app/components/ScoutNote";
 import { getTrackRecord, type RecordTotals, type ScoredPick, type WeekRecord } from "@/lib/api";
 import { competitionColor, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "Historial de aciertos · TalentScope",
+  title: "Historial de aciertos · El Regista",
   description:
     "Nuestras predicciones guardadas antes de cada partido, comparadas con el resultado real. Sin maquillaje.",
 };
@@ -26,7 +26,7 @@ function weekLabel(iso: string): string {
 
 function Kpi({ label, value, hint, tone }: { label: string; value: string; hint?: string; tone?: string }) {
   return (
-    <div className="glass rounded-2xl p-4">
+    <div className="glass rounded-lg p-4">
       <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted">{label}</p>
       <p className="mt-1 font-display text-2xl font-bold tabular-nums sm:text-3xl" style={tone ? { color: tone } : undefined}>
         {value}
@@ -44,13 +44,13 @@ function Totals({ totals, withMarket }: { totals: RecordTotals; withMarket: bool
         label="Acierto 1X2"
         value={percent(totals.hits, totals.matches)}
         hint={`${totals.hits} de ${totals.matches} · al azar ~33%`}
-        tone="#22c55e"
+        tone="#9ed7b3"
       />
       <Kpi
         label="Con 60% o más"
         value={percent(totals.confident_hits, totals.confident)}
         hint={`${totals.confident_hits} de ${totals.confident} picks seguros`}
-        tone="#ffd76a"
+        tone="#f2c230"
       />
       {withMarket && totals.market_brier !== null ? (
         <Kpi
@@ -68,7 +68,7 @@ function Totals({ totals, withMarket }: { totals: RecordTotals; withMarket: bool
 function WeeklyChart({ weeks }: { weeks: WeekRecord[] }) {
   if (weeks.length === 0) return null;
   return (
-    <div className="glass rounded-3xl p-4 sm:p-5">
+    <div className="glass rounded-lg p-4 sm:p-5">
       <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
         <h3 className="font-display text-lg font-bold">Semana a semana</h3>
         <span className="text-xs text-muted">% de 1X2 acertados · línea: azar (33%)</span>
@@ -85,7 +85,7 @@ function WeeklyChart({ weeks }: { weeks: WeekRecord[] }) {
                   className="w-full rounded-t-lg"
                   style={{
                     height: `${Math.max(rate * 100, 2)}%`,
-                    background: rate >= 0.5 ? "#22c55e" : rate >= 0.34 ? "#3d8bff" : "#64748b",
+                    background: rate >= 0.5 ? "#f2c230" : rate >= 0.34 ? "#9ed7b3" : "#4d7563",
                   }}
                   title={`${week.hits} de ${week.matches}`}
                 />
@@ -106,9 +106,9 @@ function PickRow({ pick }: { pick: ScoredPick }) {
   const kickoff = kickoffDate(pick.kickoff);
   const pickLabel = best === 0 ? pick.home_team : best === 2 ? pick.away_team : "Empate";
   return (
-    <li className="flex items-center gap-3 rounded-2xl px-3 py-2.5 odd:bg-white/[0.02]">
+    <li className="flex items-center gap-3 rounded-lg px-3 py-2.5 odd:bg-white/[0.02]">
       <span
-        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${pick.model_hit ? "bg-emerald-500/20 text-emerald-300" : "bg-red-500/15 text-red-300"}`}
+        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${pick.model_hit ? "bg-grass/25 text-brand-2" : "bg-red-500/15 text-red-300"}`}
         aria-label={pick.model_hit ? "Acierto" : "Fallo"}
       >
         {pick.model_hit ? "✓" : "✗"}
@@ -133,40 +133,28 @@ export default async function TrackRecordPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <Reveal>
-        <ScoutNote rotate={-2}>sin trampa ni cartón</ScoutNote>
-        <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Historial de aciertos</h1>
-        <p className="mt-2 max-w-2xl text-sm text-muted sm:text-base">
-          Cada martes y viernes guardamos lo que dice el modelo de los partidos de la semana,
-          <strong className="text-ink"> antes de que empiecen</strong>. Cuando hay resultado, lo
-          puntuamos. Una vez empieza el partido, la predicción ya no se puede tocar.
-        </p>
-      </Reveal>
+      <PageHeader photo={PHOTOS.historial.src} title="Historial de aciertos">Guardado antes del partido. Puntuado después.</PageHeader>
 
       {record === null ? (
-        <p className="glass rounded-3xl p-8 text-center text-muted">
+        <p className="glass rounded-lg p-8 text-center text-muted">
           No hemos podido cargar el historial ahora mismo. Vuelve a intentarlo en un minuto.
         </p>
       ) : (
         <>
           <section className="flex flex-col gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300">En vivo</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-2">En vivo</p>
               <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Predicciones registradas</h2>
             </div>
             {record.live_total.matches === 0 ? (
-              <p className="glass rounded-3xl p-6 text-sm text-muted">
-                Empezamos a registrar predicciones esta semana.{" "}
-                {record.pending > 0
-                  ? `Hay ${record.pending} partidos guardados esperando resultado: aparecerán aquí tras la próxima actualización.`
-                  : "Los primeros partidos aparecerán aquí tras la próxima actualización."}{" "}
-                Mientras, abajo tienes la temporada completa reconstruida.
+              <p className="glass rounded-lg p-6 text-sm text-muted">
+                Empezamos esta semana: los primeros resultados llegan tras la próxima jornada.
               </p>
             ) : (
               <>
                 <Totals totals={record.live_total} withMarket={record.live_total.market_matches > 0} />
                 <WeeklyChart weeks={record.live_weeks} />
-                <div className="glass rounded-3xl p-3 sm:p-4">
+                <div className="glass rounded-lg p-3 sm:p-4">
                   <h3 className="px-2 pb-2 font-display text-lg font-bold">Últimos partidos</h3>
                   <ul className="flex flex-col">
                     {record.live_recent.map((pick) => (
@@ -187,14 +175,10 @@ export default async function TrackRecordPage() {
               <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
                 Temporada {seasonDisplay(record.season_label)}, jornada a jornada
               </h2>
-              <p className="mt-1 max-w-2xl text-sm text-muted">
-                Simulación honesta: cada partido se predice solo con lo que había pasado antes de
-                él, con los mismos parámetros que fijamos en la 24/25. No es dinero real, pero
-                tampoco mira el futuro.
-              </p>
+              <p className="mt-1 max-w-2xl text-sm text-muted">Cada partido predicho solo con lo que había pasado antes.</p>
             </div>
             {record.rebuilt_total.matches === 0 ? (
-              <p className="glass rounded-3xl p-6 text-sm text-muted">
+              <p className="glass rounded-lg p-6 text-sm text-muted">
                 Aún no hay suficientes partidos jugados esta temporada para puntuar.
               </p>
             ) : (
@@ -205,17 +189,9 @@ export default async function TrackRecordPage() {
             )}
           </section>
 
-          <p className="text-sm text-muted">
-            ¿Cómo se calcula cada probabilidad?{" "}
-            <Link href="/como-funciona" className="text-brand-2 hover:underline">
-              Te lo contamos aquí
-            </Link>
-            . Y las de esta semana están en{" "}
-            <Link href="/predicciones" className="text-brand-2 hover:underline">
-              próximos partidos
-            </Link>
-            .
-          </p>
+          <Link href="/como-funciona" className="text-sm text-brand-2 hover:underline">
+            Cómo se calcula →
+          </Link>
         </>
       )}
     </div>

@@ -96,7 +96,7 @@ export function positionShort(position: string): string {
 }
 
 export function competitionColor(competition: string): string {
-  return COMPETITION_COLORS[competition] ?? "#3d8bff";
+  return COMPETITION_COLORS[competition] ?? "#7cc0ff";
 }
 
 export function formatMarketValue(amountEur: number): string {

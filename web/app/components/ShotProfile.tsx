@@ -33,8 +33,7 @@ function MinuteChart({ goals, xg, color }: { goals: number[]; xg: number[]; colo
             <motion.div
               className="relative w-3/5 rounded-t-md"
               style={{
-                background: index === best && goals[index] > 0 ? "#ffd76a" : color,
-                boxShadow: index === 5 ? `0 0 16px ${color}` : undefined,
+                background: index === best && goals[index] > 0 ? "#f2c230" : color,
               }}
               initial={{ height: 0 }}
               whileInView={{ height: `${(goals[index] / max) * 100}%` }}
@@ -52,7 +51,7 @@ function MinuteChart({ goals, xg, color }: { goals: number[]; xg: number[]; colo
 function Stat({ value, label, highlight = false }: { value: string | number; label: string; highlight?: boolean }) {
   return (
     <div className="flex flex-col">
-      <span className={`font-display text-3xl font-bold tabular-nums ${highlight ? "text-[#ffd76a]" : ""}`}>
+      <span className={`font-display text-3xl font-bold tabular-nums ${highlight ? "text-[#f2c230]" : ""}`}>
         {value}
       </span>
       <span className="text-xs text-muted">{label}</span>
@@ -60,7 +59,7 @@ function Stat({ value, label, highlight = false }: { value: string | number; lab
   );
 }
 
-export function ShotProfile({ shots, color = "#3d8bff" }: { shots: PlayerShot[]; color?: string }) {
+export function ShotProfile({ shots, color = "#7cc0ff" }: { shots: PlayerShot[]; color?: string }) {
   if (shots.length === 0) return null;
   const summary = summarize(shots);
   const finishing = summary.npGoals - summary.npXg;
@@ -70,7 +69,7 @@ export function ShotProfile({ shots, color = "#3d8bff" }: { shots: PlayerShot[];
   const deadliest = [...feet].sort((a, b) => b.goals - a.goals)[0];
 
   return (
-    <section className="glass grid grid-cols-1 gap-8 rounded-3xl p-6 lg:grid-cols-[1.1fr_1fr]">
+    <section className="glass grid grid-cols-1 gap-8 rounded-lg p-6 lg:grid-cols-[1.1fr_1fr]">
       <div className="flex flex-col gap-3">
         <div>
           <h2 className="font-display text-2xl font-bold tracking-tight">Mapa de tiros</h2>

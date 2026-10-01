@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
+import { PageHeader } from "@/app/components/PageHeader";
+import { PHOTOS } from "@/lib/photos";
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
-import { Reveal } from "@/app/components/motion";
 import { PlayerPortrait } from "@/app/components/PlayerPortrait";
-import { ScoutNote } from "@/app/components/ScoutNote";
 import { ShareCard } from "@/app/components/ShareCard";
 import { getHotPlayers, type HotMetric, type HotPlayer } from "@/lib/api";
 import { COMPETITIONS, competitionColor } from "@/lib/format";
 
 export const metadata: Metadata = {
-  title: "En racha · TalentScope",
+  title: "En racha · El Regista",
   description: "Los jugadores más en forma de las 5 grandes ligas en las últimas semanas.",
   openGraph: { images: ["/en-racha/card"] },
   twitter: { card: "summary_large_image", images: ["/en-racha/card"] },
@@ -66,14 +66,7 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
 
   return (
     <div className="flex flex-col gap-8">
-      <Reveal>
-        <ScoutNote rotate={-2}>los que están on fire</ScoutNote>
-        <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">En racha</h1>
-        <p className="mt-1 max-w-2xl text-sm text-muted sm:text-base">
-          Quién está en forma en los últimos {days} días en las 5 grandes ligas: partidos
-          jugados de verdad, con al menos 180 minutos.
-        </p>
-      </Reveal>
+      <PageHeader photo={PHOTOS.en_racha.src} title="En racha">Los más en forma de las 5 grandes ligas.</PageHeader>
 
       <div className="flex flex-col gap-3">
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
@@ -81,10 +74,9 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
             <Link
               key={entry.key}
               href={href({ ...current, metric: entry.key })}
-              className={`shrink-0 rounded-2xl px-4 py-2 transition ${entry.key === metric ? "bg-white text-black" : "glass glass-hover"}`}
+              className={`shrink-0 rounded-lg px-4 py-2 transition ${entry.key === metric ? "bg-white text-bg" : "glass glass-hover"}`}
             >
               <span className="block text-sm font-semibold">{entry.label}</span>
-              <span className={`font-hand text-base ${entry.key === metric ? "text-black/60" : "text-[#ffd76a]"}`}>{entry.note}</span>
             </Link>
           ))}
         </div>
@@ -115,7 +107,7 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
       </div>
 
       {!board || board.players.length === 0 ? (
-        <p className="glass rounded-3xl p-8 text-center text-muted">
+        <p className="glass rounded-lg p-8 text-center text-muted">
           {board ? "Todavía no hay suficientes partidos en este periodo." : "No hemos podido cargar los datos ahora mismo."}
         </p>
       ) : (
@@ -133,8 +125,8 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
                   <PlayerPortrait
                     name={player.name}
                     photoUrl={player.photo_url}
-                    accent={rank === 1 ? "#ffd76a" : "#3d8bff"}
-                    rounded="rounded-2xl sm:rounded-3xl"
+                    accent={rank === 1 ? "#f2c230" : "#7cc0ff"}
+                    rounded="rounded-lg sm:rounded-lg"
                     className="aspect-[3/4] transition duration-500 group-hover:-translate-y-1"
                   />
                   <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 font-display text-sm font-bold sm:h-9 sm:w-9 sm:text-lg">
@@ -143,7 +135,7 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
                   <div className="absolute inset-x-0 bottom-0 p-2 sm:p-4">
                     <span className="block truncate text-xs font-bold sm:text-base">{player.name}</span>
                     <span className="block truncate text-[10px] text-ink/70 sm:text-xs">{player.team}</span>
-                    <span className="font-display text-xl font-bold text-[#ffd76a] sm:text-3xl">{main.value}</span>
+                    <span className="font-display text-xl font-bold text-[#f2c230] sm:text-3xl">{main.value}</span>
                     <span className="ml-1 text-[10px] text-ink/70 sm:text-xs">{main.unit}</span>
                   </div>
                 </PlayerLink>
@@ -159,18 +151,18 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
             <ShareCard
               name="en-racha"
               imageUrl={`/en-racha/card?${new URLSearchParams({ metric, dias: String(days), ...(competition ? { liga: competition } : {}) }).toString()}`}
-              shareText="Los jugadores más en forma ahora mismo, en TalentScope"
+              shareText="Los jugadores más en forma ahora mismo, en El Regista"
               label="Compartir ranking"
             />
           </div>
 
           {rest.length > 0 ? (
-            <ol className="glass flex flex-col rounded-3xl p-2 sm:p-3" start={4}>
+            <ol className="glass flex flex-col rounded-lg p-2 sm:p-3" start={4}>
               {rest.map((player, index) => {
                 const main = headline(player, metric);
                 return (
                   <li key={player.understat_player_id}>
-                    <PlayerLink player={player} className="flex items-center gap-3 rounded-2xl px-2 py-2.5 transition hover:bg-white/[0.04] sm:px-3">
+                    <PlayerLink player={player} className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition hover:bg-white/[0.04] sm:px-3">
                       <span className="w-6 shrink-0 text-center font-display font-bold text-muted">{index + 4}</span>
                       <Avatar name={player.name} photoUrl={player.photo_url} size={40} />
                       <span className="min-w-0 flex-1">
@@ -182,7 +174,7 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
                         </span>
                       </span>
                       <span className="shrink-0 text-right">
-                        <span className="block font-display text-xl font-bold tabular-nums text-[#ffd76a]">{main.value}</span>
+                        <span className="block font-display text-xl font-bold tabular-nums text-[#f2c230]">{main.value}</span>
                         <span className="block text-[10px] text-muted">{main.unit}</span>
                       </span>
                     </PlayerLink>

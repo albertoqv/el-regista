@@ -6,7 +6,7 @@ import { CAREER } from "@/lib/seasons";
 function pill(active: boolean): string {
   return `flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
     active
-      ? "border-white/30 bg-white text-black"
+      ? "border-white/30 bg-white text-bg"
       : "border-line text-muted hover:border-line-strong hover:text-ink"
   }`;
 }

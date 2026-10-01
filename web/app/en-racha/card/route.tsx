@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { LOGO_DARK, LOGO_RATIO, OG_COLORS, OG_FONTS } from "@/lib/og-brand";
 import { getHotPlayers, type HotMetric } from "@/lib/api";
 import { bigPhoto, competitionColor } from "@/lib/format";
 
@@ -39,24 +40,23 @@ export async function GET(request: Request) {
           height: "100%",
           display: "flex",
           flexDirection: "column",
-          background: "radial-gradient(circle at 50% 0%, #ff6b3d55, #070a14 55%)",
+          background: OG_COLORS.slate,
           color: "#eef2ff",
           padding: 64,
-          fontFamily: "sans-serif",
+          fontFamily: "Regista",
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ display: "flex", fontSize: 34, fontWeight: 800, letterSpacing: -1 }}>
-            Talent<span style={{ color: "#22d3ee" }}>Scope</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LOGO_DARK} height={46} width={Math.round(46 * LOGO_RATIO)} alt="" />
           <div
             style={{
               display: "flex",
-              background: "#ffd76a",
-              color: "#2a1d00",
+              background: "#f2c230",
+              color: "#1f3b2d",
               padding: "8px 18px",
               fontSize: 24,
-              fontWeight: 900,
+              fontWeight: 400,
               transform: "rotate(-3deg)",
               borderRadius: 4,
             }}
@@ -64,7 +64,7 @@ export async function GET(request: Request) {
             {`Últimos ${days} días`}
           </div>
         </div>
-        <div style={{ display: "flex", fontSize: 96, fontWeight: 800, letterSpacing: -3, marginTop: 36 }}>En racha</div>
+        <div style={{ display: "flex", fontSize: 96, fontWeight: 400, letterSpacing: -3, marginTop: 36 }}>En racha</div>
         <div style={{ display: "flex", fontSize: 34, color: "#aab3c7", marginTop: 4 }}>
           {`${TITLES[metric]} · ${competition ?? "5 grandes ligas"}`}
         </div>
@@ -85,23 +85,23 @@ export async function GET(request: Request) {
                   padding: "16px 28px",
                 }}
               >
-                <span style={{ display: "flex", width: 56, fontSize: 52, fontWeight: 800, color: index === 0 ? "#ffd76a" : "#8b93a7" }}>
+                <span style={{ display: "flex", width: 56, fontSize: 52, fontWeight: 400, color: index === 0 ? "#f2c230" : "#8b93a7" }}>
                   {String(index + 1)}
                 </span>
-                <div style={{ display: "flex", width: 112, height: 112, borderRadius: 56, overflow: "hidden", background: "#0d1426" }}>
+                <div style={{ display: "flex", width: 112, height: 112, borderRadius: 56, overflow: "hidden", background: "#173024" }}>
                   {photo && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={photo} width={112} height={112} style={{ objectFit: "cover", objectPosition: "center top" }} alt="" />
                   )}
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-                  <span style={{ fontSize: 42, fontWeight: 800 }}>{player.name}</span>
+                  <span style={{ fontSize: 42, fontWeight: 400 }}>{player.name}</span>
                   <span style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 24, color: "#aab3c7" }}>
                     <span style={{ display: "flex", width: 12, height: 12, borderRadius: 6, background: competitionColor(player.competition) }} />
                     {`${player.team} · ${player.matches} partidos`}
                   </span>
                 </div>
-                <span style={{ fontSize: 50, fontWeight: 800, color: "#ffd76a" }}>{value(index)}</span>
+                <span style={{ fontSize: 50, fontWeight: 400, color: "#f2c230" }}>{value(index)}</span>
               </div>
             );
           })}
@@ -116,6 +116,7 @@ export async function GET(request: Request) {
     {
       width: WIDTH,
       height: HEIGHT,
+      fonts: OG_FONTS,
       headers: { "Cache-Control": "public, max-age=3600, s-maxage=21600" },
     },
   );

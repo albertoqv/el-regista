@@ -20,7 +20,7 @@ export function Partnerships({ pairs }: { pairs: Partnership[] }) {
         {pairs.map((pair, index) => (
           <Reveal key={`${pair.scorer.player_id}-${pair.assister_name}`} delay={index * 0.05}>
             <div
-              className="glass glass-hover flex items-center gap-3 rounded-3xl p-4"
+              className="glass glass-hover flex items-center gap-3 rounded-lg p-4"
               style={{ transform: `rotate(${index % 2 === 0 ? -0.6 : 0.6}deg)` }}
             >
               <div className="flex flex-col items-center gap-1">
@@ -32,7 +32,7 @@ export function Partnerships({ pairs }: { pairs: Partnership[] }) {
                   <Avatar name={pair.assister_name} size={52} />
                 )}
               </div>
-              <HandArrow direction="right" className="shrink-0 text-[#ffd76a]" />
+              <HandArrow direction="right" className="shrink-0 text-[#f2c230]" />
               <Link href={`/players/${pair.scorer.player_id}`}>
                 <Avatar name={pair.scorer.name} photoUrl={pair.scorer.photo_url} size={52} />
               </Link>

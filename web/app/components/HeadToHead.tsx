@@ -11,8 +11,8 @@ import {
   type MetricKey,
 } from "@/lib/metrics";
 
-const COLOR_A = "#3d8bff";
-const COLOR_B = "#ff6b3d";
+const COLOR_A = "#7cc0ff";
+const COLOR_B = "#ff8a4c";
 
 /** Metrics a source may not track this season: hide them when both are 0. */
 const OPTIONAL: MetricKey[] = [
@@ -67,7 +67,6 @@ function Row({
             className="h-full rounded-full"
             style={{
               background: `linear-gradient(270deg, ${COLOR_A}, ${COLOR_A}55)`,
-              boxShadow: result === 1 ? `0 0 14px ${COLOR_A}` : "none",
               opacity: result === -1 ? 0.45 : 1,
             }}
             initial={{ width: 0 }}
@@ -86,7 +85,6 @@ function Row({
             className="h-full rounded-full"
             style={{
               background: `linear-gradient(90deg, ${COLOR_B}, ${COLOR_B}55)`,
-              boxShadow: result === -1 ? `0 0 14px ${COLOR_B}` : "none",
               opacity: result === 1 ? 0.45 : 1,
             }}
             initial={{ width: 0 }}
@@ -112,7 +110,7 @@ export function HeadToHead({ playerA, playerB }: { playerA: Player; playerB: Pla
   let rowIndex = 0;
 
   return (
-    <section className="glass flex flex-col gap-6 rounded-3xl p-5 sm:p-7">
+    <section className="glass flex flex-col gap-6 rounded-lg p-5 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl font-bold tracking-tight">Métrica a métrica</h2>
@@ -133,7 +131,7 @@ export function HeadToHead({ playerA, playerB }: { playerA: Player; playerB: Pla
                 key={option.label}
                 type="button"
                 onClick={() => setPerNinety(option.value)}
-                className={`rounded-full px-3 py-1.5 transition ${perNinety === option.value ? "bg-white text-black" : "text-muted hover:text-ink"}`}
+                className={`rounded-full px-3 py-1.5 transition ${perNinety === option.value ? "bg-white text-bg" : "text-muted hover:text-ink"}`}
               >
                 {option.label}
               </button>

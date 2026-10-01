@@ -1,26 +1,21 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
-import { ScoutNote } from "@/app/components/ScoutNote";
+import { PHOTOS } from "@/lib/photos";
 
 export default function NotFound() {
   return (
-    <div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-20 text-center">
-      <ScoutNote rotate={2}>fuera de juego</ScoutNote>
-      <h1 className="font-display text-4xl font-bold tracking-tight">Aquí no hay nadie</h1>
-      <p className="text-sm text-muted">
-        Esta página no existe o el jugador ya no está en nuestra base de datos. Búscalo de nuevo o
-        explora por filtros.
-      </p>
+    <section className="photo-header -mx-4 -mt-6 flex min-h-[70vh] flex-col items-start justify-end gap-4 px-4 pb-12 sm:mx-0 sm:mt-0 sm:rounded-xl sm:px-10">
+      <img src={PHOTOS.no_encontrado.src} alt="" />
+      <h1 className="font-display text-6xl leading-[0.92] sm:text-7xl">Aquí no hay nadie</h1>
+      <p className="text-ink/85">Esta página no existe.</p>
       <div className="flex gap-2">
-        <Link
-          href="/"
-          className="rounded-full bg-[#ffd76a] px-5 py-2.5 text-sm font-bold text-black transition hover:brightness-105"
-        >
+        <Link href="/buscar" className="rounded-md bg-brand px-5 py-2.5 text-sm font-semibold text-bg">
           Buscar jugador
         </Link>
-        <Link href="/explorar" className="rounded-full border border-line px-5 py-2.5 text-sm text-muted hover:text-ink">
-          Explorador
+        <Link href="/" className="rounded-md border border-line-strong px-5 py-2.5 text-sm text-ink">
+          Portada
         </Link>
       </div>
-    </div>
+    </section>
   );
 }
