@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SITE_HOST } from "@/lib/site";
 import { LOGO_DARK, LOGO_RATIO, OG_COLORS, OG_FONTS } from "@/lib/og-brand";
 import { getHotPlayers, type HotMetric } from "@/lib/api";
 import { bigPhoto, competitionColor } from "@/lib/format";
@@ -109,7 +110,7 @@ export async function GET(request: Request) {
 
         <div style={{ display: "flex", marginTop: "auto", justifyContent: "space-between", fontSize: 22, color: "#8b93a7" }}>
           <span>Datos: Understat · mínimo 180 minutos</span>
-          <span>web-seven-tan-39.vercel.app/en-racha</span>
+          <span>{`${SITE_HOST}/en-racha`}</span>
         </div>
       </div>
     ),

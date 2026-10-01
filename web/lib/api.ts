@@ -1,4 +1,7 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// On the server the API is called directly; in the browser through the site's own
+// /api proxy (see next.config.ts), so it works on any domain without CORS.
+const API_URL =
+  typeof window === "undefined" ? (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000") : "/api";
 const REVALIDATE_SECONDS = 1800;
 
 export type PlayerSummary = {

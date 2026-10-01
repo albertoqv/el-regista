@@ -7,6 +7,7 @@ import { NavBar } from "@/app/components/NavBar";
 import { VisitTracker } from "@/app/components/VisitTracker";
 import { PHOTOS } from "@/lib/photos";
 import { PRODUCTS } from "@/lib/products";
+import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const chivo = Chivo({
@@ -24,13 +25,15 @@ const regista = localFont({
 
 export const metadata: Metadata = {
   // Absolute URLs for social previews (Open Graph cards).
-  metadataBase: new URL(
-    process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "http://localhost:3000",
-  ),
+  metadataBase: new URL(SITE_URL),
   title: "El Regista",
   description: "Scout y pronósticos de fútbol con datos reales.",
+  openGraph: {
+    siteName: "El Regista",
+    locale: "es_ES",
+    type: "website",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -95,7 +95,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
         <Link href={teamHref(forecast.home_team, forecast.competition)} className="flex min-w-0 flex-col gap-1 hover:underline">
           <span className="font-display text-base font-bold leading-tight">{forecast.home_team}</span>
-          <FormPills form={forecast.home_form} />
+          <FormPills form={forecast.home_form.slice(0, 3)} />
         </Link>
         <div className="flex flex-col items-center">
           <span className="whitespace-nowrap font-display text-xl font-bold tabular-nums">
@@ -109,7 +109,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
         >
           <span className="font-display text-base font-bold leading-tight">{forecast.away_team}</span>
           <span className="flex justify-end">
-            <FormPills form={forecast.away_form} />
+            <FormPills form={forecast.away_form.slice(0, 3)} />
           </span>
         </Link>
       </div>
@@ -138,7 +138,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
         href={`/predicciones/${forecast.match_id}`}
         className="mt-auto rounded-full bg-white px-4 py-2 text-center text-xs font-bold text-bg transition hover:bg-white/85"
       >
-        Análisis completo: córners, tarjetas, goleadores…
+        Ver análisis completo
       </Link>
     </article>
   );

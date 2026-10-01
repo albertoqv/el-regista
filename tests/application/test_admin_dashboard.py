@@ -71,8 +71,8 @@ def test_own_site_referrers_are_dropped():
         repository,
         salt="s",
         today=lambda: date(2026, 9, 30),
-        own_hosts=("web-seven-tan-39.vercel.app",),
-    ).execute("/", "https://web-seven-tan-39.vercel.app/gemelos", "1.1.1.1", CHROME)
+        own_hosts=("elregista.vercel.app",),
+    ).execute("/", "https://elregista.vercel.app/gemelos", "1.1.1.1", CHROME)
 
     assert repository.views[0].referrer is None
 

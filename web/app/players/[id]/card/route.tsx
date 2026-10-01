@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { SITE_HOST } from "@/lib/site";
 import { LOGO_DARK, LOGO_RATIO, OG_COLORS, OG_FONTS } from "@/lib/og-brand";
 import {
   getMarketValue,
@@ -163,7 +164,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
 
         <div style={{ display: "flex", marginTop: "auto", justifyContent: "space-between", fontSize: 22, color: "#8b93a7" }}>
           <span>{report ? `Percentil vs ${report.peer_count} de su puesto en ${report.competition}` : ""}</span>
-          <span>web-seven-tan-39.vercel.app</span>
+          <span>{SITE_HOST}</span>
         </div>
       </div>
     ),

@@ -78,7 +78,9 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
   migraciones corren solas al arrancar. `npx @railway/cli up --service api --detach`.
   El estado de despliegue de la CLI va con retraso: comprobar la API en vivo.
   La BD solo es accesible por red privada: limpiezas de datos = migración de Alembic.
-- Web: Vercel (https://web-seven-tan-39.vercel.app). `cd web && npx vercel --prod --yes`.
+- Web: Vercel (https://elregista.vercel.app; el antiguo web-seven-tan-39 redirige). `cd web && npx vercel --prod --yes`.
+  El navegador llama a la API por `/api/*` (rewrite en `next.config.ts`): sin CORS en ningún dominio.
+  URL pública en `web/lib/site.ts` (`NEXT_PUBLIC_SITE_URL`).
 - Secretos solo como variables de entorno (Railway / GitHub secrets
   `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo.
 - `.github/workflows/weekly-fbref-refresh.yml`: martes y viernes: FBref, Understat

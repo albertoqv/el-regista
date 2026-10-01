@@ -1,8 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL
-  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  : "http://localhost:3000";
+import { SITE_URL as SITE } from "@/lib/site";
 
 const PAGES: { path: string; changeFrequency: "daily" | "weekly" | "monthly"; priority: number }[] = [
   { path: "", changeFrequency: "daily", priority: 1 },

@@ -52,9 +52,7 @@ function TrustPanel({
       <div className="col-span-2 sm:col-span-4">
         <h2 className="font-display text-lg font-bold">¿Cuánto acierta el modelo?</h2>
         <p className="text-sm text-muted">
-          Lo hemos puesto a prueba con los {backtest.matches.toLocaleString("es-ES")} partidos de la
-          temporada {seasonDisplay(season)}, pronosticando cada uno solo con lo que se sabía antes de
-          jugarse.{" "}
+          {backtest.matches.toLocaleString("es-ES")} partidos de la {seasonDisplay(season)}, cada uno predicho solo con lo anterior.{" "}
           <Link href="/como-funciona#predicciones" className="text-brand-2 hover:underline">
             Cómo funciona →
           </Link>
@@ -87,13 +85,10 @@ function TrustPanel({
       </div>
       {benchmark && benchmark.matches > 0 && (
         <p className="col-span-2 rounded-lg bg-white/[0.04] p-3 text-sm sm:col-span-4">
-          <strong>Frente a las casas de apuestas</strong> en los mismos{" "}
-          {benchmark.matches.toLocaleString("es-ES")} partidos (Brier, menos es mejor): nuestro modelo{" "}
+          <strong>Frente a las casas de apuestas</strong>: nuestro modelo{" "}
           <strong>{benchmark.model_brier.toFixed(3)}</strong>, cuotas de cierre{" "}
-          <strong>{benchmark.market_brier.toFixed(3)}</strong>. En el ganador del partido el mercado
-          acierta más (sabe de lesiones y alineaciones), así que cuando hay cuotas publicadas las
-          mostramos como referencia. Donde aportamos lo que las cuotas gratuitas no dan es en córners,
-          tarjetas, faltas, tiros y jugadores.
+          <strong>{benchmark.market_brier.toFixed(3)}</strong>. En el 1X2 aciertan más las casas; lo
+          nuestro es lo que sus cuotas gratuitas no dan: córners, tarjetas y jugadores.
         </p>
       )}
     </section>
