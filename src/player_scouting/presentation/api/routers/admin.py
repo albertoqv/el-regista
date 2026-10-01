@@ -65,7 +65,7 @@ async def record_visit(
         return Response(status_code=204)
     RecordVisitUseCase(
         visits,
-        salt=settings.visit_salt or settings.ingestion_api_key or "talentscope",
+        salt=settings.visit_salt or settings.ingestion_api_key or "elregista",
         own_hosts=tuple(
             urlsplit(origin).hostname or "" for origin in settings.cors_origins_list
         ),

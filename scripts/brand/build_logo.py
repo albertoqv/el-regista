@@ -1,4 +1,5 @@
 """Builds the El Regista logo SVGs (pure paths) from the Regista Display glyphs."""
+
 import base64
 import json
 from pathlib import Path

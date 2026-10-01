@@ -26,7 +26,7 @@ class FakeHosting:
 def _client(visits, key="secret", hosting=None):
     app = create_app()
     app.dependency_overrides[get_api_settings] = lambda: ApiSettings(
-        ingestion_api_key=key, cors_origins="https://talentscope.example"
+        ingestion_api_key=key, cors_origins="https://elregista.example"
     )
     app.dependency_overrides[get_visit_repository] = lambda: visits
     app.dependency_overrides[get_hosting_usage_provider] = lambda: hosting

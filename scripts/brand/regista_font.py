@@ -4,6 +4,7 @@ Design units: cap height 100, stroke 22, centerline corner fillet 12 (outer radi
 23, inner ~1). Every glyph is a set of polylines; strokes are unioned and clipped to
 the glyph box so diagonal terminals sit flush on the baseline and cap height.
 """
+
 from __future__ import annotations
 
 import json
@@ -19,7 +20,7 @@ W_STROKE = 22.0
 HALF = W_STROKE / 2
 FILLET = 12.0
 SCALE = 7  # 100 design units -> 700 font units of cap height
-SIDE = 8   # side bearing in design units
+SIDE = 8  # side bearing in design units
 
 
 def fillet(points, radius=FILLET, closed=False, steps=10):
@@ -46,8 +47,8 @@ def fillet(points, radius=FILLET, closed=False, steps=10):
         b = (cur[0] + v2[0] / l2 * t, cur[1] + v2[1] / l2 * t)
         for k in range(steps + 1):
             s = k / steps
-            x = (1 - s) ** 2 * a[0] + 2 * (1 - s) * s * cur[0] + s ** 2 * b[0]
-            y = (1 - s) ** 2 * a[1] + 2 * (1 - s) * s * cur[1] + s ** 2 * b[1]
+            x = (1 - s) ** 2 * a[0] + 2 * (1 - s) * s * cur[0] + s**2 * b[0]
+            y = (1 - s) ** 2 * a[1] + 2 * (1 - s) * s * cur[1] + s**2 * b[1]
             out.append((x, y))
     if closed:
         out.append(out[0])
@@ -56,7 +57,9 @@ def fillet(points, radius=FILLET, closed=False, steps=10):
 
 def stroke(points, closed=False, radius=FILLET):
     line = LineString(fillet(points, radius, closed))
-    return line.buffer(HALF, cap_style="flat", join_style="mitre", mitre_limit=4, quad_segs=8)
+    return line.buffer(
+        HALF, cap_style="flat", join_style="mitre", mitre_limit=4, quad_segs=8
+    )
 
 
 def dot(x, y, size=W_STROKE):
@@ -76,9 +79,14 @@ def glyphs():
     S = lambda shape: ("shape", shape)
 
     W, A, B = 64, 11, 53  # standard width and the two stem centerlines
-    M = W // 2
     add("A", W, L((A, 0), (A, 89), (B, 89), (B, 0)), L((A, 46), (B, 46)))
-    add("B", W, L((A, 0), (A, 89), (B - 5, 89), (B - 5, 55), (A, 55)), L((A, 55), (B, 55), (B, 11), (A, 11)), L((A, 11), (A, 0)))
+    add(
+        "B",
+        W,
+        L((A, 0), (A, 89), (B - 5, 89), (B - 5, 55), (A, 55)),
+        L((A, 55), (B, 55), (B, 11), (A, 11)),
+        L((A, 11), (A, 0)),
+    )
     add("C", W, L((W, 89), (A, 89), (A, 11), (W, 11)))
     add("D", W, C((A, 11, 0), (A, 89, 0), (B, 89), (B, 11)))
     add("E", 60, L((60, 89), (A, 89), (A, 11), (60, 11)), L((A, 50), (51, 50)))
@@ -89,7 +97,13 @@ def glyphs():
     add("J", 60, L((49, 100), (49, 11), (0, 11)))
     add("K", W, L((A, 0), (A, 100)), L((W - 6, 108), (19, 52), (W - 6, -8)))
     add("L", 58, L((A, 100), (A, 11), (58, 11)))
-    add("M", 84, L((A, 0), (A, 100)), L((73, 0), (73, 100)), L((A, 104), (42, 44), (73, 104)))
+    add(
+        "M",
+        84,
+        L((A, 0), (A, 100)),
+        L((73, 0), (73, 100)),
+        L((A, 104), (42, 44), (73, 104)),
+    )
     add("N", W, L((A, 0), (A, 100)), L((B, 0), (B, 100)), L((A, 104), (B, -4)))
     add("O", W, C((A, 11), (A, 89), (B, 89), (B, 11)))
     add("P", W, L((A, 0), (A, 89), (B, 89), (B, 48), (A, 48)))
@@ -99,7 +113,13 @@ def glyphs():
     add("T", 62, L((0, 89), (62, 89)), L((31, 89), (31, 0)))
     add("U", W, L((A, 100), (A, 11), (B, 11), (B, 100)))
     add("V", 66, L((2, 114), (33, 0), (64, 114)))
-    add("W", 84, L((A, 0), (A, 100)), L((73, 0), (73, 100)), L((A, -4), (42, 56), (73, -4)))
+    add(
+        "W",
+        84,
+        L((A, 0), (A, 100)),
+        L((73, 0), (73, 100)),
+        L((A, -4), (42, 56), (73, -4)),
+    )
     add("X", 66, L((0, 106), (66, -6)), L((66, 106), (0, -6)))
     add("Y", 66, L((0, 110), (33, 50), (66, 110)), L((33, 50), (33, 0)))
     add("Z", W, L((0, 89), (W - 2, 89)), L((W - 8, 84), (8, 16)), L((2, 11), (W, 11)))
@@ -115,7 +135,13 @@ def glyphs():
     add("eight", 60, C((A, 11), (A, 89), (49, 89), (49, 11)), L((A, 52), (49, 52)))
     add("nine", 60, L((49, 50), (A, 50), (A, 89), (49, 89), (49, 11), (0, 11)))
 
-    add("euro", 64, L((W, 89), (22, 89), (22, 11), (W, 11)), L((0, 60), (46, 60)), L((0, 40), (46, 40)))
+    add(
+        "euro",
+        64,
+        L((W, 89), (22, 89), (22, 11), (W, 11)),
+        L((0, 60), (46, 60)),
+        L((0, 40), (46, 40)),
+    )
     add("period", 22, S(dot(11, 0)))
     add("comma", 22, L((11, 22), (11, 0), (4, -16)), bottom=-20)
     add("colon", 22, S(dot(11, 0)), S(dot(11, 46)))
@@ -126,20 +152,52 @@ def glyphs():
     add("periodcentered", 22, S(dot(11, 38)))
     add("quotesingle", 22, L((11, 100), (11, 66)))
     add("exclam", 22, L((11, 100), (11, 36)), S(dot(11, 0)))
-    add("question", 56, L((0, 89), (45, 89), (45, 56), (27, 56), (27, 34)), S(dot(27, 0)))
-    add("questiondown", 56, L((56, 11), (11, 11), (11, 44), (29, 44), (29, 66)), S(dot(29, 78)), top=100)
+    add(
+        "question",
+        56,
+        L((0, 89), (45, 89), (45, 56), (27, 56), (27, 34)),
+        S(dot(27, 0)),
+    )
+    add(
+        "questiondown",
+        56,
+        L((56, 11), (11, 11), (11, 44), (29, 44), (29, 66)),
+        S(dot(29, 78)),
+        top=100,
+    )
     add("exclamdown", 22, L((11, 0), (11, 64)), S(dot(11, 78)))
-    add("parenleft", 32, L((30, 110), (11, 110), (11, -10), (30, -10)), top=112, bottom=-12)
-    add("parenright", 32, L((2, 110), (21, 110), (21, -10), (2, -10)), top=112, bottom=-12)
+    add(
+        "parenleft",
+        32,
+        L((30, 110), (11, 110), (11, -10), (30, -10)),
+        top=112,
+        bottom=-12,
+    )
+    add(
+        "parenright",
+        32,
+        L((2, 110), (21, 110), (21, -10), (2, -10)),
+        top=112,
+        bottom=-12,
+    )
     add("percent", 70, S(dot(14, 66, 26)), S(dot(56, 8, 26)), L((6, 0), (64, 100)))
-    add("ampersand", 60, L((60, 11), (11, 11), (11, 50), (40, 50), (40, 89), (18, 89), (18, 50)), L((49, 50), (49, 30)))
+    add(
+        "ampersand",
+        60,
+        L((60, 11), (11, 11), (11, 50), (40, 50), (40, 89), (18, 89), (18, 50)),
+        L((49, 50), (49, 30)),
+    )
     add("space", 30)
     return g
 
 
 ACCENTS = {
-    "Aacute": ("A", "acute"), "Eacute": ("E", "acute"), "Iacute": ("I", "acute"),
-    "Oacute": ("O", "acute"), "Uacute": ("U", "acute"), "Ntilde": ("N", "tilde"),
+    "Aacute": ("A", "acute"),
+    "Eacute": ("E", "acute"),
+    "Iacute": ("I", "acute"),
+    "Oacute": ("O", "acute"),
+    "Uacute": ("U", "acute"),
+    "Ntilde": ("N", "tilde"),
     "Udieresis": ("U", "dieresis"),
 }
 
@@ -149,10 +207,14 @@ def accent_shape(kind, width):
     if kind == "acute":
         return Polygon([(cx - 9, 108), (cx + 3, 108), (cx + 15, 128), (cx + 3, 128)])
     if kind == "tilde":
-        line = LineString(fillet([(cx - 22, 112), (cx - 10, 122), (cx + 10, 112), (cx + 22, 122)], 5))
+        line = LineString(
+            fillet([(cx - 22, 112), (cx - 10, 122), (cx + 10, 112), (cx + 22, 122)], 5)
+        )
         return line.buffer(5, cap_style="flat", join_style="round")
     if kind == "dieresis":
-        return unary_union([box(cx - 19, 110, cx - 6, 123), box(cx + 6, 110, cx + 19, 123)])
+        return unary_union(
+            [box(cx - 19, 110, cx - 6, 123), box(cx + 6, 110, cx + 19, 123)]
+        )
     raise ValueError(kind)
 
 
@@ -196,19 +258,56 @@ def svg_path(geom, dx=0.0, dy_top=100.0, scale=1.0):
     for poly in polygons(geom):
         for ring in [poly.exterior, *poly.interiors]:
             pts = list(ring.coords)
-            cmd = "M" + " L".join(f"{(x + dx) * scale:.2f} {(dy_top - y) * scale:.2f}" for x, y in pts[:-1]) + " Z"
+            cmd = (
+                "M"
+                + " L".join(
+                    f"{(x + dx) * scale:.2f} {(dy_top - y) * scale:.2f}"
+                    for x, y in pts[:-1]
+                )
+                + " Z"
+            )
             parts.append(cmd)
     return " ".join(parts)
 
 
 CHAR_NAMES = {
     **{c: c for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"},
-    "0": "zero", "1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six",
-    "7": "seven", "8": "eight", "9": "nine", ".": "period", ",": "comma", ":": "colon",
-    "-": "hyphen", "–": "endash", "+": "plus", "/": "slash", "·": "periodcentered", "'": "quotesingle",
-    "!": "exclam", "?": "question", "¿": "questiondown", "¡": "exclamdown", "(": "parenleft",
-    ")": "parenright", "%": "percent", "€": "euro", "&": "ampersand", " ": "space",
-    "Á": "Aacute", "É": "Eacute", "Í": "Iacute", "Ó": "Oacute", "Ú": "Uacute", "Ñ": "Ntilde", "Ü": "Udieresis",
+    "0": "zero",
+    "1": "one",
+    "2": "two",
+    "3": "three",
+    "4": "four",
+    "5": "five",
+    "6": "six",
+    "7": "seven",
+    "8": "eight",
+    "9": "nine",
+    ".": "period",
+    ",": "comma",
+    ":": "colon",
+    "-": "hyphen",
+    "–": "endash",
+    "+": "plus",
+    "/": "slash",
+    "·": "periodcentered",
+    "'": "quotesingle",
+    "!": "exclam",
+    "?": "question",
+    "¿": "questiondown",
+    "¡": "exclamdown",
+    "(": "parenleft",
+    ")": "parenright",
+    "%": "percent",
+    "€": "euro",
+    "&": "ampersand",
+    " ": "space",
+    "Á": "Aacute",
+    "É": "Eacute",
+    "Í": "Iacute",
+    "Ó": "Oacute",
+    "Ú": "Uacute",
+    "Ñ": "Ntilde",
+    "Ü": "Udieresis",
 }
 
 
@@ -245,7 +344,10 @@ def build_font(geoms, widths, out_dir: Path):
             for poly in polygons(geoms[name]):
                 poly = orient(poly, sign=-1.0)
                 for ring in [poly.exterior, *poly.interiors]:
-                    pts = [(round((x + SIDE / 2) * SCALE), round(y * SCALE)) for x, y in ring.coords[:-1]]
+                    pts = [
+                        (round((x + SIDE / 2) * SCALE), round(y * SCALE))
+                        for x, y in ring.coords[:-1]
+                    ]
                     clean = [p for i, p in enumerate(pts) if p != pts[i - 1]]
                     if len(clean) < 3:
                         continue
@@ -265,16 +367,30 @@ def build_font(geoms, widths, out_dir: Path):
         metrics[name] = (metrics[name][0], getattr(g, "xMin", 0) or 0)
     fb.setupHorizontalMetrics(metrics)
     fb.setupHorizontalHeader(ascent=900, descent=-200)
-    fb.setupNameTable({"familyName": "Regista Display", "styleName": "Regular",
-                       "uniqueFontIdentifier": "RegistaDisplay-Regular-1.0",
-                       "fullName": "Regista Display", "psName": "RegistaDisplay-Regular",
-                       "version": "Version 1.000"})
-    fb.setupOS2(sTypoAscender=900, sTypoDescender=-200, usWinAscent=950, usWinDescent=220,
-                sCapHeight=700, sxHeight=700, achVendID="REGI")
+    fb.setupNameTable(
+        {
+            "familyName": "Regista Display",
+            "styleName": "Regular",
+            "uniqueFontIdentifier": "RegistaDisplay-Regular-1.0",
+            "fullName": "Regista Display",
+            "psName": "RegistaDisplay-Regular",
+            "version": "Version 1.000",
+        }
+    )
+    fb.setupOS2(
+        sTypoAscender=900,
+        sTypoDescender=-200,
+        usWinAscent=950,
+        usWinDescent=220,
+        sCapHeight=700,
+        sxHeight=700,
+        achVendID="REGI",
+    )
     fb.setupPost()
     ttf = out_dir / "RegistaDisplay.ttf"
     fb.save(ttf)
     from fontTools.ttLib import TTFont
+
     f = TTFont(ttf)
     f.flavor = "woff2"
     f.save(out_dir / "RegistaDisplay.woff2")
@@ -291,6 +407,8 @@ if __name__ == "__main__":
         d, width = word_svg(w, geoms, widths)
         words[w] = {"d": d, "width": width}
     json.dump(words, open(out / "words.json", "w"))
-    specimen, sw = word_svg("ABCDEFGHIJKLMNÑOPQRSTUVWXYZ 0123456789 ÁÉÍÓÚ ¿?¡!.,:-+%/()", geoms, widths)
+    specimen, sw = word_svg(
+        "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ 0123456789 ÁÉÍÓÚ ¿?¡!.,:-+%/()", geoms, widths
+    )
     json.dump({"d": specimen, "width": sw}, open(out / "specimen.json", "w"))
     print("ok", out)

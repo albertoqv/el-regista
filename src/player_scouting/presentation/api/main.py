@@ -19,7 +19,7 @@ from player_scouting.presentation.api.settings import get_api_settings
 
 
 def create_app() -> FastAPI:
-    app = FastAPI(title="TalentScope API")
+    app = FastAPI(title="El Regista API")
     app.state.metrics = RequestMetrics()
     app.middleware("http")(metrics_middleware(app.state.metrics))
     app.add_middleware(
