@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime
+import zlib
+from collections.abc import Iterator
+from datetime import date, datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi.responses import StreamingResponse
 
 from player_scouting.application.exceptions import PlayerNotFoundError
 from player_scouting.application.ports import MarketValueHistoryResult
@@ -12,6 +15,7 @@ from player_scouting.application.use_cases.track_record import (
 )
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.presentation.api.dependencies import (
+    BackupStream,
     EnqueueLeagueIngestionUseCaseDep,
     EnrichFromDatasetUseCaseDep,
     EnrichPendingPlayersUseCaseDep,
@@ -34,6 +38,7 @@ from player_scouting.presentation.api.dependencies import (
     ProcessLeagueIngestionBatchUseCaseDep,
     RecordEnrichmentUseCaseDep,
     TeamRepositoryDep,
+    get_backup_stream,
 )
 from player_scouting.presentation.api.schemas import (
     EnrichmentIn,
@@ -56,6 +61,27 @@ router = APIRouter(
     tags=["ingestion"],
     dependencies=[Depends(verify_ingestion_api_key)],
 )
+
+
+@router.get("/backup")
+def download_backup(
+    stream: Annotated[BackupStream, Depends(get_backup_stream)],
+) -> StreamingResponse:
+    """Every table as a gzipped, psql-replayable dump (weekly GitHub Action)."""
+
+    def gzipped() -> Iterator[bytes]:
+        compressor = zlib.compressobj(6, zlib.DEFLATED, 16 + zlib.MAX_WBITS)
+        for chunk in stream():
+            if data := compressor.compress(chunk):
+                yield data
+        yield compressor.flush()
+
+    filename = f"elregista-{date.today().isoformat()}.sql.gz"
+    return StreamingResponse(
+        gzipped(),
+        media_type="application/gzip",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @router.post(

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from datetime import UTC, datetime
 from typing import Annotated
 
 import httpx
@@ -95,8 +96,13 @@ from player_scouting.infrastructure.football_data.client import FootballDataClie
 from player_scouting.infrastructure.football_data.provider import (
     FootballDataProvider,
 )
-from player_scouting.infrastructure.persistence.database import get_session
-from player_scouting.infrastructure.persistence.overview import database_overview
+from player_scouting.infrastructure.persistence.backup import dump_data
+from player_scouting.infrastructure.persistence.database import engine, get_session
+from player_scouting.infrastructure.persistence.overview import (
+    DataFreshness,
+    data_freshness,
+    database_overview,
+)
 from player_scouting.infrastructure.persistence.sqlalchemy_league_ingestion_job_repository import (  # noqa: E501
     SqlAlchemyLeagueIngestionJobRepository,
 )
@@ -602,6 +608,28 @@ def get_visit_repository(session: SessionDep) -> VisitRepository:
 
 def get_database_overview(session: SessionDep) -> dict[str, int]:
     return database_overview(session)
+
+
+BackupStream = Callable[[], Iterator[bytes]]
+
+
+def get_backup_stream() -> BackupStream:
+    def stream() -> Iterator[bytes]:
+        # Its own connection: the download outlives the request's session.
+        # Repeatable read = every table from the same instant.
+        with engine.connect().execution_options(
+            isolation_level="REPEATABLE READ"
+        ) as connection:
+            raw = connection.connection.driver_connection
+            assert raw is not None  # psycopg, the only driver we use
+            yield from dump_data(raw)
+
+    return stream
+
+
+def get_data_freshness(session: SessionDep) -> DataFreshness:
+    # Fixture kick-offs are stored in UTC without a time zone.
+    return data_freshness(session, datetime.now(UTC).replace(tzinfo=None))
 
 
 def get_hosting_usage_provider(

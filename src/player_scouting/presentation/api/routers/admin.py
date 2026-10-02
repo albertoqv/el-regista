@@ -17,7 +17,9 @@ from player_scouting.application.use_cases.admin_dashboard import (
     AdminDashboardUseCase,
     RecordVisitUseCase,
 )
+from player_scouting.infrastructure.persistence.overview import DataFreshness
 from player_scouting.presentation.api.dependencies import (
+    get_data_freshness,
     get_database_overview,
     get_hosting_usage_provider,
     get_visit_repository,
@@ -42,6 +44,24 @@ _hosting_cache: dict[str, tuple[float, HostingUsage]] = {}
 @public_router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@public_router.get("/health/data")
+def data_health(
+    report: Annotated[DataFreshness, Depends(get_data_freshness)],
+    response: Response,
+) -> dict[str, Any]:
+    """503 when played matches lack their result, so a monitor can alert on it."""
+    stale = bool(report.missing_results)
+    if stale:
+        response.status_code = 503
+    return {
+        "status": "stale" if stale else "ok",
+        "missing_results": report.missing_results,
+        "latest_result": report.latest_result.isoformat()
+        if report.latest_result
+        else None,
+    }
 
 
 def _client_ip(request: Request) -> str:
