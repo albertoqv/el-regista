@@ -11,7 +11,7 @@ import {
   type TableRow,
 } from "@/lib/api";
 import { COMPETITIONS, currentSeasonStartYear } from "@/lib/format";
-import { RANKING_LEAGUES, RANKING_METRICS, rankingHref } from "@/lib/rankings";
+import { rankingHref, rankingPages } from "@/lib/rankings";
 import { SITE_URL as SITE } from "@/lib/site";
 
 // Rebuilt every hour: new matches and players appear without a deploy.
@@ -73,9 +73,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...PAGES.map((page) => entry(page.path, page.changeFrequency, page.priority)),
-    ...RANKING_LEAGUES.flatMap((league) =>
-      RANKING_METRICS.map((metric) => entry(rankingHref(league.slug, metric.slug), "daily", 0.7)),
-    ),
+    ...rankingPages().map(({ league, metric }) => entry(rankingHref(league.slug, metric.slug), "daily", 0.7)),
     ...tables
       .flat()
       .map((row) =>

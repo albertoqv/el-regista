@@ -29,7 +29,7 @@ test("los rankings tienen datos de la temporada", async ({ page }) => {
   await page.goto("/ranking/laliga/goleadores");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Goleadores de LaLiga");
   await expect(page.locator("ol li")).toHaveCount(50);
-  await page.getByRole("link", { name: "Premier League" }).click();
+  await page.getByRole("link", { name: "Premier League", exact: true }).click();
   await expect(page).toHaveURL(/\/ranking\/premier-league\/goleadores/);
   await noHorizontalScroll(page);
 });

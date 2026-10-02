@@ -6,7 +6,7 @@ import { JsonLd } from "@/app/components/JsonLd";
 import { listSeasonLeaders, type SeasonLeader } from "@/lib/api";
 import { currentSeasonStartYear, positionShort, seasonDisplay } from "@/lib/format";
 import { METRICS } from "@/lib/metrics";
-import { findRanking, RANKING_LEAGUES, RANKING_METRICS, rankingHref } from "@/lib/rankings";
+import { findRanking, metricsFor, RANKING_LEAGUES, rankingHref, rankingPages } from "@/lib/rankings";
 import { SITE_URL } from "@/lib/site";
 
 const LIMIT = 50;
@@ -16,9 +16,7 @@ const MIN_MINUTES_PER_90 = 270;
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return RANKING_LEAGUES.flatMap((league) =>
-    RANKING_METRICS.map((metric) => ({ liga: league.slug, metrica: metric.slug })),
-  );
+  return rankingPages().map(({ league, metric }) => ({ liga: league.slug, metrica: metric.slug }));
 }
 
 function headline(liga: string, metrica: string): string {
@@ -75,12 +73,12 @@ export default async function RankingPage(props: PageProps<"/ranking/[liga]/[met
       <header className="flex flex-col gap-2">
         <h1 className="font-display text-5xl leading-[0.92] sm:text-6xl">{title}</h1>
         <p className="text-sm text-muted">
-          {METRICS[metric.metric].help} Datos de FBref y Understat, se actualizan martes y viernes.
+          {METRICS[metric.metric].help} Datos de {league.basic ? "Transfermarkt" : "FBref y Understat"}, se actualizan martes y viernes.
         </p>
       </header>
 
       <nav aria-label="Métrica" className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
-        {RANKING_METRICS.map((entry) => (
+        {metricsFor(league).map((entry) => (
           <Link
             key={entry.slug}
             href={rankingHref(liga, entry.slug)}
@@ -92,7 +90,7 @@ export default async function RankingPage(props: PageProps<"/ranking/[liga]/[met
         ))}
       </nav>
       <nav aria-label="Liga" className="no-scrollbar -mx-4 -mt-5 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        {RANKING_LEAGUES.map((entry) => (
+        {RANKING_LEAGUES.filter((entry) => metricsFor(entry).some((m) => m.slug === metrica)).map((entry) => (
           <Link
             key={entry.slug}
             href={rankingHref(entry.slug, metrica)}

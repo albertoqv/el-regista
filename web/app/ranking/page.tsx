@@ -4,6 +4,9 @@ import { listSeasonLeaders, type SeasonLeader } from "@/lib/api";
 import { currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 import { RANKING_LEAGUES, RANKING_METRICS, rankingHref } from "@/lib/rankings";
 
+const BIG_FIVE = RANKING_LEAGUES.filter((league) => !league.basic);
+const OTHERS = RANKING_LEAGUES.filter((league) => league.basic);
+
 const season = () => seasonDisplay(String(currentSeasonStartYear()));
 
 export function generateMetadata(): Metadata {
@@ -16,7 +19,7 @@ export function generateMetadata(): Metadata {
 
 export default async function RankingIndexPage() {
   const scorers = await Promise.all(
-    RANKING_LEAGUES.map((league) =>
+    BIG_FIVE.map((league) =>
       listSeasonLeaders(currentSeasonStartYear(), { metric: "goals", competition: league.competition, limit: 3 }).catch(
         (): SeasonLeader[] => [],
       ),
@@ -27,11 +30,11 @@ export default async function RankingIndexPage() {
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-2">
         <h1 className="font-display text-5xl leading-[0.92] sm:text-6xl">Rankings {season()}</h1>
-        <p className="text-sm text-muted">Las cinco grandes ligas, actualizadas martes y viernes.</p>
+        <p className="text-sm text-muted">Catorce ligas, actualizadas martes y viernes.</p>
       </header>
 
       <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
-        {RANKING_LEAGUES.map((league, index) => (
+        {BIG_FIVE.map((league, index) => (
           <section key={league.slug} className="flex flex-col gap-3 border-t-2 border-ink pt-3">
             <h2 className="font-heading text-2xl tracking-tight">
               <Link href={rankingHref(league.slug, "goleadores")} className="hover:text-brand">
@@ -59,6 +62,28 @@ export default async function RankingIndexPage() {
           </section>
         ))}
       </div>
+
+      <section className="flex flex-col gap-3 border-t-2 border-ink pt-3">
+        <h2 className="font-heading text-2xl tracking-tight">Otras ligas</h2>
+        <p className="text-sm text-muted">Solo goles y asistencias.</p>
+        <ul className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+          {OTHERS.map((league) => (
+            <li key={league.slug} className="flex items-baseline justify-between gap-3 border-b border-line py-2">
+              <Link href={rankingHref(league.slug, "goleadores")} className="font-semibold hover:text-brand">
+                {league.competition}
+              </Link>
+              <span className="flex gap-3 text-sm text-muted">
+                <Link href={rankingHref(league.slug, "goleadores")} className="hover:text-ink">
+                  Goles
+                </Link>
+                <Link href={rankingHref(league.slug, "asistentes")} className="hover:text-ink">
+                  Asistencias
+                </Link>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </section>
     </div>
   );
 }
