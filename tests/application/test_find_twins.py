@@ -179,3 +179,41 @@ def test_shot_profile_separates_headers_from_long_range_shooters():
     names = [twin.player.name for twin in report.twins]
     assert names.index("Header twin") < names.index("Long range twin")
     assert "headed_goals" in report.target.percentiles
+
+
+EREDIVISIE_2025 = Season("Eredivisie", "2025")
+
+
+def _add_basic(repository, player_id, name, goals, assists, role="Centre-Forward"):
+    repository.save_player(
+        Player(
+            player_id, name, "Forward", None, birth_year=1998, detailed_position=role
+        )
+    )
+    repository.save_season_statistics(
+        player_id,
+        EREDIVISIE_2025,
+        Statistics(goals, assists, minutes_played=2500),
+        team=f"Team {player_id}",
+    )
+
+
+def test_leagues_with_only_goals_and_assists_get_a_basic_comparison():
+    repository = InMemoryPlayerRepository()
+    _add_basic(repository, 1, "Ueda", 25, 3)
+    _add_basic(repository, 2, "Similar striker", 22, 3)
+    _add_basic(repository, 3, "Quiet striker", 4, 0)
+    _add_basic(repository, 4, "Winger", 24, 3, role="Left Winger")
+    _add_basic(repository, 5, "Creator", 8, 12, role="Centre-Forward")
+
+    report = _use_case(repository).execute(1)
+
+    assert report.basic is True
+    names = [twin.player.name for twin in report.twins]
+    assert names[0] == "Similar striker"
+    # Without a style profile, the same role keeps the comparison honest.
+    assert "Winger" not in names
+
+
+def test_a_full_profile_is_not_a_basic_comparison():
+    assert _use_case(_repository()).execute(1).basic is False

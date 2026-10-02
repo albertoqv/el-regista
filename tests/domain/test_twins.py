@@ -55,3 +55,13 @@ def test_shared_strengths_are_the_closest_metrics_where_the_target_stands_out():
     # assists and tackles are close or far but not strengths of the target.
     assert result.shared_strengths == ("key_passes", "goals", "shots")
     assert result.differences[0] == "tackles_won"
+
+
+def test_a_basic_comparison_can_use_fewer_metrics_when_asked():
+    target = _profile(goals=90, assists=40)
+    candidate = _profile(goals=80, assists=40)
+
+    result = style_similarity(target, candidate, minimum_shared=2)
+
+    assert result is not None
+    assert result.percentage == 95
