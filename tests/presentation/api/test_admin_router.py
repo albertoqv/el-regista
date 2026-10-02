@@ -4,7 +4,9 @@ from datetime import datetime
 from fastapi.testclient import TestClient
 
 from player_scouting.application.ports import HostingUsage
+from player_scouting.infrastructure.persistence.overview import DataFreshness
 from player_scouting.presentation.api.dependencies import (
+    get_data_freshness,
     get_database_overview,
     get_hosting_usage_provider,
     get_visit_repository,
@@ -104,3 +106,37 @@ def test_health_is_public():
 
     assert response.status_code == 200
     assert response.json()["status"] == "ok"
+
+
+def _freshness_client(report):
+    app = create_app()
+    app.dependency_overrides[get_data_freshness] = lambda: report
+    return TestClient(app)
+
+
+def test_data_health_is_ok_when_every_played_match_has_its_result():
+    report = DataFreshness(missing_results=[], latest_result=datetime(2026, 9, 20))
+
+    response = _freshness_client(report).get("/health/data")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "status": "ok",
+        "missing_results": [],
+        "latest_result": "2026-09-20T00:00:00",
+    }
+
+
+def test_data_health_fails_loudly_when_results_stop_arriving():
+    report = DataFreshness(
+        missing_results=["Betis - Sevilla (La Liga, 2026-09-14)"],
+        latest_result=datetime(2026, 9, 13),
+    )
+
+    response = _freshness_client(report).get("/health/data")
+
+    assert response.status_code == 503
+    assert response.json()["status"] == "stale"
+    assert response.json()["missing_results"] == [
+        "Betis - Sevilla (La Liga, 2026-09-14)"
+    ]
