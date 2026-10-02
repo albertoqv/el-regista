@@ -6,7 +6,8 @@ export type ProductIcon =
   | "flame"
   | "calendar"
   | "checks"
-  | "shield";
+  | "shield"
+  | "trophy";
 
 export type ProductTool = {
   href: string;
@@ -59,6 +60,12 @@ export const PRODUCTS: Product[] = [
         label: "Comparar",
         description: "Cara a cara con percentiles y veredicto.",
         icon: "scale",
+      },
+      {
+        href: "/ranking",
+        label: "Rankings",
+        description: "Goleadores, asistentes y xG de cada liga.",
+        icon: "trophy",
       },
       {
         href: "/en-racha",

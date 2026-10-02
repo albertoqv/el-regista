@@ -1,11 +1,30 @@
 import type { MetadataRoute } from "next";
+import {
+  getLeagueTable,
+  getPredictions,
+  listPlayers,
+  listSeasonLeaders,
+  type Forecast,
+  type LeaderMetric,
+  type Player,
+  type SeasonLeader,
+  type TableRow,
+} from "@/lib/api";
+import { COMPETITIONS, currentSeasonStartYear } from "@/lib/format";
+import { RANKING_LEAGUES, RANKING_METRICS, rankingHref } from "@/lib/rankings";
 import { SITE_URL as SITE } from "@/lib/site";
 
-const PAGES: { path: string; changeFrequency: "daily" | "weekly" | "monthly"; priority: number }[] = [
+// Rebuilt every hour: new matches and players appear without a deploy.
+export const revalidate = 3600;
+
+type Frequency = "daily" | "weekly" | "monthly";
+
+const PAGES: { path: string; changeFrequency: Frequency; priority: number }[] = [
   { path: "", changeFrequency: "daily", priority: 1 },
   { path: "/predicciones", changeFrequency: "daily", priority: 0.9 },
   { path: "/predicciones/historial", changeFrequency: "weekly", priority: 0.8 },
   { path: "/en-racha", changeFrequency: "daily", priority: 0.8 },
+  { path: "/ranking", changeFrequency: "daily", priority: 0.8 },
   { path: "/buscar", changeFrequency: "weekly", priority: 0.7 },
   { path: "/gemelos", changeFrequency: "weekly", priority: 0.9 },
   { path: "/equipos", changeFrequency: "daily", priority: 0.8 },
@@ -17,12 +36,56 @@ const PAGES: { path: string; changeFrequency: "daily" | "weekly" | "monthly"; pr
   { path: "/privacidad", changeFrequency: "monthly", priority: 0.2 },
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+/** Players worth indexing: the season's leaders in each league plus the all-time top scorers. */
+const PLAYER_METRICS: LeaderMetric[] = ["goals", "assists", "expected_goals", "key_passes"];
+
+async function notablePlayerIds(season: number): Promise<number[]> {
+  const boards = await Promise.all([
+    ...COMPETITIONS.flatMap((competition) =>
+      PLAYER_METRICS.map((metric) =>
+        listSeasonLeaders(season, { metric, competition, limit: 50 }).catch((): SeasonLeader[] => []),
+      ),
+    ),
+    listPlayers({ sort: "goals", limit: 200 }).catch((): Player[] => []),
+  ]);
+  return [...new Set(boards.flat().map((player) => player.player_id))];
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
-  return PAGES.map((page) => ({
-    url: `${SITE}${page.path}`,
+  const season = currentSeasonStartYear();
+  const [playerIds, tables, forecasts] = await Promise.all([
+    notablePlayerIds(season),
+    Promise.all(
+      COMPETITIONS.map((competition) =>
+        getLeagueTable(String(season), competition).catch((): TableRow[] => []),
+      ),
+    ),
+    getPredictions(14).catch((): Forecast[] => []),
+  ]);
+
+  const entry = (path: string, changeFrequency: Frequency, priority: number) => ({
+    url: `${SITE}${path}`,
     lastModified: now,
-    changeFrequency: page.changeFrequency,
-    priority: page.priority,
-  }));
+    changeFrequency,
+    priority,
+  });
+
+  return [
+    ...PAGES.map((page) => entry(page.path, page.changeFrequency, page.priority)),
+    ...RANKING_LEAGUES.flatMap((league) =>
+      RANKING_METRICS.map((metric) => entry(rankingHref(league.slug, metric.slug), "daily", 0.7)),
+    ),
+    ...tables
+      .flat()
+      .map((row) =>
+        entry(
+          `/equipos/${encodeURIComponent(row.team)}?liga=${encodeURIComponent(row.competition)}`,
+          "daily",
+          0.6,
+        ),
+      ),
+    ...forecasts.map((forecast) => entry(`/predicciones/${forecast.match_id}`, "daily", 0.6)),
+    ...playerIds.map((id) => entry(`/players/${id}`, "weekly", 0.5)),
+  ];
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
 import { ForecastCard, FormPills } from "@/app/components/Forecast";
+import { JsonLd } from "@/app/components/JsonLd";
 import { Reveal } from "@/app/components/Reveal";
 import { ScoutNote } from "@/app/components/ScoutNote";
 import {
@@ -14,6 +15,7 @@ import {
   type TableRow,
   type TeamMatch,
 } from "@/lib/api";
+import { SITE_URL } from "@/lib/site";
 import { competitionColor, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
 function param(value: string | string[] | undefined): string | undefined {
@@ -21,8 +23,14 @@ function param(value: string | string[] | undefined): string | undefined {
 }
 
 export async function generateMetadata(props: PageProps<"/equipos/[team]">): Promise<Metadata> {
-  const { team } = await props.params;
-  return { title: `${decodeURIComponent(team)} · El Regista` };
+  const { team: encoded } = await props.params;
+  const team = decodeURIComponent(encoded);
+  const league = param((await props.searchParams).liga) ?? "La Liga";
+  return {
+    title: `${team}: xG, forma y próximos partidos · El Regista`,
+    description: `${team} en ${league}: clasificación real y por xG, partido a partido, sus jugadores más decisivos y la probabilidad de sus próximos partidos.`,
+    alternates: { canonical: `/equipos/${encodeURIComponent(team)}?liga=${encodeURIComponent(league)}` },
+  };
 }
 
 const W = 720;
@@ -94,6 +102,20 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
 
   return (
     <div className="flex flex-col gap-10">
+      <JsonLd
+        data={{
+          "@type": "SportsTeam",
+          name: team,
+          sport: "Fútbol",
+          url: `${SITE_URL}/equipos/${encodeURIComponent(team)}?liga=${encodeURIComponent(league)}`,
+          memberOf: { "@type": "SportsOrganization", name: league },
+          athlete: players.slice(0, 11).map((player) => ({
+            "@type": "Person",
+            name: player.name,
+            url: `${SITE_URL}/players/${player.player_id}`,
+          })),
+        }}
+      />
       <Reveal>
         <Link href={`/equipos?liga=${encodeURIComponent(league)}&temporada=${season}`} className="text-sm text-muted hover:text-ink">
           ← {league} {seasonDisplay(season)}

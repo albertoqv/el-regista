@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { kickoffDate, ProbabilityBar } from "@/app/components/Forecast";
+import { SITE_URL } from "@/lib/site";
+import { JsonLd } from "@/app/components/JsonLd";
 import { Reveal } from "@/app/components/Reveal";
 import { PlayerMarketsTable } from "@/app/components/PlayerMarketsTable";
 import { ScoutNote, Sticker } from "@/app/components/ScoutNote";
@@ -20,8 +22,12 @@ import { competitionColor } from "@/lib/format";
 export async function generateMetadata(props: PageProps<"/predicciones/[match]">): Promise<Metadata> {
   const { match } = await props.params;
   const insights = await getMatchInsights(Number(match)).catch(() => null);
+  if (!insights) return { title: "Pronóstico · El Regista" };
+  const match_ = `${insights.home_team} - ${insights.away_team}`;
   return {
-    title: insights ? `${insights.home_team} - ${insights.away_team} · Pronóstico` : "Pronóstico",
+    title: `${match_}: pronóstico y probabilidades · El Regista`,
+    description: `Probabilidades de ${match_} (${insights.competition}): resultado, goles, córners, tarjetas y goleadores, calculadas con datos reales.`,
+    alternates: { canonical: `/predicciones/${match}` },
   };
 }
 
@@ -166,6 +172,22 @@ export default async function MatchPage(props: PageProps<"/predicciones/[match]"
 
   return (
     <div className="flex flex-col gap-8">
+      <JsonLd
+        data={{
+          "@type": "SportsEvent",
+          name: `${insights.home_team} - ${insights.away_team}`,
+          sport: "Fútbol",
+          startDate: kickoff.toISOString(),
+          url: `${SITE_URL}/predicciones/${matchId}`,
+          superEvent: { "@type": "SportsEvent", name: insights.competition },
+          homeTeam: { "@type": "SportsTeam", name: insights.home_team },
+          awayTeam: { "@type": "SportsTeam", name: insights.away_team },
+          competitor: [
+            { "@type": "SportsTeam", name: insights.home_team },
+            { "@type": "SportsTeam", name: insights.away_team },
+          ],
+        }}
+      />
       <Reveal>
         <Link href="/predicciones" className="text-sm text-muted hover:text-ink">
           ← Predicciones

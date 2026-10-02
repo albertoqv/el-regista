@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
+import { JsonLd } from "@/app/components/JsonLd";
 import { PlayerPortrait } from "@/app/components/PlayerPortrait";
 import { Reveal } from "@/app/components/Reveal";
 import { PlayerSearchForm } from "@/app/components/PlayerSearchForm";
@@ -23,6 +24,7 @@ import {
 } from "@/lib/api";
 import { currentSeasonStartYear, formatMarketValue, seasonDisplay } from "@/lib/format";
 import { PHOTOS } from "@/lib/photos";
+import { SITE_URL } from "@/lib/site";
 
 async function loadHome(startYear: number) {
   try {
@@ -59,6 +61,15 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col gap-16">
+      <JsonLd
+        data={{
+          "@type": "WebSite",
+          name: "El Regista",
+          url: SITE_URL,
+          inLanguage: "es",
+          description: "Scout y pronósticos de fútbol con datos reales.",
+        }}
+      />
       <section className="photo-header -mx-4 -mt-6 flex min-h-[460px] flex-col justify-end gap-6 px-4 pb-10 pt-24 sm:mx-0 sm:mt-0 sm:rounded-xl sm:px-10">
         <Image
           src={PHOTOS.portada.src}

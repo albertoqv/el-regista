@@ -36,6 +36,7 @@ export const metadata: Metadata = {
     type: "website",
   },
   twitter: { card: "summary_large_image" },
+  alternates: { types: { "application/rss+xml": [{ url: "/feed.xml", title: "El Regista · Próximos partidos" }] } },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
+import { SITE_URL } from "@/lib/site";
+import { JsonLd } from "@/app/components/JsonLd";
 import { Reveal } from "@/app/components/Reveal";
 import { CountUp } from "@/app/components/motion";
 import { PercentileBars, PercentileLegend } from "@/app/components/PercentileBars";
@@ -65,6 +67,7 @@ export async function generateMetadata(
   return {
     title: `${player.name} · El Regista`,
     description: `Perfil de scouting, gemelos y estadísticas de ${player.name}.`,
+    alternates: { canonical: `/players/${id}` },
     openGraph: { images: [`/players/${id}/card`] },
     twitter: { card: "summary_large_image", images: [`/players/${id}/card`] },
   };
@@ -111,6 +114,18 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
 
   return (
     <div className="flex flex-col gap-14">
+      <JsonLd
+        data={{
+          "@type": "Person",
+          name: player.name,
+          url: `${SITE_URL}/players/${playerId}`,
+          jobTitle: "Futbolista",
+          ...(player.date_of_birth ? { birthDate: player.date_of_birth } : {}),
+          ...(player.photo_url ? { image: player.photo_url } : {}),
+          ...(player.height_cm ? { height: `${player.height_cm} cm` } : {}),
+          ...(seasons[0]?.team ? { memberOf: { "@type": "SportsTeam", name: seasons[0].team } } : {}),
+        }}
+      />
       <section className="relative">
         <div
           aria-hidden="true"

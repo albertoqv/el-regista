@@ -6,6 +6,7 @@ import {
   IconFlame,
   IconScale,
   IconSearch,
+  IconTrophy,
   IconTwins,
 } from "@/app/components/icons";
 import type { ProductIcon as ProductIconName } from "@/lib/products";
@@ -19,6 +20,7 @@ const ICONS = {
   calendar: IconCalendar,
   checks: IconChecks,
   shield: IconShield,
+  trophy: IconTrophy,
 } as const;
 
 export function ProductIcon({
