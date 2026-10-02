@@ -102,5 +102,7 @@ jobs:
       # (a different IP each run) and only the results go to the API.
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
+      - name: Season in progress of the 9 extra leagues (Transfermarkt club pages)
+        run: uv run python scripts/scrape_leagues_remote.py --season "$START_YEAR"
       - name: Photos, birth dates and market values (Transfermarkt)
         run: uv run python scripts/enrich_remote.py --limit 400

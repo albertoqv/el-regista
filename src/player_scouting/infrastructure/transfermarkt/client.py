@@ -41,6 +41,9 @@ class TransfermarktClient:
         )
         return response.json()
 
+    def get_page(self, path: str) -> str:
+        return self._get(f"{self._base_url}{path}").text
+
     def _get(self, url: str, params: dict | None = None) -> httpx.Response:
         response = self._http_client.get(
             url, params=params, headers={"User-Agent": USER_AGENT}

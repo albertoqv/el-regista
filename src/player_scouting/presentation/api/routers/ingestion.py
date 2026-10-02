@@ -14,6 +14,7 @@ from player_scouting.application.use_cases.track_record import (
     SnapshotPredictionsUseCase,
 )
 from player_scouting.domain.market_value import MarketValuePoint
+from player_scouting.infrastructure.transfermarkt.league_pages import SEASON_LEAGUES
 from player_scouting.presentation.api.dependencies import (
     BackupStream,
     EnqueueLeagueIngestionUseCaseDep,
@@ -26,6 +27,7 @@ from player_scouting.presentation.api.dependencies import (
     IngestMatchStatsUseCaseDep,
     IngestPlayerSeasonUseCaseDep,
     IngestRostersUseCaseDep,
+    IngestScrapedLeagueSeasonUseCaseDep,
     IngestSeasonDatasetUseCaseDep,
     IngestSeasonShotsUseCaseDep,
     IngestTeamSeasonUseCaseDep,
@@ -47,6 +49,7 @@ from player_scouting.presentation.api.schemas import (
     LeagueIngestionJobOut,
     LeagueSummaryOut,
     PendingEnrichmentOut,
+    ScrapedLeagueSeasonIn,
     ShotIngestionSummaryOut,
     TeamSeasonSummaryOut,
     ingestion_result_out_from_domain,
@@ -158,6 +161,22 @@ def ingest_transfermarkt_dataset_season(
     start_year: int, use_case: IngestDatasetLeaguesUseCaseDep
 ) -> IngestionResultOut:
     return ingestion_result_out_from_domain(use_case.execute(start_year))
+
+
+@router.post("/transfermarkt/league-seasons", response_model=IngestionResultOut)
+def receive_scraped_league_season(
+    body: ScrapedLeagueSeasonIn, use_case: IngestScrapedLeagueSeasonUseCaseDep
+) -> IngestionResultOut:
+    """26/27 and later of the extra leagues, read from Transfermarkt elsewhere."""
+    if body.competition not in SEASON_LEAGUES.values():
+        raise HTTPException(status_code=422, detail="Unknown league")
+    return ingestion_result_out_from_domain(
+        use_case.execute(
+            body.competition,
+            body.season_label,
+            [row.to_domain() for row in body.rows],
+        )
+    )
 
 
 @router.post("/understat/teams/{start_year}", response_model=TeamSeasonSummaryOut)

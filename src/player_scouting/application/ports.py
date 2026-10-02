@@ -371,6 +371,18 @@ class DatasetSeasonRow:
     statistics: Statistics
 
 
+@dataclass(frozen=True)
+class ScrapedSeasonRow:
+    """A player's line on a club's season page (Transfermarkt), read elsewhere."""
+
+    transfermarkt_id: int
+    name: str
+    position: str
+    detailed_position: str | None
+    team: str
+    statistics: Statistics
+
+
 class TransfermarktDatasetProvider(Protocol):
     def profiles(self) -> list[DatasetProfile]: ...
 

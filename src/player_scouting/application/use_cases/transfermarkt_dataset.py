@@ -8,10 +8,12 @@ from player_scouting.application.player_matching import name_tokens
 from player_scouting.application.ports import (
     DatasetProfile,
     PlayerRepository,
+    ScrapedSeasonRow,
     TransfermarktDatasetProvider,
 )
 from player_scouting.domain.entities import Player
 from player_scouting.domain.season import Season
+from player_scouting.domain.statistics import Statistics
 
 # Players created from the dataset get ids in their own range, far from
 # StatsBomb's small ids and FBref's hashed ones (>= 1e9).
@@ -177,3 +179,62 @@ class IngestDatasetLeaguesUseCase:
                 player_id, sorted(profile.valuations, key=lambda p: p.as_of)
             )
         return player_id
+
+
+def _added(first: Statistics, second: Statistics) -> Statistics:
+    return replace(
+        first,
+        goals=first.goals + second.goals,
+        assists=first.assists + second.assists,
+        minutes_played=first.minutes_played + second.minutes_played,
+        yellow_cards=first.yellow_cards + second.yellow_cards,
+        red_cards=first.red_cards + second.red_cards,
+    )
+
+
+@dataclass
+class IngestScrapedLeagueSeasonUseCase:
+    """The season in progress of the extra leagues, which the dataset lacks.
+
+    The lines are read from Transfermarkt's club pages on another machine
+    (Transfermarkt throttles the API's IP) and sent here.
+    """
+
+    repository: PlayerRepository
+
+    def execute(
+        self, competition: str, season_label: str, rows: list[ScrapedSeasonRow]
+    ) -> IngestionResult:
+        # A move inside the league during the season: one line, both clubs.
+        merged: dict[int, tuple[ScrapedSeasonRow, Statistics, list[str]]] = {}
+        for row in rows:
+            if row.transfermarkt_id in merged:
+                first, total, teams = merged[row.transfermarkt_id]
+                merged[row.transfermarkt_id] = (
+                    first,
+                    _added(total, row.statistics),
+                    [*teams, row.team],
+                )
+            else:
+                merged[row.transfermarkt_id] = (row, row.statistics, [row.team])
+
+        known = self.repository.transfermarkt_index()
+        season = Season(competition, season_label)
+        for transfermarkt_id, (row, statistics, teams) in merged.items():
+            player_id = known.get(transfermarkt_id)
+            if player_id is None:
+                player_id = TRANSFERMARKT_ID_OFFSET + transfermarkt_id
+                self.repository.save_player(
+                    Player(
+                        player_id,
+                        row.name,
+                        row.position,
+                        None,
+                        detailed_position=row.detailed_position,
+                    )
+                )
+                self.repository.set_transfermarkt_id(player_id, transfermarkt_id)
+            self.repository.save_season_statistics(
+                player_id, season, statistics, ", ".join(teams)
+            )
+        return IngestionResult(ingested=len(merged), skipped=[])

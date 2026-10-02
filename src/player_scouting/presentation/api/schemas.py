@@ -10,6 +10,7 @@ from player_scouting.application.ports import (
     LeagueSummary,
     Partnership,
     PlayerShot,
+    ScrapedSeasonRow,
     SeasonRecord,
     ShotLeader,
     TeamMatch,
@@ -128,6 +129,41 @@ class MarketValuePointIn(BaseModel):
     as_of: date
     amount_eur: int
     club: str
+
+
+class ScrapedSeasonRowIn(BaseModel):
+    transfermarkt_id: int
+    name: str
+    position: str
+    detailed_position: str | None = None
+    team: str
+    goals: int = 0
+    assists: int = 0
+    minutes_played: int = 0
+    yellow_cards: int = 0
+    red_cards: int = 0
+
+    def to_domain(self) -> ScrapedSeasonRow:
+        return ScrapedSeasonRow(
+            transfermarkt_id=self.transfermarkt_id,
+            name=self.name,
+            position=self.position,
+            detailed_position=self.detailed_position,
+            team=self.team,
+            statistics=Statistics(
+                goals=self.goals,
+                assists=self.assists,
+                minutes_played=self.minutes_played,
+                yellow_cards=self.yellow_cards,
+                red_cards=self.red_cards,
+            ),
+        )
+
+
+class ScrapedLeagueSeasonIn(BaseModel):
+    competition: str
+    season_label: str
+    rows: list[ScrapedSeasonRowIn]
 
 
 class EnrichmentIn(BaseModel):

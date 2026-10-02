@@ -71,6 +71,7 @@ from player_scouting.application.use_cases.team_analytics import (
 from player_scouting.application.use_cases.transfermarkt_dataset import (
     EnrichFromDatasetUseCase,
     IngestDatasetLeaguesUseCase,
+    IngestScrapedLeagueSeasonUseCase,
 )
 from player_scouting.domain.similarity_calculator import SimilarityCalculator
 from player_scouting.infrastructure.api_football.league_provider import (
@@ -531,6 +532,18 @@ def get_ingest_dataset_leagues_use_case(
     provider: TransfermarktDatasetProviderDep, repository: PlayerRepositoryDep
 ) -> IngestDatasetLeaguesUseCase:
     return IngestDatasetLeaguesUseCase(provider, repository)
+
+
+def get_ingest_scraped_league_season_use_case(
+    repository: PlayerRepositoryDep,
+) -> IngestScrapedLeagueSeasonUseCase:
+    return IngestScrapedLeagueSeasonUseCase(repository)
+
+
+IngestScrapedLeagueSeasonUseCaseDep = Annotated[
+    IngestScrapedLeagueSeasonUseCase,
+    Depends(get_ingest_scraped_league_season_use_case),
+]
 
 
 EnrichFromDatasetUseCaseDep = Annotated[

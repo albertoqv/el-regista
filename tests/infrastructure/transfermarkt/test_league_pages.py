@@ -1,5 +1,9 @@
+# ruff: noqa: E501 - fixtures are real HTML, kept on one line as served.
 import httpx
 import pytest
+
+from player_scouting.application.ports import EnrichmentUnavailableError
+from player_scouting.infrastructure.transfermarkt.client import TransfermarktClient
 from player_scouting.infrastructure.transfermarkt.league_pages import (
     ClubLink,
     ScrapedLine,
@@ -7,9 +11,6 @@ from player_scouting.infrastructure.transfermarkt.league_pages import (
     extract_club_season,
     extract_league_clubs,
 )
-
-from player_scouting.application.ports import EnrichmentUnavailableError
-from player_scouting.infrastructure.transfermarkt.client import TransfermarktClient
 
 # Shape captured from a real league page (Oct 2026),
 # https://www.transfermarkt.com/eredivisie/startseite/wettbewerb/NL1
