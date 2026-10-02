@@ -7,6 +7,10 @@ from player_scouting.presentation.api.metrics import (
     RequestMetrics,
     metrics_middleware,
 )
+from player_scouting.presentation.api.response_cache import (
+    ResponseCache,
+    response_cache_middleware,
+)
 from player_scouting.presentation.api.routers import (
     admin,
     ingestion,
@@ -21,6 +25,8 @@ from player_scouting.presentation.api.settings import get_api_settings
 def create_app() -> FastAPI:
     app = FastAPI(title="El Regista API")
     app.state.metrics = RequestMetrics()
+    app.state.response_cache = ResponseCache()
+    app.middleware("http")(response_cache_middleware(app.state.response_cache))
     app.middleware("http")(metrics_middleware(app.state.metrics))
     app.add_middleware(
         CORSMiddleware,
