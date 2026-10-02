@@ -8,8 +8,8 @@ out = Path("out")
 words = json.load(open(out / "words.json"))
 R, E, L, RR = words["REGISTA"], words["E"], words["L"], words["R"]
 
-# Claret, bone and sky blue: an old football club, nothing like a betting brand.
-SLATE, CHALK, YELLOW, GRASS = "#26131A", "#F3EBE3", "#9CCFEA", "#F28C6B"
+# Paper, ink and a match-ball orange: light, current and nothing like a betting brand.
+SLATE, CHALK, YELLOW, GRASS = "#16171B", "#F7F6F2", "#C93C17", "#2350D8"
 LABEL_W = 44
 GAP = 12
 
@@ -66,12 +66,13 @@ def icon(bg, fg, accent, rounded=True):
 
 
 files = {
-    "logo-dark.svg": lockup(CHALK, YELLOW, SLATE),
-    "logo-light.svg": lockup(SLATE, YELLOW, SLATE),
+    "logo-dark.svg": lockup(CHALK, YELLOW, CHALK),
+    "logo-light.svg": lockup(SLATE, YELLOW, CHALK),
     "logo-on-yellow.svg": lockup(SLATE, SLATE, YELLOW),
     "logo-mono.svg": lockup(CHALK, None, CHALK, outline=True),
     "logo-stacked-dark.svg": stacked(CHALK, YELLOW, SLATE),
     "icon.svg": icon(SLATE, CHALK, YELLOW),
+    "icon-orange.svg": icon(YELLOW, CHALK, SLATE),
     "icon-yellow.svg": icon(YELLOW, SLATE, SLATE),
     "icon-light.svg": icon(CHALK, SLATE, YELLOW),
 }

@@ -70,8 +70,8 @@ Todo se actualiza solo **los martes y los viernes**.
 
 ## Hecho a mano
 
-Nada genérico: la tipografía (**Regista Display**, inspirada en los dorsales clásicos), el logo
-y los iconos están diseñados para El Regista. Las fotos tienen licencia libre y sus autores
+Nada genérico: la tipografía de los titulares (**Regista Display**, inspirada en los dorsales
+clásicos), el logo y los iconos están diseñados para El Regista. Las fotos tienen licencia libre y sus autores
 aparecen al pie de la web.
 
 ---
@@ -123,7 +123,7 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 ### Marca
 
 La tipografía, el logo y los iconos se generan con código en `scripts/brand/` (shapely +
-fontTools). Paleta de club clásico: granate `#26131A`, hueso `#F3EBE3`, celeste `#9CCFEA` y coral `#F28C6B`.
+fontTools). Paleta: papel `#F7F6F2`, tinta `#16171B`, naranja balón `#C93C17` y azul `#2350D8`. Texto en Schibsted Grotesk.
 
 </details>
 

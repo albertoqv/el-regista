@@ -33,7 +33,7 @@ export const PRODUCTS: Product[] = [
     name: "Scout",
     subject: "Jugadores",
     pitch: "Encuentra, compara y ficha jugadores con datos reales de 14 ligas.",
-    color: "#9ccfea",
+    color: "#c93c17",
     tools: [
       {
         href: "/buscar",
@@ -73,7 +73,7 @@ export const PRODUCTS: Product[] = [
     name: "Pronósticos",
     subject: "Partidos",
     pitch: "Probabilidades de cada partido y un historial de aciertos que no se puede maquillar.",
-    color: "#f28c6b",
+    color: "#2350d8",
     tools: [
       {
         href: "/predicciones",

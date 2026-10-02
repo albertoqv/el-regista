@@ -23,7 +23,7 @@ function MinuteChart({ goals, xg, color }: { goals: number[]; xg: number[]; colo
           <span className="font-display text-sm font-bold tabular-nums">{goals[index]}</span>
           <div className="relative flex h-full w-full items-end justify-center">
             <motion.div
-              className="absolute bottom-0 w-full rounded-t-md border border-dashed border-white/25"
+              className="absolute bottom-0 w-full rounded-t-md border border-dashed border-ink/25"
               initial={{ height: 0 }}
               whileInView={{ height: `${(xg[index] / max) * 100}%` }}
               viewport={{ once: true }}
@@ -33,7 +33,7 @@ function MinuteChart({ goals, xg, color }: { goals: number[]; xg: number[]; colo
             <motion.div
               className="relative w-3/5 rounded-t-md"
               style={{
-                background: index === best && goals[index] > 0 ? "#9ccfea" : color,
+                background: index === best && goals[index] > 0 ? "#c93c17" : color,
               }}
               initial={{ height: 0 }}
               whileInView={{ height: `${(goals[index] / max) * 100}%` }}
@@ -51,7 +51,7 @@ function MinuteChart({ goals, xg, color }: { goals: number[]; xg: number[]; colo
 function Stat({ value, label, highlight = false }: { value: string | number; label: string; highlight?: boolean }) {
   return (
     <div className="flex flex-col">
-      <span className={`font-display text-3xl font-bold tabular-nums ${highlight ? "text-[#9ccfea]" : ""}`}>
+      <span className={`font-display text-3xl font-bold tabular-nums ${highlight ? "text-[#c93c17]" : ""}`}>
         {value}
       </span>
       <span className="text-xs text-muted">{label}</span>
@@ -59,7 +59,7 @@ function Stat({ value, label, highlight = false }: { value: string | number; lab
   );
 }
 
-export function ShotProfile({ shots, color = "#9ccfea" }: { shots: PlayerShot[]; color?: string }) {
+export function ShotProfile({ shots, color = "#c93c17" }: { shots: PlayerShot[]; color?: string }) {
   if (shots.length === 0) return null;
   const summary = summarize(shots);
   const finishing = summary.npGoals - summary.npXg;
@@ -72,7 +72,7 @@ export function ShotProfile({ shots, color = "#9ccfea" }: { shots: PlayerShot[];
     <section className="glass grid grid-cols-1 gap-8 rounded-lg p-6 lg:grid-cols-[1.1fr_1fr]">
       <div className="flex flex-col gap-3">
         <div>
-          <h2 className="font-display text-2xl font-bold tracking-tight">Mapa de tiros</h2>
+          <h2 className="font-heading text-2xl tracking-tight">Mapa de tiros</h2>
           <p className="text-sm text-muted">
             {summary.shots} tiros, {summary.goals} goles. Los goles decisivos llevan borde grueso.
           </p>
@@ -82,7 +82,7 @@ export function ShotProfile({ shots, color = "#9ccfea" }: { shots: PlayerShot[];
 
       <div className="flex flex-col gap-6">
         <div>
-          <h3 className="mb-1 font-display text-lg font-bold">¿Cuándo marca?</h3>
+          <h3 className="mb-1 font-heading text-lg">¿Cuándo marca?</h3>
           <p className="mb-3 text-xs text-muted">
             Barras = goles por tramo · contorno punteado = xG (lo que &quot;debería&quot; haber marcado).
           </p>
@@ -107,7 +107,7 @@ export function ShotProfile({ shots, color = "#9ccfea" }: { shots: PlayerShot[];
 
         {feet.length > 0 && (
           <div>
-            <h3 className="mb-2 flex items-center gap-2 font-display text-lg font-bold">
+            <h3 className="mb-2 flex items-center gap-2 font-heading text-lg">
               Con qué la mete
               {deadliest && deadliest.goals > 0 && (
                 <ScoutNote rotate={-3} className="text-base">
@@ -119,7 +119,7 @@ export function ShotProfile({ shots, color = "#9ccfea" }: { shots: PlayerShot[];
               {feet.map((part) => (
                 <li key={part.key} className="grid grid-cols-[110px_1fr_70px] items-center gap-3 text-sm">
                   <span className="text-ink/85">{BODY_LABEL[part.key]}</span>
-                  <div className="h-2.5 overflow-hidden rounded-full bg-white/5">
+                  <div className="h-2.5 overflow-hidden rounded-full bg-ink/5">
                     <motion.div
                       className="h-full rounded-full"
                       style={{ background: color }}

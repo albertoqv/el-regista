@@ -49,7 +49,7 @@ export function MarketValueChart({ series }: { series: ValueSeries[] }) {
             const peak = Math.max(...entry.history.map((point) => point.amount_eur));
             return (
               <div key={entry.name} className="flex flex-col items-end">
-                <span className="font-display text-2xl font-bold" style={{ color: entry.color }}>
+                <span className="font-heading text-2xl" style={{ color: entry.color }}>
                   {formatMarketValue(latest.amount_eur)}
                 </span>
                 <span className="text-xs text-muted">
@@ -76,7 +76,7 @@ export function MarketValueChart({ series }: { series: ValueSeries[] }) {
             x2={WIDTH - PAD_X}
             y1={PAD_Y + ratio * (HEIGHT - PAD_Y * 2)}
             y2={PAD_Y + ratio * (HEIGHT - PAD_Y * 2)}
-            stroke="rgba(255,255,255,0.05)"
+            stroke="rgba(22,23,27,0.05)"
           />
         ))}
         {withData.map((entry, index) => {

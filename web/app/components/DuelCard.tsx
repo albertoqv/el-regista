@@ -35,19 +35,19 @@ export function DuelCard({
         <PlayerPortrait
           name={a.name}
           photoUrl={a.photo_url}
-          accent="#9ccfea"
+          accent="#2350d8"
           rounded="rounded-lg"
           className="aspect-[4/5] transition duration-500 group-hover:-translate-x-1"
         />
         <PlayerPortrait
           name={b.name}
           photoUrl={b.photo_url}
-          accent="#f28c6b"
+          accent="#c93c17"
           mirrored
           rounded="rounded-lg"
           className="aspect-[4/5] transition duration-500 group-hover:translate-x-1"
         />
-        <span className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-[#1d0e14] font-display text-sm font-bold italic transition duration-500 group-hover:scale-110">
+        <span className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-ink/20 bg-[#ffffff] font-heading text-sm italic transition duration-500 group-hover:scale-110">
           VS
         </span>
       </div>

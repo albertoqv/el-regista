@@ -48,7 +48,7 @@ export function KeyMoments({
   return (
     <section className="glass flex flex-col gap-5 rounded-lg p-5 sm:p-7">
       <div>
-        <h2 className="font-display text-2xl font-bold tracking-tight">Momentos clave</h2>
+        <h2 className="font-heading text-2xl tracking-tight">Momentos clave</h2>
         <p className="text-sm text-muted">
           Sacado de sus {a.shots} y {b.shots} tiros: cuándo, cómo y si sirvieron para ganar.
         </p>
@@ -67,7 +67,7 @@ export function KeyMoments({
               <div className="flex flex-col gap-1">
                 <span className="text-center text-xs font-medium text-ink/80">{row.label}</span>
                 <div className="flex h-2 gap-1">
-                  <div className="flex flex-1 justify-end overflow-hidden rounded-full bg-white/5">
+                  <div className="flex flex-1 justify-end overflow-hidden rounded-full bg-ink/5">
                     <motion.div
                       className="h-full rounded-full bg-side-a"
                       style={{ opacity: winner === -1 ? 0.4 : 1 }}
@@ -77,7 +77,7 @@ export function KeyMoments({
                       transition={{ duration: 0.8, delay: index * 0.05 }}
                     />
                   </div>
-                  <div className="flex-1 overflow-hidden rounded-full bg-white/5">
+                  <div className="flex-1 overflow-hidden rounded-full bg-ink/5">
                     <motion.div
                       className="h-full rounded-full bg-side-b"
                       style={{ opacity: winner === 1 ? 0.4 : 1 }}

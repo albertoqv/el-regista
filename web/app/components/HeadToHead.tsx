@@ -11,8 +11,8 @@ import {
   type MetricKey,
 } from "@/lib/metrics";
 
-const COLOR_A = "#9ccfea";
-const COLOR_B = "#f28c6b";
+const COLOR_A = "#2350d8";
+const COLOR_B = "#c93c17";
 
 /** Metrics a source may not track this season: hide them when both are 0. */
 const OPTIONAL: MetricKey[] = [
@@ -58,11 +58,11 @@ function Row({
     <li className="grid grid-cols-[1fr_auto_1fr] items-center gap-3" title={info.help}>
       <div className="flex items-center justify-end gap-3">
         <span
-          className={`font-display text-lg font-bold tabular-nums transition ${result === 1 ? "text-white" : "text-muted"}`}
+          className={`font-display text-lg font-bold tabular-nums transition ${result === 1 ? "text-ink" : "text-muted"}`}
         >
           {formatMetric(metric, a, perNinety)}
         </span>
-        <div className="flex h-3 w-full max-w-[260px] justify-end overflow-hidden rounded-full bg-white/5">
+        <div className="flex h-3 w-full max-w-[260px] justify-end overflow-hidden rounded-full bg-ink/5">
           <motion.div
             className="h-full rounded-full"
             style={{
@@ -80,7 +80,7 @@ function Row({
         {info.short}
       </span>
       <div className="flex items-center gap-3">
-        <div className="flex h-3 w-full max-w-[260px] overflow-hidden rounded-full bg-white/5">
+        <div className="flex h-3 w-full max-w-[260px] overflow-hidden rounded-full bg-ink/5">
           <motion.div
             className="h-full rounded-full"
             style={{
@@ -94,7 +94,7 @@ function Row({
           />
         </div>
         <span
-          className={`font-display text-lg font-bold tabular-nums transition ${result === -1 ? "text-white" : "text-muted"}`}
+          className={`font-display text-lg font-bold tabular-nums transition ${result === -1 ? "text-ink" : "text-muted"}`}
         >
           {formatMetric(metric, b, perNinety)}
         </span>
@@ -113,7 +113,7 @@ export function HeadToHead({ playerA, playerB }: { playerA: Player; playerB: Pla
     <section className="glass flex flex-col gap-6 rounded-lg p-5 sm:p-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl font-bold tracking-tight">Métrica a métrica</h2>
+          <h2 className="font-heading text-2xl tracking-tight">Métrica a métrica</h2>
           <p className="text-sm text-muted">
             {perNinety
               ? "Por cada 90 minutos: justo aunque uno haya jugado más que el otro."
@@ -131,7 +131,7 @@ export function HeadToHead({ playerA, playerB }: { playerA: Player; playerB: Pla
                 key={option.label}
                 type="button"
                 onClick={() => setPerNinety(option.value)}
-                className={`rounded-full px-3 py-1.5 transition ${perNinety === option.value ? "bg-white text-bg" : "text-muted hover:text-ink"}`}
+                className={`rounded-full px-3 py-1.5 transition ${perNinety === option.value ? "bg-ink text-bg" : "text-muted hover:text-ink"}`}
               >
                 {option.label}
               </button>

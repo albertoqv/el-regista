@@ -172,7 +172,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
             <Reveal>
               <section className="glass flex flex-col gap-4 rounded-lg p-6">
                 <div className="text-center">
-                  <h2 className="font-display text-2xl font-bold tracking-tight">Radar de percentiles</h2>
+                  <h2 className="font-heading text-2xl tracking-tight">Radar de percentiles</h2>
                   <p className="mx-auto max-w-2xl text-sm text-muted">
                     Cada uno frente a los jugadores de su puesto en su liga. Cuanto más hacia fuera,
                     mejor que el resto (100 = el mejor).
@@ -181,8 +181,8 @@ export default async function ComparePage(props: PageProps<"/compare">) {
                 <RadarChart
                   axes={RADAR_METRICS}
                   series={[
-                    { name: content.playerA.name, color: "#9ccfea", values: toValues(content.percentilesA) },
-                    { name: content.playerB.name, color: "#f28c6b", values: toValues(content.percentilesB) },
+                    { name: content.playerA.name, color: "#2350d8", values: toValues(content.percentilesA) },
+                    { name: content.playerB.name, color: "#c93c17", values: toValues(content.percentilesB) },
                   ]}
                 />
                 <div className="flex flex-col items-center gap-2">
@@ -213,8 +213,8 @@ export default async function ComparePage(props: PageProps<"/compare">) {
             <Reveal>
               <MarketValueChart
                 series={[
-                  { name: content.playerA.name, color: "#9ccfea", history: content.valueA.history },
-                  { name: content.playerB.name, color: "#f28c6b", history: content.valueB.history },
+                  { name: content.playerA.name, color: "#2350d8", history: content.valueA.history },
+                  { name: content.playerB.name, color: "#c93c17", history: content.valueB.history },
                 ]}
               />
             </Reveal>
@@ -224,7 +224,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
 
       {!content && pairs.length > 0 && (
         <section className="flex flex-col gap-4">
-          <h2 className="font-display text-xl font-bold tracking-tight">
+          <h2 className="font-heading text-xl tracking-tight">
             ¿Sin ideas? Prueba con estos duelos
           </h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

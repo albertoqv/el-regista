@@ -111,7 +111,7 @@ export function ComparePicker({
       <div className="flex flex-col gap-2">
         <PlayerAutocomplete
           initialPlayer={defaultA}
-          accent="#9ccfea"
+          accent="#2350d8"
           onSelect={(player) => {
             const id = player?.player_id ?? null;
             setPlayerA(id);
@@ -123,20 +123,20 @@ export function ComparePicker({
         <SeasonSelect
           playerId={playerA}
           value={valueA}
-          color="#9ccfea"
+          color="#2350d8"
           onChange={(value) => {
             setValueA(value);
             go(playerA, playerB, value, valueB);
           }}
         />
       </div>
-      <span className="hidden pt-3 text-center font-display text-sm font-bold italic text-muted md:block">
+      <span className="hidden pt-3 text-center font-heading text-sm italic text-muted md:block">
         VS
       </span>
       <div className="flex flex-col gap-2">
         <PlayerAutocomplete
           initialPlayer={defaultB}
-          accent="#f28c6b"
+          accent="#c93c17"
           onSelect={(player) => {
             const id = player?.player_id ?? null;
             setPlayerB(id);
@@ -148,7 +148,7 @@ export function ComparePicker({
         <SeasonSelect
           playerId={playerB}
           value={valueB}
-          color="#f28c6b"
+          color="#c93c17"
           onChange={(value) => {
             setValueB(value);
             go(playerA, playerB, valueA, value);

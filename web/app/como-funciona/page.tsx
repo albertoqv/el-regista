@@ -31,24 +31,24 @@ function CalibrationChart({ backtest }: { backtest: Backtest }) {
   const maxCount = Math.max(...backtest.calibration.map((b) => b.count), 1);
   return (
     <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="h-auto w-full max-w-[320px]" role="img" aria-label="Calibración del modelo">
-      <rect x={PAD} y={PAD} width={SIZE - PAD * 2} height={SIZE - PAD * 2} fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.1)" />
-      <line x1={scale(0)} y1={flip(0)} x2={scale(1)} y2={flip(1)} stroke="rgba(255,255,255,0.35)" strokeDasharray="4 4" />
+      <rect x={PAD} y={PAD} width={SIZE - PAD * 2} height={SIZE - PAD * 2} fill="rgba(22,23,27,0.02)" stroke="rgba(22,23,27,0.1)" />
+      <line x1={scale(0)} y1={flip(0)} x2={scale(1)} y2={flip(1)} stroke="rgba(22,23,27,0.35)" strokeDasharray="4 4" />
       {backtest.calibration.map((bucket) => (
         <circle
           key={bucket.predicted}
           cx={scale(bucket.predicted)}
           cy={flip(bucket.observed)}
           r={round(3 + 7 * Math.sqrt(bucket.count / maxCount))}
-          fill="#9ccfea"
+          fill="#c93c17"
           fillOpacity="0.85"
         >
           <title>{`Dice ${Math.round(bucket.predicted * 100)}% → pasó ${Math.round(bucket.observed * 100)}% (${bucket.count} casos)`}</title>
         </circle>
       ))}
-      <text x={SIZE / 2} y={SIZE - 6} textAnchor="middle" className="fill-[#c7b3b0] text-xs">
+      <text x={SIZE / 2} y={SIZE - 6} textAnchor="middle" className="fill-[#5d6068] text-xs">
         probabilidad que da el modelo
       </text>
-      <text x={10} y={SIZE / 2} textAnchor="middle" transform={`rotate(-90 10 ${SIZE / 2})`} className="fill-[#c7b3b0] text-xs">
+      <text x={10} y={SIZE / 2} textAnchor="middle" transform={`rotate(-90 10 ${SIZE / 2})`} className="fill-[#5d6068] text-xs">
         frecuencia real
       </text>
     </svg>
@@ -60,7 +60,7 @@ function Section({ id, title, note, children }: { id: string; title: string; not
     <Reveal>
       <section id={id} className="glass scroll-mt-24 rounded-lg p-6 sm:p-8">
         {note && <ScoutNote rotate={-2} className="text-lg">{note}</ScoutNote>}
-        <h2 className="font-display text-2xl font-bold tracking-tight">{title}</h2>
+        <h2 className="font-heading text-2xl tracking-tight">{title}</h2>
         <div className="mt-3 flex flex-col gap-3 text-[15px] leading-relaxed text-ink/85 [&_strong]:text-ink">{children}</div>
       </section>
     </Reveal>
@@ -80,7 +80,7 @@ export default async function HowItWorksPage() {
       <Reveal>
         <ScoutNote rotate={-3}>sin trucos ni cajas negras</ScoutNote>
         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
-          Cómo <Marker color="#9ccfea">funciona</Marker>
+          Cómo <Marker color="#c93c17">funciona</Marker>
         </h1>
         <p className="mt-2 text-muted">
           Todo lo que ves sale de datos públicos y de cálculos que puedes entender. Aquí está cada uno
@@ -233,7 +233,7 @@ export default async function HowItWorksPage() {
         </p>
 
         {backtest && backtest.matches > 0 && (
-          <div className="mt-2 grid grid-cols-1 items-center gap-6 rounded-lg bg-white/[0.03] p-4 sm:grid-cols-[1fr_300px]">
+          <div className="mt-2 grid grid-cols-1 items-center gap-6 rounded-lg bg-ink/[0.03] p-4 sm:grid-cols-[1fr_300px]">
             <div className="flex flex-col gap-2 text-sm">
               <p>
                 <strong>Examen real</strong>: los {backtest.matches.toLocaleString("es-ES")} partidos de
@@ -290,7 +290,7 @@ export default async function HowItWorksPage() {
           nuestro modelo queda como opinión independiente.
         </p>
         {statsBacktest.length > 0 && (
-          <div className="overflow-x-auto rounded-lg bg-white/[0.03] p-4">
+          <div className="overflow-x-auto rounded-lg bg-ink/[0.03] p-4">
             <p className="mb-2 text-sm">
               <strong>Examen real</strong> en La Liga {seasonDisplay(season)}: error medio del total del
               partido, frente a usar siempre la media de la liga (menos es mejor).
@@ -355,7 +355,7 @@ export default async function HowItWorksPage() {
           (igual para asistencia, tarjeta y tiros).
         </p>
         {playersBacktest && playersBacktest.predictions > 0 && (
-          <p className="rounded-lg bg-white/[0.03] p-4 text-sm">
+          <p className="rounded-lg bg-ink/[0.03] p-4 text-sm">
             <strong>Examen real</strong> en La Liga {seasonDisplay(season)}:{" "}
             {playersBacktest.predictions.toLocaleString("es-ES")} pronósticos de &quot;marca&quot; hechos
             solo con datos anteriores. Brier <strong>{playersBacktest.brier.toFixed(3)}</strong> frente a{" "}

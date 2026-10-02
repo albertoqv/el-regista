@@ -64,7 +64,7 @@ function Histogram({ values, highlight }: { values: number[]; highlight: number 
           className="flex-1 rounded-t-sm"
           style={{
             height: `${(value / max) * 100}%`,
-            background: index > highlight ? "#9ccfea" : "rgba(255,255,255,0.18)",
+            background: index > highlight ? "#2350d8" : "rgba(22,23,27,0.18)",
           }}
           title={`${index}: ${percent(value)}`}
         />
@@ -83,7 +83,7 @@ function StatCard({ stat, home, away }: { stat: StatForecast; home: string; away
   return (
     <div className="glass flex flex-col gap-3 rounded-lg p-5">
       <div className="flex items-baseline justify-between">
-        <h3 className="font-display text-lg font-bold">{label.title}</h3>
+        <h3 className="font-heading text-lg">{label.title}</h3>
         <span className="font-display text-2xl font-bold tabular-nums">{decimal(stat.expected_total)}</span>
       </div>
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-sm">
@@ -100,7 +100,7 @@ function StatCard({ stat, home, away }: { stat: StatForecast; home: string; away
       {main && <Histogram values={stat.distribution} highlight={main.line} />}
       <div className="flex flex-wrap gap-1.5 text-xs">
         {stat.over.map((line) => (
-          <span key={line.line} className="rounded-md bg-white/5 px-2 py-1 tabular-nums">
+          <span key={line.line} className="rounded-md bg-ink/5 px-2 py-1 tabular-nums">
             +{String(line.line).replace(".", ",")} <strong>{percent(line.over)}</strong>
           </span>
         ))}
@@ -113,7 +113,7 @@ function MatchTable({ title, rows }: { title: string; rows: MatchLine[] }) {
   if (rows.length === 0) return null;
   return (
     <div className="glass overflow-x-auto rounded-lg p-4">
-      <h3 className="mb-2 font-display text-lg font-bold">{title}</h3>
+      <h3 className="mb-2 font-heading text-lg">{title}</h3>
       <table className="w-full min-w-[460px] text-sm">
         <thead>
           <tr className="text-left text-xs text-muted">
@@ -194,7 +194,7 @@ export default async function MatchPage(props: PageProps<"/predicciones/[match]"
       <Reveal>
         <section className="glass grid grid-cols-1 gap-5 rounded-lg p-5 sm:p-6 lg:grid-cols-2">
           <div className="flex flex-col gap-4">
-            <h2 className="font-display text-2xl font-bold tracking-tight">Resultado</h2>
+            <h2 className="font-heading text-2xl tracking-tight">Resultado</h2>
             {insights.market && (
               <OutcomeRow
                 label="Casas de apuestas"
@@ -210,34 +210,34 @@ export default async function MatchPage(props: PageProps<"/predicciones/[match]"
             <OutcomeRow label="Al descanso" outcome={insights.half_time} />
           </div>
           <div className="flex flex-col gap-4">
-            <h2 className="font-display text-2xl font-bold tracking-tight">Goles</h2>
+            <h2 className="font-heading text-2xl tracking-tight">Goles</h2>
             <div className="grid grid-cols-5 gap-2 text-center">
               {insights.goals_over.map((line) => (
-                <div key={line.line} className="rounded-lg bg-white/5 p-2">
+                <div key={line.line} className="rounded-lg bg-ink/5 p-2">
                   <span className="block text-xs text-muted">+{String(line.line).replace(".", ",")}</span>
                   <span className="font-display text-lg font-bold tabular-nums">{percent(line.over)}</span>
                 </div>
               ))}
             </div>
             <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              <div className="rounded-lg bg-white/5 p-2">
+              <div className="rounded-lg bg-ink/5 p-2">
                 <span className="block text-muted">Marcan ambos</span>
-                <strong className="font-display text-lg">{percent(insights.both_teams_score)}</strong>
+                <strong className="font-heading text-lg">{percent(insights.both_teams_score)}</strong>
               </div>
-              <div className="rounded-lg bg-white/5 p-2">
+              <div className="rounded-lg bg-ink/5 p-2">
                 <span className="block text-muted">{insights.home_team} a cero</span>
-                <strong className="font-display text-lg">{percent(insights.home_clean_sheet)}</strong>
+                <strong className="font-heading text-lg">{percent(insights.home_clean_sheet)}</strong>
               </div>
-              <div className="rounded-lg bg-white/5 p-2">
+              <div className="rounded-lg bg-ink/5 p-2">
                 <span className="block text-muted">{insights.away_team} a cero</span>
-                <strong className="font-display text-lg">{percent(insights.away_clean_sheet)}</strong>
+                <strong className="font-heading text-lg">{percent(insights.away_clean_sheet)}</strong>
               </div>
             </div>
             <div>
               <span className="text-xs font-semibold text-muted">Marcadores más probables</span>
               <div className="mt-2 flex flex-wrap gap-2">
                 {insights.scorelines.map((score, index) => (
-                  <span key={`${score.home}-${score.away}`} className="rounded-xl bg-white/5 px-3 py-2 font-display font-bold tabular-nums">
+                  <span key={`${score.home}-${score.away}`} className="rounded-xl bg-ink/5 px-3 py-2 font-display font-bold tabular-nums">
                     {score.home}-{score.away}{" "}
                     <span className="text-xs font-normal text-muted">{percent(score.probability)}</span>
                     {index === 0 && <Sticker tone="yellow" rotate={-4} className="ml-2">top</Sticker>}
@@ -252,7 +252,7 @@ export default async function MatchPage(props: PageProps<"/predicciones/[match]"
       {insights.stats.length > 0 && (
         <section className="flex flex-col gap-4">
           <div className="flex flex-wrap items-end justify-between gap-2">
-            <h2 className="font-display text-2xl font-bold tracking-tight">Estadísticas del partido</h2>
+            <h2 className="font-heading text-2xl tracking-tight">Estadísticas del partido</h2>
             {insights.referee && (
               <span className="glass rounded-lg px-4 py-2 text-sm">
                 <ScoutNote rotate={-2} className="text-base">árbitro:</ScoutNote> <strong>{insights.referee.name}</strong>{" "}

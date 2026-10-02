@@ -61,7 +61,7 @@ function Column({
           return (
             <li key={player.understat_player_id}>
               {player.player_id ? (
-                <Link href={`/players/${player.player_id}`} className="block hover:bg-white/5 rounded-xl">
+                <Link href={`/players/${player.player_id}`} className="block hover:bg-ink/5 rounded-xl">
                   {content}
                 </Link>
               ) : (
@@ -82,7 +82,7 @@ export function PlayerMarketsTable({ markets }: { markets: PlayerMarkets }) {
     <section className="glass flex flex-col gap-4 rounded-lg p-5 sm:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="font-display text-2xl font-bold tracking-tight">Jugadores</h2>
+          <h2 className="font-heading text-2xl tracking-tight">Jugadores</h2>
           <p className="text-sm text-muted">
             {info.help} La cifra grande es la probabilidad en este partido; debajo, la probabilidad de
             que juegue (según sus últimos partidos) y la probabilidad <strong>si juega</strong>, que es
@@ -95,7 +95,7 @@ export function PlayerMarketsTable({ markets }: { markets: PlayerMarkets }) {
               key={entry.key}
               type="button"
               onClick={() => setMarket(entry.key)}
-              className={`rounded-full px-3 py-1.5 transition ${market === entry.key ? "bg-white text-bg" : "text-muted hover:text-ink"}`}
+              className={`rounded-full px-3 py-1.5 transition ${market === entry.key ? "bg-ink text-bg" : "text-muted hover:text-ink"}`}
             >
               {entry.label}
             </button>
@@ -103,8 +103,8 @@ export function PlayerMarketsTable({ markets }: { markets: PlayerMarkets }) {
         </div>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Column team={markets.home_team} players={markets.home} market={market} color="#9ccfea" />
-        <Column team={markets.away_team} players={markets.away} market={market} color="#f28c6b" />
+        <Column team={markets.home_team} players={markets.home} market={market} color="#2350d8" />
+        <Column team={markets.away_team} players={markets.away} market={market} color="#c93c17" />
       </div>
     </section>
   );

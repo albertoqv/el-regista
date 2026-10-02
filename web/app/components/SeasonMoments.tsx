@@ -70,7 +70,7 @@ export function SeasonMoments({
             onClick={() => load(entry.metric)}
             className={`shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition ${
               metric === entry.metric
-                ? "border-[#9ccfea] bg-[#9ccfea] text-bg"
+                ? "border-[#c93c17] bg-[#c93c17] text-bg"
                 : "border-line text-muted hover:border-line-strong hover:text-ink"
             }`}
           >
@@ -98,18 +98,18 @@ export function SeasonMoments({
                   <PlayerPortrait
                     name={first.name}
                     photoUrl={first.photo_url}
-                    accent="#9ccfea"
+                    accent="#c93c17"
                     className="aspect-[4/5] w-full"
                   />
                   <div className="absolute inset-x-0 bottom-0 p-5">
-                    <p className="text-xs font-semibold text-[#9ccfea]">
+                    <p className="text-xs font-semibold text-[#c93c17]">
                       {info.title}
                     </p>
                     <p className="font-display text-6xl font-bold leading-none">
                       {format(first.value, metric, info.decimals)}
                     </p>
                     <p className="text-xs text-muted">{info.unit}</p>
-                    <p className="mt-1 font-display text-xl font-bold">{first.name}</p>
+                    <p className="mt-1 font-heading text-xl">{first.name}</p>
                     <p className="text-xs text-muted">{first.team ?? first.competition}</p>
                   </div>
                 </Link>
@@ -128,9 +128,9 @@ export function SeasonMoments({
                   >
                     <Link
                       href={`/players/${leader.player_id}`}
-                      className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-white/5"
+                      className="flex items-center gap-3 rounded-lg px-3 py-2 transition hover:bg-ink/5"
                     >
-                      <span className="w-5 text-center font-display text-sm font-bold text-muted">
+                      <span className="w-5 text-center font-heading text-sm text-muted">
                         {index + 2}
                       </span>
                       <Avatar name={leader.name} photoUrl={leader.photo_url} size={36} />

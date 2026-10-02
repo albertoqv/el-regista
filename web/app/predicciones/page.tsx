@@ -14,7 +14,7 @@ import {
   type Highlights,
   type MarketBenchmark,
 } from "@/lib/api";
-import { COMPETITIONS, competitionColor, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
+import { COMPETITIONS, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Predicciones · El Regista",
@@ -50,7 +50,7 @@ function TrustPanel({
   return (
     <section className="glass grid grid-cols-2 gap-4 rounded-lg p-5 sm:grid-cols-4">
       <div className="col-span-2 sm:col-span-4">
-        <h2 className="font-display text-lg font-bold">¿Cuánto acierta el modelo?</h2>
+        <h2 className="font-heading text-lg">¿Cuánto acierta el modelo?</h2>
         <p className="text-sm text-muted">
           {backtest.matches.toLocaleString("es-ES")} partidos de la {seasonDisplay(season)}, cada uno predicho solo con lo anterior.{" "}
           <Link href="/como-funciona#predicciones" className="text-brand-2 hover:underline">
@@ -84,7 +84,7 @@ function TrustPanel({
         <span className="text-xs text-muted">desvío medio entre lo que dice y lo que pasa</span>
       </div>
       {benchmark && benchmark.matches > 0 && (
-        <p className="col-span-2 rounded-lg bg-white/[0.04] p-3 text-sm sm:col-span-4">
+        <p className="col-span-2 rounded-lg bg-ink/[0.04] p-3 text-sm sm:col-span-4">
           <strong>Frente a las casas de apuestas</strong>: nuestro modelo{" "}
           <strong>{benchmark.model_brier.toFixed(3)}</strong>, cuotas de cierre{" "}
           <strong>{benchmark.market_brier.toFixed(3)}</strong>. En el 1X2 aciertan más las casas; lo
@@ -135,16 +135,15 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
         {[undefined, ...COMPETITIONS].map((option) => {
           const active = league === option;
-          const color = option ? competitionColor(option) : "#9ccfea";
           return (
             <Link
               key={option ?? "all"}
               href={option ? `/predicciones?liga=${encodeURIComponent(option)}` : "/predicciones"}
               className="flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition"
               style={{
-                borderColor: active ? color : "rgba(255,255,255,0.08)",
-                background: active ? `${color}22` : "transparent",
-                color: active ? "#fff" : "#c7b3b0",
+                borderColor: active ? "#16171b" : "rgba(22,23,27,0.14)",
+                background: active ? "#16171b" : "transparent",
+                color: active ? "#f7f6f2" : "#5d6068",
               }}
             >
               {option ?? "Todas"}
@@ -160,7 +159,7 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
       ) : (
         [...byDay.entries()].map(([day, list]) => (
           <section key={day} className="flex flex-col gap-4">
-            <h2 className="font-display text-xl font-bold capitalize">{dayLabel(list[0].kickoff)}</h2>
+            <h2 className="font-heading text-xl capitalize">{dayLabel(list[0].kickoff)}</h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {list.map((forecast) => (
                 <ForecastCard key={forecast.match_id} forecast={forecast} />

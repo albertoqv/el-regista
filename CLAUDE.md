@@ -19,12 +19,14 @@ reales de las 5 grandes ligas. Proyecto personal: **todo debe ser 100% gratis**
   - `presentation/api/` — routers `players` e `ingestion` (todo `/ingestion/*`
     exige cabecera `X-Ingestion-Key` si `INGESTION_API_KEY` está configurada).
 - Web: `web/` Next.js 16 (App Router, lee `web/AGENTS.md`: APIs cambiadas respecto
-  a lo conocido), Tailwind. **Marca El Regista**: granate #26131A, hueso #F3EBE3, celeste #9CCFEA (acento,
-  Scout) y coral #F28C6B (Pronósticos) (tokens en `globals.css`). Nada de verde+amarillo
-  (parece una casa de apuestas), ni iconos en menús, ni puntitos de color, ni rótulos
-  pequeños en mayúsculas espaciadas; texto mínimo 13 px (`--text-xs`).
-  Tipografía propia **Regista Display** (solo mayúsculas, titulares) + Chivo (texto);
-  logo, iconos y fuente se generan con `scripts/brand/*.py` (shapely + fontTools) →
+  a lo conocido), Tailwind. **Marca El Regista** (tema claro): papel #F7F6F2, tinta #16171B, naranja balón #C93C17
+  (acento y Scout) y azul #2350D8 (Pronósticos, jugador/local A) (tokens en `globals.css`).
+  Nada de verde+amarillo (casa de apuestas) ni granate; sin iconos en menús, sin puntitos
+  de color, sin rótulos pequeños en mayúsculas espaciadas; texto mínimo 13 px (`--text-xs`).
+  Tipografía: **Regista Display** propia (solo mayúsculas) para titulares ≥3xl y cifras;
+  **Schibsted Grotesk** (`font-heading`, negrita) para títulos pequeños y menús, y para el
+  texto. Texto sobre fotos: clase `photo-header`/`on-photo` (lo fuerza a claro).
+  Logo, iconos y fuente se generan con `scripts/brand/*.py` (shapely + fontTools) →
   `web/app/fonts/`, `web/public/brand/`, `web/app/components/icons.tsx` (no editar a mano).
   Nada de efectos "de IA" (notas manuscritas, brillos, degradados, cristal) y poco texto.
   Fotos libres en `web/public/photos` con créditos en `lib/photos.ts` (pie de página).

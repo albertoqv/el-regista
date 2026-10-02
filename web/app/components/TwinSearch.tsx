@@ -8,7 +8,7 @@ export function TwinSearch({ autoFocus = false }: { autoFocus?: boolean }) {
   return (
     <PlayerAutocomplete
       size="lg"
-      accent="#9ccfea"
+      accent="#c93c17"
       autoFocus={autoFocus}
       onSelect={(player) => {
         if (player) router.push(`/gemelos?p=${player.player_id}`);

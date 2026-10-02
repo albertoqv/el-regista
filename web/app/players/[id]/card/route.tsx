@@ -63,7 +63,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
           display: "flex",
           flexDirection: "column",
           background: OG_COLORS.slate,
-          color: "#f3ebe3",
+          color: "#f7f6f2",
           padding: 64,
           fontFamily: "Regista",
         }}
@@ -74,8 +74,8 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
           <div
             style={{
               display: "flex",
-              background: "#9ccfea",
-              color: "#26131a",
+              background: "#f2643a",
+              color: "#16171b",
               padding: "8px 18px",
               fontSize: 24,
               fontWeight: 400,
@@ -95,7 +95,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
               height: 546,
               borderRadius: 36,
               overflow: "hidden",
-              background: "#1d0e14",
+              background: "#0f1013",
             }}
           >
             {photo && (
@@ -110,11 +110,11 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
             <div style={{ display: "flex", fontSize: 76, fontWeight: 400, lineHeight: 1, letterSpacing: -2, marginTop: 8 }}>
               {player.name}
             </div>
-            <div style={{ display: "flex", fontSize: 28, color: "#c7b3b0", marginTop: 16 }}>
+            <div style={{ display: "flex", fontSize: 28, color: "#a9acb3", marginTop: 16 }}>
               {[season.team, age ? `${age} años` : null].filter(Boolean).join(" · ")}
             </div>
             {value.current && (
-              <div style={{ display: "flex", fontSize: 64, fontWeight: 400, color: "#f28c6b", marginTop: 24 }}>
+              <div style={{ display: "flex", fontSize: 64, fontWeight: 400, color: "#5b8cff", marginTop: 24 }}>
                 {formatMarketValue(value.current.amount_eur)}
               </div>
             )}
@@ -136,7 +136,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
               }}
             >
               <span style={{ fontSize: 52, fontWeight: 400 }}>{number.value}</span>
-              <span style={{ fontSize: 22, color: "#c7b3b0" }}>{number.label}</span>
+              <span style={{ fontSize: 22, color: "#a9acb3" }}>{number.label}</span>
             </div>
           ))}
         </div>
@@ -144,7 +144,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
         <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 40 }}>
           {strengths(report).map((strength) => (
             <div key={strength.label} style={{ display: "flex", alignItems: "center", gap: 20 }}>
-              <span style={{ width: 220, fontSize: 26, color: "#f3ebe3" }}>{strength.label}</span>
+              <span style={{ width: 220, fontSize: 26, color: "#f7f6f2" }}>{strength.label}</span>
               <div style={{ display: "flex", flex: 1, height: 18, borderRadius: 9, background: "rgba(255,255,255,0.07)" }}>
                 <div
                   style={{
@@ -162,7 +162,7 @@ export async function GET(_request: Request, ctx: RouteContext<"/players/[id]/ca
           ))}
         </div>
 
-        <div style={{ display: "flex", marginTop: "auto", justifyContent: "space-between", fontSize: 22, color: "#c7b3b0" }}>
+        <div style={{ display: "flex", marginTop: "auto", justifyContent: "space-between", fontSize: 22, color: "#a9acb3" }}>
           <span>{report ? `Percentil vs ${report.peer_count} de su puesto en ${report.competition}` : ""}</span>
           <span>{SITE_HOST}</span>
         </div>

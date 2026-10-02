@@ -30,11 +30,12 @@ function Silhouette({ color }: { color: string }) {
 export function PlayerPortrait({
   name,
   photoUrl,
-  accent = "#9ccfea",
+  accent = "#c93c17",
   mirrored = false,
   className = "",
   rounded = "rounded-lg",
   focus = "center top",
+  priority = false,
 }: {
   name: string;
   photoUrl: string | null | undefined;
@@ -44,6 +45,8 @@ export function PlayerPortrait({
   rounded?: string;
   /** CSS object-position: landscape crops need to aim lower to keep the face. */
   focus?: string;
+  /** The main picture of the page: fetch it first. */
+  priority?: boolean;
 }) {
   // Try the sharp portrait first, then the original one, then the silhouette.
   const sources = [bigPhoto(photoUrl), photoUrl].filter(
@@ -58,15 +61,15 @@ export function PlayerPortrait({
     <div
       className={`relative overflow-hidden ${rounded} ${className}`}
       style={{
-        background: `radial-gradient(120% 90% at 50% 0%, ${accent}55, transparent 60%), linear-gradient(180deg, #0d1426, #1d0e14)`,
-        boxShadow: "0 0 0 1px rgba(242,239,230,0.12)",
+        background: `radial-gradient(120% 90% at 50% 0%, ${accent}33, transparent 60%), linear-gradient(180deg, #e9e7e1, #ffffff)`,
+        boxShadow: "0 0 0 1px rgba(22,23,27,0.08)",
       }}
     >
       <div
         className="pointer-events-none absolute inset-0 opacity-40"
         style={{
           backgroundImage:
-            "repeating-linear-gradient(135deg, rgba(255,255,255,0.04) 0 2px, transparent 2px 12px)",
+            "repeating-linear-gradient(135deg, rgba(22,23,27,0.03) 0 2px, transparent 2px 12px)",
         }}
       />
       {!failed ? (
@@ -76,6 +79,8 @@ export function PlayerPortrait({
           src={source}
           alt={name}
           onError={next}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
           ref={(node) => {
             // The error may fire before hydration, when onError is not attached yet.
             if (node && node.complete && node.naturalWidth === 0) next();
@@ -95,7 +100,7 @@ export function PlayerPortrait({
       )}
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 h-1/3"
-        style={{ background: "linear-gradient(0deg, #1d0e14ee, transparent)" }}
+        style={{ background: "linear-gradient(0deg, #ffffffee, transparent)" }}
       />
     </div>
   );

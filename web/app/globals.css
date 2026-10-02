@@ -1,21 +1,22 @@
 @import "tailwindcss";
 
-/* El Regista: claret, bone and sky blue, like an old football club. Flat, no glow. */
+/* El Regista: paper, ink and a match-ball orange. Light, flat, no glow. */
 :root {
-  --bg: #26131a;
-  --bg-deep: #1d0e14;
-  --surface: #301920;
-  --surface-strong: #3b2029;
-  --border: #4c2c36;
-  --border-strong: #6a4350;
-  --text: #f3ebe3;
-  --muted: #c7b3b0;
-  --brand: #9ccfea;
-  --brand-2: #b9ddf0;
-  --grass: #8fcf9c;
-  --side-a: #9ccfea;
-  --side-b: #f28c6b;
-  --gold: #9ccfea;
+  --bg: #f7f6f2;
+  --bg-deep: #efede7;
+  --surface: #ffffff;
+  --surface-strong: #f1efe9;
+  --border: #e3e0d8;
+  --border-strong: #cdc9bf;
+  --text: #16171b;
+  --muted: #5d6068;
+  --brand: #c93c17;
+  --brand-2: #2350d8;
+  --grass: #1f8a4c;
+  --side-a: #2350d8;
+  --side-b: #c93c17;
+  --gold: #c93c17;
+  --on-photo: #fbfaf7;
 }
 
 @theme inline {
@@ -33,9 +34,11 @@
   --color-side-a: var(--side-a);
   --color-side-b: var(--side-b);
   --color-gold: var(--gold);
-  --font-sans: var(--font-chivo);
+  --color-on-photo: var(--on-photo);
+  --font-sans: var(--font-body);
   --font-display: var(--font-regista);
-  --font-hand: var(--font-chivo);
+  --font-heading: var(--font-body);
+  --font-hand: var(--font-body);
   /* Nothing tiny: small print is where a page starts to look machine-made. */
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.35;
@@ -44,7 +47,7 @@
 }
 
 html {
-  color-scheme: dark;
+  color-scheme: light;
   background: var(--bg);
 }
 
@@ -52,25 +55,38 @@ body {
   overflow-x: clip;
   background: var(--bg);
   color: var(--text);
-  font-family: var(--font-chivo), system-ui, sans-serif;
+  font-family: var(--font-body), system-ui, sans-serif;
+  text-rendering: optimizeLegibility;
 }
 
-/* Regista Display is drawn in capitals only: headings always read upright and tight. */
+/* Regista Display is drawn in capitals only: big headings, numbers and the logo. */
 .font-display {
   text-transform: uppercase;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.015em;
   font-weight: 400;
+  line-height: 0.95;
+}
+
+/* Smaller headings, menus and labels: the text face, bold and tight. */
+.font-heading {
+  font-weight: 700;
+  letter-spacing: -0.012em;
+}
+
+h1, h2, h3 {
+  text-wrap: balance;
 }
 
 ::selection {
-  background: rgba(156, 207, 234, 0.45);
-  color: #26131a;
+  background: rgba(201, 60, 23, 0.2);
+  color: #16171b;
 }
 
 /* Cards: flat slate panels with a thin line (the old "glass" name is kept for markup). */
 .glass {
   background: var(--surface);
   border: 1px solid var(--border);
+  box-shadow: 0 1px 0 rgba(22, 23, 27, 0.03);
 }
 
 .glass-hover {
@@ -100,6 +116,22 @@ body {
   isolation: isolate;
 }
 
+/* Text over a photo is always light, whatever the page colours are. */
+.photo-header,
+.on-photo {
+  color: var(--on-photo);
+}
+
+.photo-header [class*="text-ink"],
+.on-photo [class*="text-ink"] {
+  color: var(--on-photo);
+}
+
+.photo-header [class*="text-muted"],
+.on-photo [class*="text-muted"] {
+  color: rgba(251, 250, 247, 0.78);
+}
+
 .photo-header > img {
   position: absolute;
   inset: 0;
@@ -114,7 +146,7 @@ body {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(29, 14, 20, 0.35) 0%, rgba(29, 14, 20, 0.95) 100%);
+  background: linear-gradient(180deg, rgba(14, 15, 18, 0.25) 0%, rgba(14, 15, 18, 0.88) 100%);
 }
 
 /* A very slow push-in on the home photo: movement without the weight of a video. */
@@ -172,7 +204,7 @@ body {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(243, 235, 227, 0.06), transparent);
+  background: linear-gradient(90deg, transparent, rgba(22, 23, 27, 0.05), transparent);
   animation: shimmer 1.4s infinite;
 }
 

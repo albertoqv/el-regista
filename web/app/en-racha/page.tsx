@@ -74,7 +74,7 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
             <Link
               key={entry.key}
               href={href({ ...current, metric: entry.key })}
-              className={`shrink-0 rounded-lg px-4 py-2 transition ${entry.key === metric ? "bg-white text-bg" : "glass glass-hover"}`}
+              className={`shrink-0 rounded-lg px-4 py-2 transition ${entry.key === metric ? "bg-ink text-bg" : "glass glass-hover"}`}
             >
               <span className="block text-sm font-semibold">{entry.label}</span>
             </Link>
@@ -86,7 +86,7 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
               <Link
                 key={league || "all"}
                 href={href({ ...current, liga: league })}
-                className={`shrink-0 rounded-full px-3 py-1.5 font-medium ${league === competition ? "bg-white/15 text-ink" : "text-muted hover:text-ink"}`}
+                className={`shrink-0 rounded-full px-3 py-1.5 font-medium ${league === competition ? "bg-ink/15 text-ink" : "text-muted hover:text-ink"}`}
               >
                 {league || "Todas"}
               </Link>
@@ -97,7 +97,7 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
               <Link
                 key={value}
                 href={href({ ...current, dias: String(value) })}
-                className={`rounded-full px-3 py-1.5 font-medium ${value === days ? "bg-white/15 text-ink" : "text-muted hover:text-ink"}`}
+                className={`rounded-full px-3 py-1.5 font-medium ${value === days ? "bg-ink/15 text-ink" : "text-muted hover:text-ink"}`}
               >
                 {value} días
               </Link>
@@ -125,17 +125,17 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
                   <PlayerPortrait
                     name={player.name}
                     photoUrl={player.photo_url}
-                    accent={rank === 1 ? "#9ccfea" : "#9ccfea"}
+                    accent={rank === 1 ? "#c93c17" : "#c93c17"}
                     rounded="rounded-lg sm:rounded-lg"
                     className="aspect-[3/4] transition duration-500 group-hover:-translate-y-1"
                   />
-                  <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 font-display text-sm font-bold sm:h-9 sm:w-9 sm:text-lg">
+                  <span className="absolute left-2 top-2 flex h-7 w-7 items-center justify-center rounded-full bg-black/70 font-heading text-sm sm:h-9 sm:w-9 sm:text-lg">
                     {rank}
                   </span>
                   <div className="absolute inset-x-0 bottom-0 p-2 sm:p-4">
                     <span className="block truncate text-xs font-bold sm:text-base">{player.name}</span>
                     <span className="block truncate text-xs text-ink/70 sm:text-xs">{player.team}</span>
-                    <span className="font-display text-xl font-bold text-[#9ccfea] sm:text-3xl">{main.value}</span>
+                    <span className="font-heading text-xl text-[#c93c17] sm:text-3xl">{main.value}</span>
                     <span className="ml-1 text-xs text-ink/70 sm:text-xs">{main.unit}</span>
                   </div>
                 </PlayerLink>
@@ -162,7 +162,7 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
                 const main = headline(player, metric);
                 return (
                   <li key={player.understat_player_id}>
-                    <PlayerLink player={player} className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition hover:bg-white/[0.04] sm:px-3">
+                    <PlayerLink player={player} className="flex items-center gap-3 rounded-lg px-2 py-2.5 transition hover:bg-ink/[0.04] sm:px-3">
                       <span className="w-6 shrink-0 text-center font-display font-bold text-muted">{index + 4}</span>
                       <Avatar name={player.name} photoUrl={player.photo_url} size={40} />
                       <span className="min-w-0 flex-1">
@@ -173,7 +173,7 @@ export default async function HotPage(props: PageProps<"/en-racha">) {
                         </span>
                       </span>
                       <span className="shrink-0 text-right">
-                        <span className="block font-display text-xl font-bold tabular-nums text-[#9ccfea]">{main.value}</span>
+                        <span className="block font-display text-xl font-bold tabular-nums text-[#c93c17]">{main.value}</span>
                         <span className="block text-xs text-muted">{main.unit}</span>
                       </span>
                     </PlayerLink>

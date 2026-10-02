@@ -96,7 +96,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-const INPUT = "glass rounded-xl px-3 py-2 text-sm text-ink outline-none focus:border-white/30";
+const INPUT = "glass rounded-xl px-3 py-2 text-sm text-ink outline-none focus:border-ink/30";
 
 export default async function ExplorePage(props: PageProps<"/explorar">) {
   const searchParams = await props.searchParams;
@@ -151,7 +151,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
             style={{ transform: `rotate(${index % 2 ? 1 : -1}deg)` }}
           >
             <span className="block text-sm font-semibold">{recipe.label}</span>
-            <span className="font-hand text-base text-[#9ccfea]">{recipe.note}</span>
+            <span className="font-hand text-base text-[#c93c17]">{recipe.note}</span>
           </Link>
         ))}
       </div>
@@ -255,14 +255,14 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
             type="checkbox"
             value="true"
             defaultChecked={values.per_90}
-            className="h-4 w-4 accent-[#9ccfea]"
+            className="h-4 w-4 accent-[#c93c17]"
           />
           Por 90 minutos
         </label>
         <div className="col-span-2 flex items-end gap-2 sm:col-span-1 lg:col-span-2">
           <button
             type="submit"
-            className="flex-1 rounded-full bg-[#9ccfea] px-5 py-2.5 text-sm font-bold text-bg transition hover:brightness-105"
+            className="flex-1 rounded-full bg-[#c93c17] px-5 py-2.5 text-sm font-bold text-bg transition hover:brightness-105"
           >
             Buscar
           </button>
@@ -319,7 +319,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
                 <th className="px-2 py-3">A</th>
                 <th className="px-2 py-3">xG</th>
                 <th className="px-2 py-3">xA</th>
-                <th className="px-4 py-3 text-right text-[#9ccfea]">
+                <th className="px-4 py-3 text-right text-[#c93c17]">
                   {sortLabel}
                   {perNinetyShown ? " /90" : ""}
                 </th>
@@ -329,7 +329,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
               {rows.map((row, index) => (
                 <tr
                   key={`${row.player_id}-${row.competition}`}
-                  className="border-b border-line/60 transition hover:bg-white/[0.03]"
+                  className="border-b border-line/60 transition hover:bg-ink/[0.03]"
                 >
                   <td className="px-4 py-2.5 font-display font-bold text-muted">{index + 1}</td>
                   <td className="px-2 py-2.5">
@@ -359,7 +359,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
                   <td className="px-2 py-2.5 tabular-nums text-muted">
                     {row.expected_assists.toFixed(1)}
                   </td>
-                  <td className="px-4 py-2.5 text-right font-display text-base font-bold tabular-nums text-[#9ccfea]">
+                  <td className="px-4 py-2.5 text-right font-display text-base font-bold tabular-nums text-[#c93c17]">
                     {show(row, values.sort, values.per_90)}
                   </td>
                 </tr>

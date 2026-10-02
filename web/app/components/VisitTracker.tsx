@@ -25,6 +25,8 @@ export function VisitTracker() {
       body: JSON.stringify({ path: pathname, referrer }),
       headers: { "Content-Type": "text/plain" },
       keepalive: true,
+      // Nothing is read back, so no CORS is needed on any domain.
+      mode: "no-cors",
     }).catch(() => {});
   }, [pathname]);
 

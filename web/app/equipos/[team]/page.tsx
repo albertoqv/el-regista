@@ -43,14 +43,14 @@ function XgChart({ matches }: { matches: TeamMatch[] }) {
   const scale = (value: number) => round((value / max) * (mid - 12));
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="xG a favor y en contra por partido">
-      <line x1={PAD} x2={W - PAD} y1={mid} y2={mid} stroke="rgba(255,255,255,0.15)" />
+      <line x1={PAD} x2={W - PAD} y1={mid} y2={mid} stroke="rgba(22,23,27,0.15)" />
       {matches.map((match, index) => {
         const x = round(PAD + slot * index + slot / 2);
         const colour = match.result === "w" ? "#34d399" : match.result === "d" ? "#9ca3af" : "#fb7185";
         return (
           <g key={match.match_id}>
-            <rect x={round(x - bar / 2)} y={round(mid - scale(match.xg_for))} width={round(bar)} height={scale(match.xg_for)} rx="3" fill="#9ccfea" />
-            <rect x={round(x - bar / 2)} y={mid} width={round(bar)} height={scale(match.xg_against)} rx="3" fill="#f28c6b" opacity="0.85" />
+            <rect x={round(x - bar / 2)} y={round(mid - scale(match.xg_for))} width={round(bar)} height={scale(match.xg_for)} rx="3" fill="#2350d8" />
+            <rect x={round(x - bar / 2)} y={mid} width={round(bar)} height={scale(match.xg_against)} rx="3" fill="#c93c17" opacity="0.85" />
             <circle cx={x} cy={H - 6} r="3" fill={colour} />
             <title>{`vs ${match.opponent} · ${match.goals_for}-${match.goals_against} · xG ${match.xg_for.toFixed(2)}-${match.xg_against.toFixed(2)}`}</title>
           </g>
@@ -131,7 +131,7 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
       {matches.length > 0 && (
         <Reveal>
           <section className="glass rounded-lg p-5">
-            <h2 className="font-display text-xl font-bold">Ocasiones partido a partido</h2>
+            <h2 className="font-heading text-xl">Ocasiones partido a partido</h2>
             <p className="mb-2 text-xs text-muted">
               Arriba, xG creado; abajo, xG concedido. El punto indica el resultado (verde victoria, gris
               empate, rojo derrota).
@@ -143,7 +143,7 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
 
       {upcoming.length > 0 && (
         <section className="flex flex-col gap-4">
-          <h2 className="font-display text-2xl font-bold">Próximos partidos</h2>
+          <h2 className="font-heading text-2xl">Próximos partidos</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {upcoming.map((forecast) => (
               <ForecastCard key={forecast.match_id} forecast={forecast} />
@@ -154,7 +154,7 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
 
       {players.length > 0 && (
         <section className="flex flex-col gap-4">
-          <h2 className="font-display text-2xl font-bold">Quién pone las ocasiones</h2>
+          <h2 className="font-heading text-2xl">Quién pone las ocasiones</h2>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {players.map((player) => (
               <Link
@@ -165,7 +165,7 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
                 <Avatar name={player.name} photoUrl={player.photo_url} size={42} />
                 <span className="flex-1 truncate font-semibold">{player.name}</span>
                 <span className="text-right text-xs text-muted">
-                  <strong className="font-display text-base text-ink">{player.goals}</strong> goles
+                  <strong className="font-heading text-base text-ink">{player.goals}</strong> goles
                   <br />
                   {player.value.toFixed(1)} xG · {player.shots} tiros
                 </span>
@@ -177,7 +177,7 @@ export default async function TeamPage(props: PageProps<"/equipos/[team]">) {
 
       {matches.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="font-display text-2xl font-bold">Resultados</h2>
+          <h2 className="font-heading text-2xl">Resultados</h2>
           <ul className="glass divide-y divide-line/60 rounded-lg">
             {[...matches].reverse().map((match) => (
               <li key={match.match_id} className="grid grid-cols-[90px_1fr_auto_auto] items-center gap-3 px-4 py-2.5 text-sm">

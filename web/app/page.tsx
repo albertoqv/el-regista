@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
 import { PlayerPortrait } from "@/app/components/PlayerPortrait";
@@ -59,8 +60,15 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col gap-16">
       <section className="photo-header -mx-4 -mt-6 flex min-h-[460px] flex-col justify-end gap-6 px-4 pb-10 pt-24 sm:mx-0 sm:mt-0 sm:rounded-xl sm:px-10">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={PHOTOS.portada.src} alt="" className="slow-zoom" fetchPriority="high" />
+        <Image
+          src={PHOTOS.portada.src}
+          alt=""
+          fill
+          sizes="(min-width: 1152px) 1104px, 100vw"
+          className="slow-zoom object-cover"
+          loading="eager"
+          fetchPriority="high"
+        />
         <div className="flex flex-col gap-3">
           <Sticker className="w-fit">Temporada {seasonDisplay(String(startYear))}</Sticker>
           <h1 className="font-display text-5xl leading-[0.92] sm:text-7xl">
@@ -74,19 +82,18 @@ export default async function HomePage() {
           <PlayerSearchForm />
         </div>
         {overview && (
-          <dl className="flex flex-wrap gap-x-10 gap-y-3">
+          <ul className="flex flex-wrap gap-x-10 gap-y-3">
             {[
               { value: overview.players, label: "jugadores" },
               { value: overview.shots, label: "tiros" },
               { value: overview.match_stats, label: "partidos" },
             ].map((item) => (
-              <div key={item.label} className="flex items-baseline gap-2">
-                <dt className="sr-only">{item.label}</dt>
-                <dd className="font-display text-3xl tabular-nums">{item.value.toLocaleString("es-ES")}</dd>
+              <li key={item.label} className="flex items-baseline gap-2">
+                <span className="font-display text-3xl tabular-nums">{item.value.toLocaleString("es-ES")}</span>
                 <span className="text-sm text-muted">{item.label}</span>
-              </div>
+              </li>
             ))}
-          </dl>
+          </ul>
         )}
       </section>
 
@@ -130,7 +137,7 @@ function HotTeaser({ board }: { board: HotBoard }) {
       <div className="glass rounded-xl p-5 sm:p-7">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h3 className="mt-2 font-display text-2xl font-bold tracking-tight sm:text-3xl">
+            <h3 className="mt-2 font-heading text-2xl tracking-tight sm:text-3xl">
               En racha
             </h3>
           </div>
@@ -142,7 +149,7 @@ function HotTeaser({ board }: { board: HotBoard }) {
           {board.players.map((player, index) => {
             const content = (
               <>
-                <span className="font-display text-lg font-bold text-muted">{index + 1}</span>
+                <span className="font-heading text-lg text-muted">{index + 1}</span>
                 <Avatar name={player.name} photoUrl={player.photo_url} size={40} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-sm font-semibold">{player.name}</span>
@@ -150,7 +157,7 @@ function HotTeaser({ board }: { board: HotBoard }) {
                     {player.team}
                   </span>
                 </span>
-                <span className="font-display text-xl font-bold text-[#9ccfea]">
+                <span className="font-heading text-xl text-[#c93c17]">
                   {player.goals + player.assists}
                 </span>
               </>
@@ -160,7 +167,7 @@ function HotTeaser({ board }: { board: HotBoard }) {
                 {player.player_id ? (
                   <Link
                     href={`/players/${player.player_id}`}
-                    className="flex items-center gap-2.5 rounded-lg border border-line p-2.5 transition hover:bg-white/[0.04]"
+                    className="flex items-center gap-2.5 rounded-lg border border-line p-2.5 transition hover:bg-ink/[0.04]"
                   >
                     {content}
                   </Link>
@@ -194,7 +201,7 @@ function RecordTeaser({ record }: { record: TrackRecord }) {
           <p className="text-xs font-semibold text-brand-2">
             Historial de aciertos
           </p>
-          <h3 className="font-display text-2xl font-bold tracking-tight">
+          <h3 className="font-heading text-2xl tracking-tight">
             {live
               ? "Predicciones guardadas antes del partido"
               : `La ${seasonDisplay(record.season_label)} reconstruida sin mirar el futuro`}
@@ -209,7 +216,7 @@ function RecordTeaser({ record }: { record: TrackRecord }) {
         </div>
         {confident !== null ? (
           <div className="text-center">
-            <span className="block font-display text-5xl font-bold text-[#9ccfea]">{confident}%</span>
+            <span className="block font-display text-5xl font-bold text-[#c93c17]">{confident}%</span>
             <span className="text-xs text-muted">cuando damos 60% o más</span>
           </div>
         ) : null}
@@ -236,11 +243,11 @@ function TwinTeaser({ report }: { report: TwinReport }) {
                 ¿{target.name}
                 {target.market_value_eur ? ` por ${formatMarketValue(target.market_value_eur)}` : ""}?
                 <br />
-                <span className="text-[#9ccfea]">Tenemos gemelos.</span>
+                <span className="text-[#c93c17]">Tenemos gemelos.</span>
               </h2>
               <Link
                 href={`/gemelos?p=${target.player_id}`}
-                className="w-fit rounded-full bg-[#9ccfea] px-6 py-3 font-bold text-bg transition hover:brightness-105"
+                className="w-fit rounded-full bg-[#c93c17] px-6 py-3 font-bold text-bg transition hover:brightness-105"
               >
                 Ver todos sus gemelos →
               </Link>
@@ -251,16 +258,16 @@ function TwinTeaser({ report }: { report: TwinReport }) {
                   <PlayerPortrait
                     name={twin.name}
                     photoUrl={twin.photo_url}
-                    accent="#9ccfea"
+                    accent="#c93c17"
                     rounded="rounded-lg"
                     className="aspect-[3/4] transition duration-500 group-hover:-translate-y-1"
                   />
-                  <span className="absolute right-2 top-2 rounded-full bg-black/65 px-2 py-0.5 font-display text-sm font-bold">
+                  <span className="absolute right-2 top-2 rounded-full bg-black/65 px-2 py-0.5 font-heading text-sm">
                     {twin.similarity}%
                   </span>
                   <div className="absolute inset-x-0 bottom-0 p-3">
                     <span className="block truncate text-sm font-bold">{twin.name}</span>
-                    <span className="font-display text-lg font-bold text-brand-2">
+                    <span className="font-heading text-lg text-brand-2">
                       {formatMarketValue(twin.market_value_eur as number)}
                     </span>
                   </div>

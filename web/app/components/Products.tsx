@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { PHOTOS } from "@/lib/photos";
@@ -11,8 +12,14 @@ export function ProductsGrid() {
     <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
       {PRODUCTS.map((product) => (
         <div key={product.key} className="glass overflow-hidden" style={{ borderTop: `4px solid ${product.color}` }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={PRODUCT_PHOTOS[product.key]} alt="" className="h-40 w-full object-cover" />
+          <Image
+            src={PRODUCT_PHOTOS[product.key]}
+            alt=""
+            width={1024}
+            height={683}
+            sizes="(min-width: 768px) 552px, 100vw"
+            className="h-40 w-full object-cover"
+          />
           <div className="p-5 sm:p-7">
             <h2 className="font-display text-5xl" style={{ color: product.color }}>
               {product.name}
@@ -21,7 +28,7 @@ export function ProductsGrid() {
               {product.tools.map((tool) => (
                 <li key={tool.href}>
                   <Link href={tool.href} className="group/tool flex items-baseline justify-between gap-4 py-3">
-                    <span className="font-display text-2xl leading-none transition group-hover/tool:text-brand">{tool.label}</span>
+                    <span className="font-heading text-2xl leading-none transition group-hover/tool:text-brand">{tool.label}</span>
                     <span className="hidden text-right text-sm text-muted sm:block">{tool.description}</span>
                   </Link>
                 </li>
@@ -51,7 +58,7 @@ export function ProductBand({
         <h2 className="font-display text-4xl sm:text-6xl" style={{ color: info.color }}>
           {title}
         </h2>
-        <Link href={info.tools[0].href} className="font-display text-lg hover:underline sm:text-xl">
+        <Link href={info.tools[0].href} className="font-heading text-lg hover:underline sm:text-xl">
           Abrir {info.name} →
         </Link>
       </div>

@@ -33,7 +33,7 @@ export function Sticker({
     white: "bg-ink text-bg",
   };
   return (
-    <span className={`sticker inline-block px-2 py-0.5 font-display text-sm ${tones[tone]} ${className}`}>
+    <span className={`sticker inline-block px-2 py-0.5 font-heading text-sm ${tones[tone]} ${className}`}>
       {children}
     </span>
   );

@@ -15,7 +15,7 @@ export function PlayerAutocomplete({
   onSelect,
   placeholder,
   size = "md",
-  accent = "#9ccfea",
+  accent = "#c93c17",
   autoFocus = false,
 }: {
   initialPlayer?: PlayerSummary | null;
@@ -84,7 +84,7 @@ export function PlayerAutocomplete({
   return (
     <div className="relative w-full" ref={containerRef}>
       <div
-        className={`glass flex items-center gap-3 rounded-lg transition focus-within:border-white/25 ${large ? "px-5 py-4" : "px-4 py-2.5"}`}
+        className={`glass flex items-center gap-3 rounded-lg transition focus-within:border-ink/25 ${large ? "px-5 py-4" : "px-4 py-2.5"}`}
         style={{ boxShadow: open ? `0 0 0 3px ${accent}33` : undefined }}
       >
         <IconSearch size={large ? 22 : 18} color={accent} />
@@ -135,11 +135,11 @@ export function PlayerAutocomplete({
                   type="button"
                   onMouseEnter={() => setHighlighted(index)}
                   onClick={() => choose(player)}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition ${index === highlighted ? "bg-white/8" : ""}`}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm transition ${index === highlighted ? "bg-ink/8" : ""}`}
                 >
                   <Avatar name={player.name} photoUrl={player.photo_url} size={34} />
                   <span className="flex-1 truncate font-medium">{player.name}</span>
-                  <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-xs font-semibold text-muted">
+                  <span className="rounded-md bg-ink/5 px-1.5 py-0.5 text-xs font-semibold text-muted">
                     {positionShort(player.position)}
                   </span>
                   {player.latest_season_year && (

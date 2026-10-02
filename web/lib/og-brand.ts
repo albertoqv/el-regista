@@ -9,7 +9,7 @@ const [font, logo, cover] = await Promise.all([
 ]);
 
 export const LOGO_DARK = `data:image/svg+xml;base64,${logo.toString("base64")}`;
-export const LOGO_RATIO = 5.25;
+export const LOGO_RATIO = 5.44;
 export const COVER_PHOTO = `data:image/jpeg;base64,${cover.toString("base64")}`;
 
 export const OG_FONTS = [
@@ -17,10 +17,10 @@ export const OG_FONTS = [
 ];
 
 export const OG_COLORS = {
-  slate: "#26131a",
-  deep: "#1d0e14",
-  chalk: "#f3ebe3",
-  dim: "#c7b3b0",
-  yellow: "#9ccfea",
-  grass: "#8fcf9c",
+  slate: "#16171b",
+  deep: "#0f1013",
+  chalk: "#f7f6f2",
+  dim: "#a9acb3",
+  yellow: "#f2643a",
+  grass: "#5b8cff",
 };

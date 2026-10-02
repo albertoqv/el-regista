@@ -42,10 +42,10 @@ export function CompareVerdict({ playerA, playerB }: { playerA: Player; playerB:
     <section className="glass flex flex-col gap-5 rounded-lg p-6">
       <div className="text-center">
         <p className="text-xs font-semibold text-muted">Veredicto</p>
-        <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+        <h2 className="font-heading text-2xl tracking-tight sm:text-3xl">
           {leader ? (
             <>
-              <span style={{ color: leader === playerA ? "#9ccfea" : "#f28c6b" }}>{leader.name}</span>{" "}
+              <span style={{ color: leader === playerA ? "#2350d8" : "#c93c17" }}>{leader.name}</span>{" "}
               gana en {Math.max(winsA.length, winsB.length)} de {metrics.length} métricas
             </>
           ) : (
@@ -67,7 +67,7 @@ export function CompareVerdict({ playerA, playerB }: { playerA: Player; playerB:
             viewport={{ once: true }}
             transition={{ type: "spring", stiffness: 60, damping: 12, delay: 0.3 }}
           />
-          <div className="absolute inset-y-0 left-1/2 w-px bg-white/60" />
+          <div className="absolute inset-y-0 left-1/2 w-px bg-ink/60" />
         </div>
         <span className="font-display text-3xl font-bold text-side-b tabular-nums">{winsB.length}</span>
       </div>

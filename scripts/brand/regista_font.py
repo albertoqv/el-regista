@@ -16,11 +16,11 @@ from shapely.geometry import LineString, Polygon, box
 from shapely.geometry.polygon import orient
 from shapely.ops import unary_union
 
-W_STROKE = 22.0
+W_STROKE = 19.0
 HALF = W_STROKE / 2
-FILLET = 12.0
+FILLET = 11.0
 SCALE = 7  # 100 design units -> 700 font units of cap height
-SIDE = 8  # side bearing in design units
+SIDE = 10  # side bearing in design units
 
 
 def fillet(points, radius=FILLET, closed=False, steps=10):
@@ -62,7 +62,7 @@ def stroke(points, closed=False, radius=FILLET):
     )
 
 
-def dot(x, y, size=W_STROKE):
+def dot(x, y, size=W_STROKE + 2):
     return box(x - size / 2, y, x + size / 2, y + size)
 
 

@@ -43,7 +43,7 @@ export function ValueMap({ target, twins }: { target: TwinProfile; twins: Twin[]
     <div className="glass relative rounded-lg p-4 sm:p-6">
       <div className="mb-2 flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h2 className="font-display text-xl font-bold tracking-tight">Mapa de fichajes</h2>
+          <h2 className="font-heading text-xl tracking-tight">Mapa de fichajes</h2>
           <p className="text-sm text-muted">
             Arriba = más parecido · izquierda = más barato. Lo ideal está arriba a la izquierda.
           </p>
@@ -72,24 +72,24 @@ export function ValueMap({ target, twins }: { target: TwinProfile; twins: Twin[]
           width={round((WIDTH - PAD.left - PAD.right) * 0.42)}
           height={round((HEIGHT - PAD.top - PAD.bottom) * 0.45)}
           rx="14"
-          fill="rgba(156,207,234,0.05)"
-          stroke="rgba(156,207,234,0.25)"
+          fill="rgba(201,60,23,0.05)"
+          stroke="rgba(201,60,23,0.25)"
           strokeDasharray="6 6"
         />
-        <text x={PAD.left + 12} y={PAD.top + 30} className="fill-[#9ccfea] font-hand text-[26px]">
+        <text x={PAD.left + 12} y={PAD.top + 30} className="fill-[#c93c17] font-hand text-[26px]">
           zona ganga
         </text>
 
         {ticks.map((tick) => (
           <g key={tick}>
-            <line x1={x(tick)} x2={x(tick)} y1={PAD.top} y2={HEIGHT - PAD.bottom} stroke="rgba(255,255,255,0.05)" />
-            <text x={x(tick)} y={HEIGHT - 16} textAnchor="middle" className="fill-[#c7b3b0] text-[12px]">
+            <line x1={x(tick)} x2={x(tick)} y1={PAD.top} y2={HEIGHT - PAD.bottom} stroke="rgba(22,23,27,0.05)" />
+            <text x={x(tick)} y={HEIGHT - 16} textAnchor="middle" className="fill-[#5d6068] text-[12px]">
               {formatMarketValue(tick)}
             </text>
           </g>
         ))}
         {[minSimilarity, (minSimilarity + 100) / 2, 100].map((tick) => (
-          <text key={tick} x={PAD.left - 10} y={y(tick) + 4} textAnchor="end" className="fill-[#c7b3b0] text-[12px]">
+          <text key={tick} x={PAD.left - 10} y={y(tick) + 4} textAnchor="end" className="fill-[#5d6068] text-[12px]">
             {Math.round(tick)}%
           </text>
         ))}
@@ -101,7 +101,7 @@ export function ValueMap({ target, twins }: { target: TwinProfile; twins: Twin[]
               x2={x(target.market_value_eur)}
               y1={PAD.top}
               y2={HEIGHT - PAD.bottom}
-              stroke="#f28c6b"
+              stroke="#c93c17"
               strokeDasharray="4 5"
               strokeWidth="1.5"
             />
@@ -109,7 +109,7 @@ export function ValueMap({ target, twins }: { target: TwinProfile; twins: Twin[]
               x={x(target.market_value_eur) - 8}
               y={PAD.top + 14}
               textAnchor="end"
-              className="fill-[#f28c6b] text-[12px] font-semibold"
+              className="fill-[#c93c17] text-[12px] font-semibold"
             >
               {target.name}: {formatMarketValue(target.market_value_eur)}
             </text>
@@ -132,7 +132,7 @@ export function ValueMap({ target, twins }: { target: TwinProfile; twins: Twin[]
                 onMouseEnter={() => setHovered(twin.player_id)}
                 onMouseLeave={() => setHovered(null)}
               >
-                <circle cx={cx} cy={cy} r={R + 3} fill="#1d0e14" stroke={isActive ? "#9ccfea" : "rgba(255,255,255,0.35)"} strokeWidth={isActive ? 3 : 1.5} />
+                <circle cx={cx} cy={cy} r={R + 3} fill="#ffffff" stroke={isActive ? "#c93c17" : "rgba(22,23,27,0.35)"} strokeWidth={isActive ? 3 : 1.5} />
                 {photo ? (
                   <image
                     href={photo}

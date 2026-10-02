@@ -1,11 +1,11 @@
-/* eslint-disable @next/next/no-img-element */
+import Image from "next/image";
 import Link from "next/link";
 import { PHOTOS } from "@/lib/photos";
 
 export default function NotFound() {
   return (
     <section className="photo-header -mx-4 -mt-6 flex min-h-[70vh] flex-col items-start justify-end gap-4 px-4 pb-12 sm:mx-0 sm:mt-0 sm:rounded-xl sm:px-10">
-      <img src={PHOTOS.no_encontrado.src} alt="" />
+      <Image src={PHOTOS.no_encontrado.src} alt="" fill sizes="100vw" className="object-cover" />
       <h1 className="font-display text-6xl leading-[0.92] sm:text-7xl">Aquí no hay nadie</h1>
       <p className="text-ink/85">Esta página no existe.</p>
       <div className="flex gap-2">

@@ -12,7 +12,7 @@ export function PlayerStats({ player }: { player: Player }) {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="font-display text-2xl font-bold tracking-tight">Estadísticas</h2>
+        <h2 className="font-heading text-2xl tracking-tight">Estadísticas</h2>
         {canPerNinety && (
           <div className="glass flex rounded-full p-1 text-xs font-semibold">
             {[
@@ -23,7 +23,7 @@ export function PlayerStats({ player }: { player: Player }) {
                 key={option.label}
                 type="button"
                 onClick={() => setPerNinety(option.value)}
-                className={`rounded-full px-3 py-1.5 transition ${perNinety === option.value ? "bg-white text-bg" : "text-muted hover:text-ink"}`}
+                className={`rounded-full px-3 py-1.5 transition ${perNinety === option.value ? "bg-ink text-bg" : "text-muted hover:text-ink"}`}
               >
                 {option.label}
               </button>

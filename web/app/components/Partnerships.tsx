@@ -31,7 +31,7 @@ export function Partnerships({ pairs }: { pairs: Partnership[] }) {
                   <Avatar name={pair.assister_name} size={52} />
                 )}
               </div>
-              <HandArrow direction="right" className="shrink-0 text-[#9ccfea]" />
+              <HandArrow direction="right" className="shrink-0 text-[#c93c17]" />
               <Link href={`/players/${pair.scorer.player_id}`}>
                 <Avatar name={pair.scorer.name} photoUrl={pair.scorer.photo_url} size={52} />
               </Link>

@@ -7,17 +7,12 @@ import { Avatar } from "@/app/components/Avatar";
 import { CountUp } from "@/app/components/motion";
 import { PlayerPortrait } from "@/app/components/PlayerPortrait";
 import { listSeasonLeaders, type LeaderMetric, type SeasonLeader } from "@/lib/api";
-import {
-  COMPETITIONS,
-  competitionColor,
-  positionShort,
-  seasonDisplay,
-} from "@/lib/format";
+import { COMPETITIONS, positionShort, seasonDisplay } from "@/lib/format";
 import { LEADER_TABS, METRICS } from "@/lib/metrics";
 
 const LIMIT = 10;
 const PODIUM_ORDER = [1, 0, 2];
-const MEDALS = ["#f5c451", "#f3ebe3", "#e0935a"];
+const MEDALS = ["#f5c451", "#16171b", "#e0935a"];
 
 function valueOf(leader: SeasonLeader, metric: LeaderMetric): number {
   return leader[metric];
@@ -57,7 +52,7 @@ function PodiumCard({
           className={`w-full transition duration-500 group-hover:-translate-y-1 ${first ? "aspect-[3/4]" : "aspect-[3/4] sm:aspect-[4/5]"}`}
         />
         <div
-          className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full font-display text-lg font-bold text-bg"
+          className="absolute left-3 top-3 flex h-9 w-9 items-center justify-center rounded-full font-heading text-lg text-bg"
           style={{ background: MEDALS[rank] }}
         >
           {rank + 1}
@@ -66,7 +61,7 @@ function PodiumCard({
           <span className="font-display text-4xl font-bold leading-none tabular-nums sm:text-6xl">
             <CountUp value={valueOf(leader, metric)} decimals={decimalsOf(metric)} />
           </span>
-          <span className="truncate font-display text-sm font-semibold sm:text-xl">
+          <span className="truncate font-heading text-sm sm:text-xl">
             {leader.name}
           </span>
           <span className="flex items-center gap-1.5 truncate text-xs text-muted">
@@ -153,7 +148,6 @@ export function SeasonLeaders({
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         {[null, ...COMPETITIONS].map((option) => {
           const active = competition === option;
-          const color = option ? competitionColor(option) : "#9ccfea";
           return (
             <button
               key={option ?? "all"}
@@ -161,9 +155,9 @@ export function SeasonLeaders({
               onClick={() => load(metric, option)}
               className="flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition"
               style={{
-                borderColor: active ? color : "rgba(255,255,255,0.08)",
-                background: active ? `${color}22` : "transparent",
-                color: active ? "#fff" : "#c7b3b0",
+                borderColor: active ? "#16171b" : "rgba(22,23,27,0.14)",
+                background: active ? "#16171b" : "transparent",
+                color: active ? "#f7f6f2" : "#5d6068",
               }}
             >
               {option ?? "Las 5 ligas"}
@@ -204,7 +198,7 @@ export function SeasonLeaders({
                   >
                     <Link
                       href={`/players/${leader.player_id}`}
-                      className="relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 transition hover:bg-white/5"
+                      className="relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 transition hover:bg-ink/5"
                     >
                       <motion.span
                         className="absolute inset-y-1 left-0 rounded-lg bg-surface-strong"
@@ -212,7 +206,7 @@ export function SeasonLeaders({
                         animate={{ width: `${(value / maxValue) * 100}%` }}
                         transition={{ duration: 0.8, delay: 0.3 + index * 0.05 }}
                       />
-                      <span className="relative w-5 text-center font-display text-sm font-bold text-muted">
+                      <span className="relative w-5 text-center font-heading text-sm text-muted">
                         {index + 4}
                       </span>
                       <span className="relative">

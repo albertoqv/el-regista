@@ -23,7 +23,7 @@ export function PercentileBars({ report }: { report: PercentileReport }) {
                 </span>
               </span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-white/6">
+            <div className="h-2 overflow-hidden rounded-full bg-ink/6">
               <motion.div
                 className="h-full rounded-full"
                 style={{

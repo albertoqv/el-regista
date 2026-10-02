@@ -22,7 +22,7 @@ export default function Error({
         <button
           type="button"
           onClick={() => retry()}
-          className="rounded-full bg-[#9ccfea] px-5 py-2.5 text-sm font-bold text-bg transition hover:brightness-105"
+          className="rounded-full bg-[#c93c17] px-5 py-2.5 text-sm font-bold text-bg transition hover:brightness-105"
         >
           Reintentar
         </button>

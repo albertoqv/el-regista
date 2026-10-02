@@ -81,8 +81,8 @@ function VisitsChart({ daily }: { daily: AdminDashboard["daily"] }) {
         return (
           <g key={day.day}>
             <title>{label}</title>
-            <rect x={x} y={height - viewsHeight} width={bar} height={viewsHeight} rx={3} fill="#9ccfea" opacity={0.35} />
-            <rect x={x} y={height - peopleHeight} width={bar} height={peopleHeight} rx={3} fill="#9ccfea" />
+            <rect x={x} y={height - viewsHeight} width={bar} height={viewsHeight} rx={3} fill="#c93c17" opacity={0.35} />
+            <rect x={x} y={height - peopleHeight} width={bar} height={peopleHeight} rx={3} fill="#c93c17" />
             {index % 5 === 0 || index === daily.length - 1 ? (
               <text
                 x={index === 0 ? x : index === daily.length - 1 ? x + bar : x + Math.round(bar / 2)}
@@ -102,14 +102,14 @@ function Ranking({ title, rows, label }: { title: string; rows: RankedCount[]; l
   const max = Math.max(1, ...rows.map((row) => row.views));
   return (
     <section className="glass rounded-lg p-5">
-      <h2 className="font-display text-lg font-bold">{title}</h2>
+      <h2 className="font-heading text-lg">{title}</h2>
       {rows.length === 0 ? (
         <p className="mt-3 text-sm text-muted">Todavía nada.</p>
       ) : (
         <ol className="mt-3 flex flex-col gap-1.5">
           {rows.map((row) => (
             <li key={row.name} className="relative overflow-hidden rounded-xl px-3 py-1.5 text-sm">
-              <span className="absolute inset-y-0 left-0 rounded-xl bg-white/[0.06]" style={{ width: `${(row.views / max) * 100}%` }} />
+              <span className="absolute inset-y-0 left-0 rounded-xl bg-ink/[0.06]" style={{ width: `${(row.views / max) * 100}%` }} />
               <span className="relative flex justify-between gap-3">
                 <span className="truncate">{label(row.name)}</span>
                 <span className="shrink-0 tabular-nums text-muted">
@@ -143,7 +143,7 @@ function LoginForm({ error }: { error?: string }) {
           placeholder="Clave"
           className="glass flex-1 rounded-xl px-3 py-2 text-sm text-ink outline-none"
         />
-        <button type="submit" className="rounded-full bg-[#9ccfea] px-5 py-2 text-sm font-bold text-bg">
+        <button type="submit" className="rounded-full bg-[#c93c17] px-5 py-2 text-sm font-bold text-bg">
           Entrar
         </button>
       </form>
@@ -195,10 +195,10 @@ export default async function AdminPage() {
 
       <section className="glass rounded-lg p-5">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-lg font-bold">Visitas por día</h2>
+          <h2 className="font-heading text-lg">Visitas por día</h2>
           <span className="text-xs text-muted">
-            <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-[#9ccfea]" />personas
-            <span className="ml-3 mr-1 inline-block h-2 w-2 rounded-sm bg-[#9ccfea]/35" />páginas vistas
+            <span className="mr-1 inline-block h-2 w-2 rounded-sm bg-[#c93c17]" />personas
+            <span className="ml-3 mr-1 inline-block h-2 w-2 rounded-sm bg-[#c93c17]/35" />páginas vistas
           </span>
         </div>
         <VisitsChart daily={dashboard.daily} />
@@ -211,7 +211,7 @@ export default async function AdminPage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <section className="glass flex flex-col gap-3 rounded-lg p-5">
-          <h2 className="font-display text-lg font-bold">Servidor (Railway)</h2>
+          <h2 className="font-heading text-lg">Servidor (Railway)</h2>
           {hosting ? (
             <>
               <p className="text-sm text-muted">
@@ -223,7 +223,7 @@ export default async function AdminPage() {
               <ul className="flex flex-col gap-1.5">
                 {lineItems.map(([label, value]) => (
                   <li key={label} className="relative overflow-hidden rounded-xl px-3 py-1.5 text-sm">
-                    <span className="absolute inset-y-0 left-0 rounded-xl bg-[#f28c6b]/20" style={{ width: `${(value / lineMax) * 100}%` }} />
+                    <span className="absolute inset-y-0 left-0 rounded-xl bg-[#c93c17]/20" style={{ width: `${(value / lineMax) * 100}%` }} />
                     <span className="relative flex justify-between">
                       <span>{label}</span>
                       <span className="tabular-nums">{dollars(value)}</span>
@@ -251,7 +251,7 @@ export default async function AdminPage() {
         </section>
 
         <section className="glass flex flex-col gap-3 rounded-lg p-5">
-          <h2 className="font-display text-lg font-bold">Salud de la API</h2>
+          <h2 className="font-heading text-lg">Salud de la API</h2>
           <p className="text-sm text-muted">Desde el último despliegue ({shortDate(api.since)}).</p>
           <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
             <div><p className="text-xs text-muted">Peticiones</p><p className="font-display text-xl font-bold tabular-nums">{number(api.requests)}</p></div>
@@ -273,7 +273,7 @@ export default async function AdminPage() {
       </div>
 
       <section className="glass rounded-lg p-5">
-        <h2 className="font-display text-lg font-bold">Datos</h2>
+        <h2 className="font-heading text-lg">Datos</h2>
         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {Object.entries(dashboard.data).map(([key, value]) => (
             <div key={key}>

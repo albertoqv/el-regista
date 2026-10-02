@@ -4,7 +4,7 @@ import type { Forecast } from "@/lib/api";
 const RESULT_LABEL: Record<string, string> = { w: "V", d: "E", l: "D" };
 const RESULT_COLOR: Record<string, string> = {
   w: "bg-grass/85 text-bg",
-  d: "bg-white/25 text-ink",
+  d: "bg-ink/25 text-ink",
   l: "bg-rose-500/80 text-white",
 };
 
@@ -16,7 +16,7 @@ export function FormPills({ form, size = "sm" }: { form: string[]; size?: "sm" |
       {form.map((result, index) => (
         <span
           key={index}
-          className={`inline-flex items-center justify-center rounded-md font-bold ${box} ${RESULT_COLOR[result] ?? "bg-white/10"}`}
+          className={`inline-flex items-center justify-center rounded-md font-bold ${box} ${RESULT_COLOR[result] ?? "bg-ink/10"}`}
         >
           {RESULT_LABEL[result] ?? "?"}
         </span>
@@ -42,7 +42,7 @@ export function ProbabilityBar({
     <div className="flex flex-col gap-1">
       <div className="flex h-3 overflow-hidden rounded-full">
         <div className="bg-side-a" style={{ width: percent(home) }} />
-        <div className="bg-white/30" style={{ width: percent(draw) }} />
+        <div className="bg-ink/30" style={{ width: percent(draw) }} />
         <div className="bg-side-b" style={{ width: percent(away) }} />
       </div>
       <div className="flex justify-between text-xs font-semibold tabular-nums">
@@ -92,7 +92,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
 
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-3">
         <Link href={teamHref(forecast.home_team, forecast.competition)} className="flex min-w-0 flex-col gap-1 hover:underline">
-          <span className="font-display text-base font-bold leading-tight">{forecast.home_team}</span>
+          <span className="font-heading text-base leading-tight">{forecast.home_team}</span>
           <FormPills form={forecast.home_form.slice(0, 3)} />
         </Link>
         <div className="flex flex-col items-center">
@@ -105,7 +105,7 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
           href={teamHref(forecast.away_team, forecast.competition)}
           className="flex min-w-0 flex-col items-end gap-1 text-right hover:underline"
         >
-          <span className="font-display text-base font-bold leading-tight">{forecast.away_team}</span>
+          <span className="font-heading text-base leading-tight">{forecast.away_team}</span>
           <span className="flex justify-end">
             <FormPills form={forecast.away_form.slice(0, 3)} />
           </span>
@@ -115,26 +115,26 @@ export function ForecastCard({ forecast }: { forecast: Forecast }) {
       <ProbabilityBar home={forecast.home_win} draw={forecast.draw} away={forecast.away_win} />
 
       <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-        <span className="font-hand text-lg text-[#9ccfea]">{verdict(forecast)}</span>
+        <span className="font-hand text-lg text-[#c93c17]">{verdict(forecast)}</span>
         <span className="flex flex-wrap gap-1.5">
           {forecast.scorelines.slice(0, 3).map((score) => (
-            <span key={`${score.home}-${score.away}`} className="rounded-md bg-white/5 px-2 py-1 tabular-nums">
+            <span key={`${score.home}-${score.away}`} className="rounded-md bg-ink/5 px-2 py-1 tabular-nums">
               {score.home}-{score.away} <span className="text-muted">{percent(score.probability)}</span>
             </span>
           ))}
         </span>
       </div>
       <div className="grid grid-cols-2 gap-2 text-xs">
-        <span className="rounded-xl bg-white/5 px-3 py-2">
+        <span className="rounded-xl bg-ink/5 px-3 py-2">
           Más de 2,5 goles <strong className="float-right tabular-nums">{percent(forecast.over_2_5)}</strong>
         </span>
-        <span className="rounded-xl bg-white/5 px-3 py-2">
+        <span className="rounded-xl bg-ink/5 px-3 py-2">
           Marcan ambos <strong className="float-right tabular-nums">{percent(forecast.both_teams_score)}</strong>
         </span>
       </div>
       <Link
         href={`/predicciones/${forecast.match_id}`}
-        className="mt-auto rounded-full bg-white px-4 py-2 text-center text-xs font-bold text-bg transition hover:bg-white/85"
+        className="mt-auto rounded-full bg-ink px-4 py-2 text-center text-xs font-bold text-bg transition hover:bg-ink/85"
       >
         Ver análisis completo
       </Link>

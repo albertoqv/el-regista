@@ -60,12 +60,12 @@ export function TwinCard({
             </Sticker>
           ))}
         </div>
-        <div className="absolute right-3 top-3 flex h-14 w-14 flex-col items-center justify-center rounded-full border border-white/15 bg-black/65">
-          <span className="font-display text-lg font-bold leading-none">{twin.similarity}%</span>
+        <div className="absolute right-3 top-3 flex h-14 w-14 flex-col items-center justify-center rounded-full border border-ink/15 bg-black/65">
+          <span className="font-heading text-lg leading-none">{twin.similarity}%</span>
           <span className="text-[8px] font-semibold text-muted">igual</span>
         </div>
         <div className="absolute inset-x-0 bottom-0 p-4">
-          <h3 className="font-display text-xl font-bold leading-tight">{twin.name}</h3>
+          <h3 className="font-heading text-xl leading-tight">{twin.name}</h3>
           <p className="flex items-center gap-1.5 text-xs text-ink/75">
             {twin.team ?? twin.competition} · {seasonDisplay(twin.season_label)}
             {twin.detailed_position && ` · ${roleLabel(twin)}`}
@@ -80,13 +80,13 @@ export function TwinCard({
             <span className="block text-xs font-semibold text-muted">
               Valor
             </span>
-            <span className="font-display text-2xl font-bold">
+            <span className="font-heading text-2xl">
               {twin.market_value_eur !== null ? formatMarketValue(twin.market_value_eur) : "—"}
             </span>
           </div>
           {label && (
             <span
-              className={`rounded-lg px-2 py-1 text-right text-xs font-semibold ${value.kind === "cheaper" ? "bg-grass/12 text-brand-2" : "bg-white/5 text-muted"}`}
+              className={`rounded-lg px-2 py-1 text-right text-xs font-semibold ${value.kind === "cheaper" ? "bg-grass/12 text-brand-2" : "bg-ink/5 text-muted"}`}
             >
               {label}
             </span>
@@ -116,7 +116,7 @@ export function TwinCard({
         <div className="mt-auto flex gap-2 pt-1">
           <Link
             href={compareHref(target, twin)}
-            className="flex-1 rounded-full bg-white px-3 py-2 text-center text-xs font-bold text-bg transition hover:bg-white/85"
+            className="flex-1 rounded-full bg-ink px-3 py-2 text-center text-xs font-bold text-bg transition hover:bg-ink/85"
           >
             Cara a cara
           </Link>

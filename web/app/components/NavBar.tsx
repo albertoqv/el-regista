@@ -23,9 +23,9 @@ function ToolLink({
     <Link
       href={href}
       onClick={onClick}
-      className="group/tool block border-l-2 border-transparent px-4 py-2.5 transition hover:border-brand hover:bg-white/[0.04]"
+      className="group/tool block border-l-2 border-transparent px-4 py-2.5 transition hover:border-brand hover:bg-ink/[0.04]"
     >
-      <span className="block font-display text-2xl leading-none text-ink transition group-hover/tool:text-brand">{label}</span>
+      <span className="block font-heading text-2xl leading-none text-ink transition group-hover/tool:text-brand">{label}</span>
       <span className="mt-1 block text-sm text-muted">{description}</span>
     </Link>
   );
@@ -36,7 +36,7 @@ function ProductMenu({ product, active }: { product: Product; active: boolean })
     <div className="group relative">
       <button
         type="button"
-        className={`flex items-center gap-1 px-3 py-1.5 font-display text-xl transition ${active ? "text-brand" : "text-ink hover:text-brand"}`}
+        className={`flex items-center gap-1 px-3 py-1.5 font-heading text-xl transition ${active ? "text-brand" : "text-ink hover:text-brand"}`}
         aria-haspopup="true"
       >
         {product.name}
@@ -76,7 +76,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
           ))}
         </section>
       ))}
-      <Link href="/como-funciona" onClick={onClose} className="mt-6 block px-4 py-3 font-display text-2xl text-muted">
+      <Link href="/como-funciona" onClick={onClose} className="mt-6 block px-4 py-3 font-heading text-2xl text-muted">
         Cómo funciona
       </Link>
     </div>
@@ -96,7 +96,7 @@ function ProductTabs({ product, activeHref }: { product: Product; activeHref: st
               aria-current={active ? "page" : undefined}
               // On phones the tab row scrolls: bring the current tool into view.
               ref={active ? (element) => element?.scrollIntoView({ block: "nearest", inline: "center" }) : undefined}
-              className={`shrink-0 border-b-2 py-2 font-display text-lg transition ${active ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink"}`}
+              className={`shrink-0 border-b-2 py-2 font-heading text-lg transition ${active ? "border-brand text-ink" : "border-transparent text-muted hover:text-ink"}`}
             >
               {tool.label}
             </Link>
@@ -131,12 +131,12 @@ export function NavBar() {
             {PRODUCTS.map((product) => (
               <ProductMenu key={product.key} product={product} active={here?.product.key === product.key} />
             ))}
-            <Link href="/como-funciona" className="px-3 py-1.5 font-display text-xl text-muted transition hover:text-ink">
+            <Link href="/como-funciona" className="px-3 py-1.5 font-heading text-xl text-muted transition hover:text-ink">
               Cómo funciona
             </Link>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <Link href="/predicciones" className="shrink-0 bg-brand px-4 py-1.5 font-display text-lg text-bg transition hover:brightness-110">
+            <Link href="/predicciones" className="shrink-0 bg-brand px-4 py-1.5 font-heading text-lg text-bg transition hover:brightness-110">
               Pronósticos
             </Link>
             <button

@@ -1,6 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
-import { Chivo } from "next/font/google";
+import { Schibsted_Grotesk } from "next/font/google";
 import localFont from "next/font/local";
 import Link from "next/link";
 import { NavBar } from "@/app/components/NavBar";
@@ -10,9 +10,11 @@ import { PRODUCTS } from "@/lib/products";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
-const chivo = Chivo({
-  variable: "--font-chivo",
+// Text face: a grotesque drawn for newsrooms, readable and not the usual web default.
+const body = Schibsted_Grotesk({
+  variable: "--font-body",
   subsets: ["latin"],
+  display: "swap",
 });
 
 // Our own typeface, drawn for El Regista (scripts/brand/regista_font.py).
@@ -38,11 +40,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${chivo.variable} ${regista.variable} h-full antialiased`}>
+    <html lang="es" className={`${body.variable} ${regista.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <NavBar />
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 pb-24 pt-6 sm:px-6">{children}</main>
-        <footer className="border-t border-line bg-bg-deep py-10 text-xs text-muted">
+        <footer className="border-t border-line bg-bg-deep py-10 text-sm text-muted">
           <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6">
             <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
               {PRODUCTS.flatMap((product) =>

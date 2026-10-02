@@ -44,7 +44,7 @@ function Chip({ active, href: to, children }: { active: boolean; href: string; c
       href={to}
       scroll={false}
       className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-        active ? "border-[#9ccfea] bg-[#9ccfea] text-bg" : "border-line text-muted hover:border-line-strong hover:text-ink"
+        active ? "border-[#c93c17] bg-[#c93c17] text-bg" : "border-line text-muted hover:border-line-strong hover:text-ink"
       }`}
     >
       {children}
@@ -65,7 +65,7 @@ function Landing({ stars }: { stars: SeasonLeader[] }) {
         <Reveal>
           <ScoutNote rotate={-4}>el truco de los ojeadores</ScoutNote>
           <h1 className="mt-2 font-display text-5xl font-bold leading-[1.02] tracking-tight sm:text-7xl">
-            Encuentra al <Marker color="#9ccfea">gemelo</Marker>.
+            Encuentra al <Marker color="#c93c17">gemelo</Marker>.
           </h1>
         </Reveal>
         <Reveal delay={0.08}>
@@ -73,7 +73,7 @@ function Landing({ stars }: { stars: SeasonLeader[] }) {
         </Reveal>
         <Reveal delay={0.14} className="relative w-full max-w-2xl">
           <TwinSearch autoFocus />
-          <span className="pointer-events-none absolute -right-28 -top-12 hidden text-[#9ccfea] lg:flex lg:items-end">
+          <span className="pointer-events-none absolute -right-28 -top-12 hidden text-[#c93c17] lg:flex lg:items-end">
             <ScoutNote rotate={6}>prueba con tu crack</ScoutNote>
             <HandArrow direction="down-left" />
           </span>
@@ -82,7 +82,7 @@ function Landing({ stars }: { stars: SeasonLeader[] }) {
 
       {stars.length > 0 && (
         <section className="flex flex-col gap-4">
-          <h2 className="font-display text-xl font-bold">O empieza por uno de estos</h2>
+          <h2 className="font-heading text-xl">O empieza por uno de estos</h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
             {stars.map((star, index) => (
               <Reveal key={star.player_id} delay={index * 0.04}>
@@ -95,7 +95,7 @@ function Landing({ stars }: { stars: SeasonLeader[] }) {
                     className="aspect-[3/4] transition duration-500 group-hover:-translate-y-1 group-hover:rotate-[-1deg]"
                   />
                   <div className="absolute inset-x-0 bottom-0 p-3">
-                    <span className="block truncate font-display text-sm font-bold">{star.name}</span>
+                    <span className="block truncate font-heading text-sm">{star.name}</span>
                     <span className="block truncate text-xs text-muted">{star.team}</span>
                   </div>
                 </Link>
@@ -113,8 +113,8 @@ function Landing({ stars }: { stars: SeasonLeader[] }) {
         ].map(([step, title, text], index) => (
           <Reveal key={step} delay={index * 0.06}>
             <div className="glass h-full rounded-lg p-6">
-              <span className="font-hand text-4xl text-[#9ccfea]">{step}.</span>
-              <h3 className="font-display text-lg font-bold">{title}</h3>
+              <span className="font-hand text-4xl text-[#c93c17]">{step}.</span>
+              <h3 className="font-heading text-lg">{title}</h3>
               <p className="mt-1 text-sm text-muted">{text}</p>
             </div>
           </Reveal>
@@ -181,7 +181,7 @@ export default async function TwinsPage(props: PageProps<"/gemelos">) {
           <PlayerPortrait
             name={target.name}
             photoUrl={target.photo_url}
-            accent="#9ccfea"
+            accent="#c93c17"
             className="mx-auto aspect-[3/4] w-full max-w-[260px]"
           />
         </Reveal>
@@ -202,7 +202,7 @@ export default async function TwinsPage(props: PageProps<"/gemelos">) {
               <span className="block text-xs font-semibold text-muted">
                 Lo que cuesta
               </span>
-              <span className="font-display text-5xl font-bold text-[#f28c6b]">
+              <span className="font-display text-5xl font-bold text-[#c93c17]">
                 {target.market_value_eur ? formatMarketValue(target.market_value_eur) : "—"}
               </span>
             </div>
@@ -211,7 +211,7 @@ export default async function TwinsPage(props: PageProps<"/gemelos">) {
                 <span className="block text-xs font-semibold text-muted">
                   Mejor alternativa
                 </span>
-                <span className="font-display text-lg font-bold">
+                <span className="font-heading text-lg">
                   {best.name} · {best.similarity}% por {formatMarketValue(best.market_value_eur)}
                 </span>
               </div>

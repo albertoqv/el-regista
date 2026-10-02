@@ -20,7 +20,7 @@ export default function Image() {
             width: 1200,
             height: 630,
             display: "flex",
-            backgroundImage: "linear-gradient(90deg, rgba(29,14,20,0.97) 0%, rgba(29,14,20,0.88) 55%, rgba(29,14,20,0.35) 100%)",
+            backgroundImage: "linear-gradient(90deg, rgba(15,16,19,0.97) 0%, rgba(15,16,19,0.88) 55%, rgba(15,16,19,0.35) 100%)",
           }}
         />
         <div style={{ position: "relative", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 70, width: "100%" }}>
@@ -30,7 +30,7 @@ export default function Image() {
             <div style={{ display: "flex", fontSize: 96, lineHeight: 0.92 }}>DATOS DE VERDAD</div>
             <div style={{ display: "flex", gap: 16, marginTop: 18, fontSize: 32 }}>
               <span style={{ display: "flex", background: OG_COLORS.yellow, color: OG_COLORS.slate, padding: "6px 16px" }}>SCOUT</span>
-              <span style={{ display: "flex", background: "#f28c6b", color: OG_COLORS.slate, padding: "6px 16px" }}>PRONÓSTICOS</span>
+              <span style={{ display: "flex", background: "#5b8cff", color: OG_COLORS.slate, padding: "6px 16px" }}>PRONÓSTICOS</span>
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { preconnect } from "react-dom";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -49,7 +50,7 @@ function Badge({ label, value }: { label: string; value: string }) {
       <span className="text-xs font-semibold text-muted">
         {label}
       </span>
-      <span className="font-display text-base font-semibold">{value}</span>
+      <span className="font-heading text-base">{value}</span>
     </div>
   );
 }
@@ -69,6 +70,8 @@ export async function generateMetadata(
 }
 
 export default async function PlayerDetailPage(props: PageProps<"/players/[id]">) {
+  // Player photos come from Transfermarkt: open the connection before the HTML needs it.
+  preconnect("https://img.a.transfermarkt.technology");
   const { id } = await props.params;
   const playerId = Number(id);
   const searchParams = await props.searchParams;
@@ -102,7 +105,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
 
   const age = formatAge(player);
   const team = season ? seasons.find((s) => s.label === season.label && s.competition === season.competition)?.team : null;
-  const accent = season ? competitionColor(season.competition) : "#9ccfea";
+  const accent = season ? competitionColor(season.competition) : "#c93c17";
   const contributions = player.goals + player.assists;
 
   return (
@@ -110,7 +113,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       <section className="relative">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-6 left-0 right-0 select-none overflow-hidden whitespace-nowrap text-center font-display text-[18vw] font-bold uppercase leading-none text-white/[0.03] sm:text-[9rem]"
+          className="pointer-events-none absolute -top-6 left-0 right-0 select-none overflow-hidden whitespace-nowrap text-center font-display text-[18vw] font-bold uppercase leading-none text-ink/[0.03] sm:text-[9rem]"
         >
           {player.name.split(" ").slice(-1)[0]}
         </div>
@@ -122,12 +125,13 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
               photoUrl={player.photo_url}
               accent={accent}
               className="mx-auto aspect-[3/4] w-full max-w-[320px]"
+              priority
             />
           </Reveal>
 
           <div className="flex flex-col gap-5">
             <Reveal delay={0.05}>
-              <p className="flex items-center gap-2 text-xs font-semibold" style={{ color: accent }}>
+              <p className="flex items-center gap-2 text-sm font-semibold text-muted">
                 {roleLabel(player)}
                 {team && <span className="text-muted">· {team}</span>}
               </p>
@@ -192,7 +196,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
           <section className="glass grid grid-cols-1 gap-8 rounded-lg p-6 lg:grid-cols-2">
             <div className="flex flex-col gap-3">
               <div>
-                <h2 className="font-display text-2xl font-bold tracking-tight">
+                <h2 className="font-heading text-2xl tracking-tight">
                   Perfil de scouting
                 </h2>
                 <p className="text-sm text-muted">
@@ -228,7 +232,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
 
       {marketValue.history.length > 0 && (
         <Reveal>
-          <MarketValueChart series={[{ name: player.name, color: "#8fcf9c", history: marketValue.history }]} />
+          <MarketValueChart series={[{ name: player.name, color: "#1f8a4c", history: marketValue.history }]} />
         </Reveal>
       )}
 
@@ -237,7 +241,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       <section id="parecidos" className="flex scroll-mt-24 flex-col gap-5">
         <Reveal className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="font-display text-2xl font-bold tracking-tight">Sus gemelos</h2>
+            <h2 className="font-heading text-2xl tracking-tight">Sus gemelos</h2>
             <p className="text-sm text-muted">
               {twins
                 ? `Juegan como él en su ${seasonDisplay(twins.target.season_label)} con ${twins.target.team ?? twins.target.competition}. Pulsa uno para verlos cara a cara.`
@@ -246,7 +250,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
           </div>
           <Link
             href={`/gemelos?p=${player.player_id}`}
-            className="rounded-full bg-[#9ccfea] px-4 py-2 text-sm font-bold text-bg transition hover:brightness-105"
+            className="rounded-full bg-[#c93c17] px-4 py-2 text-sm font-bold text-bg transition hover:brightness-105"
           >
             Buscar gemelos baratos →
           </Link>

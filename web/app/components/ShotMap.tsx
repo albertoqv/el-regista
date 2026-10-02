@@ -29,7 +29,7 @@ const RESULT_LABEL: Record<string, string> = {
   OwnGoal: "Autogol",
 };
 
-export function ShotMap({ shots, color = "#9ccfea" }: { shots: PlayerShot[]; color?: string }) {
+export function ShotMap({ shots, color = "#2350d8" }: { shots: PlayerShot[]; color?: string }) {
   const [hovered, setHovered] = useState<number | null>(null);
   const visible = shots.filter((shot) => shot.x >= 0.5 && shot.result !== "OwnGoal");
   const active = hovered !== null ? visible[hovered] : null;
@@ -44,7 +44,7 @@ export function ShotMap({ shots, color = "#9ccfea" }: { shots: PlayerShot[]; col
           {/* The "D": arc of 9.15 m around the penalty spot, outside the box. */}
           <path d={`M ${W / 2 - 73.1} 165 A 91.5 91.5 0 0 0 ${W / 2 + 73.1} 165`} />
           <path d={`M ${W / 2 - 91.5} ${H} A 91.5 91.5 0 0 1 ${W / 2 + 91.5} ${H}`} />
-          <line x1={W / 2 - 36.6} y1="-6" x2={W / 2 + 36.6} y2="-6" strokeWidth="5" strokeDasharray="none" stroke="rgba(255,255,255,0.5)" />
+          <line x1={W / 2 - 36.6} y1="-6" x2={W / 2 + 36.6} y2="-6" strokeWidth="5" strokeDasharray="none" stroke="rgba(22,23,27,0.5)" />
         </g>
         <circle cx={W / 2} cy="110" r="3" fill="rgba(226,232,255,0.4)" />
 
@@ -86,7 +86,7 @@ export function ShotMap({ shots, color = "#9ccfea" }: { shots: PlayerShot[]; col
         )}
         <span className="flex items-center gap-3">
           <span className="flex items-center gap-1.5">
-            <span className="h-3 w-3 rounded-full border border-white" style={{ background: color }} />
+            <span className="h-3 w-3 rounded-full border border-ink" style={{ background: color }} />
             gol
           </span>
           <span className="flex items-center gap-1.5">

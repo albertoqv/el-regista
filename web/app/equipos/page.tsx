@@ -4,7 +4,7 @@ import { FormPills } from "@/app/components/Forecast";
 import { Reveal } from "@/app/components/motion";
 import { ScoutNote } from "@/app/components/ScoutNote";
 import { getLeagueTable, type TableRow } from "@/lib/api";
-import { COMPETITIONS, competitionColor, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
+import { COMPETITIONS, currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Equipos · El Regista",
@@ -41,16 +41,15 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
         <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0">
           {COMPETITIONS.map((option) => {
             const active = league === option;
-            const color = competitionColor(option);
             return (
               <Link
                 key={option}
                 href={`/equipos?liga=${encodeURIComponent(option)}&temporada=${season}`}
                 className="flex shrink-0 items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium"
                 style={{
-                  borderColor: active ? color : "rgba(255,255,255,0.08)",
-                  background: active ? `${color}22` : "transparent",
-                  color: active ? "#fff" : "#c7b3b0",
+                  borderColor: active ? "#16171b" : "rgba(22,23,27,0.14)",
+                background: active ? "#16171b" : "transparent",
+                color: active ? "#f7f6f2" : "#5d6068",
                 }}
               >
                 {option}
@@ -63,7 +62,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
             <Link
               key={option}
               href={`/equipos?liga=${encodeURIComponent(league)}&temporada=${option}`}
-              className={`rounded-full px-3 py-1 text-xs font-semibold ${option === season ? "bg-white text-bg" : "text-muted hover:text-ink"}`}
+              className={`rounded-full px-3 py-1 text-xs font-semibold ${option === season ? "bg-ink text-bg" : "text-muted hover:text-ink"}`}
             >
               {seasonDisplay(option)}
             </Link>
@@ -78,7 +77,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Reveal>
               <div className="glass h-full rounded-lg p-5">
-                <h2 className="font-display text-lg font-bold">Los que más aprietan</h2>
+                <h2 className="font-heading text-lg">Los que más aprietan</h2>
                 <p className="mb-3 text-xs text-muted">
                   PPDA: pases que dejan dar al rival antes de intentar robar. Cuanto más bajo, más presión.
                 </p>
@@ -97,7 +96,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
             </Reveal>
             <Reveal delay={0.05}>
               <div className="glass h-full rounded-lg p-5">
-                <h2 className="font-display text-lg font-bold">Suerte y mala suerte</h2>
+                <h2 className="font-heading text-lg">Suerte y mala suerte</h2>
                 <p className="mb-3 text-xs text-muted">
                   Puntos reales menos puntos esperados. Muy positivo = está sacando más de lo que genera.
                 </p>
@@ -139,7 +138,7 @@ export default async function TeamsPage(props: PageProps<"/equipos">) {
                 {rows.map((row) => {
                   const luck = row.points - row.xpts;
                   return (
-                    <tr key={row.team} className="border-b border-line/60 hover:bg-white/[0.03]">
+                    <tr key={row.team} className="border-b border-line/60 hover:bg-ink/[0.03]">
                       <td className="px-4 py-2.5 font-display font-bold text-muted">{row.position}</td>
                       <td className="px-2 py-2.5 font-semibold">
                         <Link

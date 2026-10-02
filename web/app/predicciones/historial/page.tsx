@@ -44,13 +44,13 @@ function Totals({ totals, withMarket }: { totals: RecordTotals; withMarket: bool
         label="Acierto 1X2"
         value={percent(totals.hits, totals.matches)}
         hint={`${totals.hits} de ${totals.matches} · al azar ~33%`}
-        tone="#8fcf9c"
+        tone="#1f8a4c"
       />
       <Kpi
         label="Con 60% o más"
         value={percent(totals.confident_hits, totals.confident)}
         hint={`${totals.confident_hits} de ${totals.confident} picks seguros`}
-        tone="#9ccfea"
+        tone="#c93c17"
       />
       {withMarket && totals.market_brier !== null ? (
         <Kpi
@@ -70,12 +70,12 @@ function WeeklyChart({ weeks }: { weeks: WeekRecord[] }) {
   return (
     <div className="glass rounded-lg p-4 sm:p-5">
       <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
-        <h3 className="font-display text-lg font-bold">Semana a semana</h3>
+        <h3 className="font-heading text-lg">Semana a semana</h3>
         <span className="text-xs text-muted">% de 1X2 acertados · línea: azar (33%)</span>
       </div>
       <div className="no-scrollbar mt-4 overflow-x-auto">
         <div className="relative flex h-44 min-w-full items-end gap-1.5" style={{ width: `max(100%, ${weeks.length * 44}px)` }}>
-          <span className="pointer-events-none absolute inset-x-0 border-t border-dashed border-white/20" style={{ bottom: "33%" }} />
+          <span className="pointer-events-none absolute inset-x-0 border-t border-dashed border-ink/20" style={{ bottom: "33%" }} />
           {weeks.map((week) => {
             const rate = week.matches ? week.hits / week.matches : 0;
             return (
@@ -85,7 +85,7 @@ function WeeklyChart({ weeks }: { weeks: WeekRecord[] }) {
                   className="w-full rounded-t-lg"
                   style={{
                     height: `${Math.max(rate * 100, 2)}%`,
-                    background: rate >= 0.5 ? "#9ccfea" : rate >= 0.34 ? "#8fcf9c" : "#4d7563",
+                    background: rate >= 0.5 ? "#c93c17" : rate >= 0.34 ? "#1f8a4c" : "#4d7563",
                   }}
                   title={`${week.hits} de ${week.matches}`}
                 />
@@ -106,7 +106,7 @@ function PickRow({ pick }: { pick: ScoredPick }) {
   const kickoff = kickoffDate(pick.kickoff);
   const pickLabel = best === 0 ? pick.home_team : best === 2 ? pick.away_team : "Empate";
   return (
-    <li className="flex items-center gap-3 rounded-lg px-3 py-2.5 odd:bg-white/[0.02]">
+    <li className="flex items-center gap-3 rounded-lg px-3 py-2.5 odd:bg-ink/[0.02]">
       <span
         className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold ${pick.model_hit ? "bg-grass/25 text-brand-2" : "bg-red-500/15 text-red-300"}`}
         aria-label={pick.model_hit ? "Acierto" : "Fallo"}
@@ -143,7 +143,7 @@ export default async function TrackRecordPage() {
           <section className="flex flex-col gap-4">
             <div>
               <p className="text-xs font-semibold text-brand-2">En vivo</p>
-              <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Predicciones registradas</h2>
+              <h2 className="font-heading text-2xl tracking-tight sm:text-3xl">Predicciones registradas</h2>
             </div>
             {record.live_total.matches === 0 ? (
               <p className="glass rounded-lg p-6 text-sm text-muted">
@@ -154,7 +154,7 @@ export default async function TrackRecordPage() {
                 <Totals totals={record.live_total} withMarket={record.live_total.market_matches > 0} />
                 <WeeklyChart weeks={record.live_weeks} />
                 <div className="glass rounded-lg p-3 sm:p-4">
-                  <h3 className="px-2 pb-2 font-display text-lg font-bold">Últimos partidos</h3>
+                  <h3 className="px-2 pb-2 font-heading text-lg">Últimos partidos</h3>
                   <ul className="flex flex-col">
                     {record.live_recent.map((pick) => (
                       <PickRow key={pick.match_id} pick={pick} />
@@ -171,7 +171,7 @@ export default async function TrackRecordPage() {
           <section className="flex flex-col gap-4">
             <div>
               <p className="text-xs font-semibold text-brand-2">Reconstruido</p>
-              <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+              <h2 className="font-heading text-2xl tracking-tight sm:text-3xl">
                 Temporada {seasonDisplay(record.season_label)}, jornada a jornada
               </h2>
               <p className="mt-1 max-w-2xl text-sm text-muted">Cada partido predicho solo con lo que había pasado antes.</p>

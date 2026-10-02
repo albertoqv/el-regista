@@ -69,8 +69,8 @@ export function RadarChart({
               return `${p.x},${p.y}`;
             })
             .join(" ")}
-          fill={ring === 100 ? "rgba(255,255,255,0.02)" : "none"}
-          stroke="rgba(255,255,255,0.08)"
+          fill={ring === 100 ? "rgba(22,23,27,0.02)" : "none"}
+          stroke="rgba(22,23,27,0.08)"
           strokeDasharray={ring === 50 ? "4 4" : undefined}
         />
       ))}
@@ -87,14 +87,14 @@ export function RadarChart({
               y1={CENTER}
               x2={end.x}
               y2={end.y}
-              stroke="rgba(255,255,255,0.07)"
+              stroke="rgba(22,23,27,0.07)"
             />
             <text
               x={label.x}
               y={label.y}
               textAnchor={anchor}
               dominantBaseline="middle"
-              className="fill-[#c7b3b0] text-[12px] font-medium"
+              className="fill-[#5d6068] text-[12px] font-medium"
             >
               <title>{METRICS[axis].help}</title>
               {METRICS[axis].short}
@@ -134,7 +134,7 @@ export function RadarChart({
                 cx={p.x}
                 cy={p.y}
                 r={3.5}
-                fill="#1d0e14"
+                fill="#ffffff"
                 stroke={entry.color}
                 strokeWidth={2}
               >

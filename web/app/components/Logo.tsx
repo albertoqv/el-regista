@@ -7,7 +7,7 @@
 export function Logo({
   size = 28,
   withWordmark = true,
-  tone = "dark",
+  tone = "light",
 }: {
   size?: number;
   withWordmark?: boolean;
@@ -16,13 +16,13 @@ export function Logo({
   if (!withWordmark) {
     return <img src="/brand/icon.svg" alt="El Regista" width={size} height={size} />;
   }
-  // The wordmark is 5.25 times wider than tall.
+  // The wordmark is 5.44 times wider than tall.
   return (
     <img
       src={tone === "dark" ? "/brand/logo-dark.svg" : "/brand/logo-light.svg"}
       alt="El Regista"
       height={size}
-      width={Math.round(size * 5.25)}
+      width={Math.round(size * 5.44)}
       style={{ height: size, width: "auto" }}
     />
   );
