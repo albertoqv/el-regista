@@ -6,7 +6,7 @@ import { FaceOff } from "@/app/components/FaceOff";
 import { HeadToHead } from "@/app/components/HeadToHead";
 import { KeyMoments } from "@/app/components/KeyMoments";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
-import { Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
 import { PercentileLegend } from "@/app/components/PercentileBars";
 import { RadarChart } from "@/app/components/RadarChart";
 import {

@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { Avatar } from "@/app/components/Avatar";
@@ -33,13 +32,9 @@ function PodiumCard({
 }) {
   const first = rank === 0;
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 40 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.5, delay: first ? 0 : 0.1 + rank * 0.08 }}
-      className={first ? "sm:-mt-6" : "sm:mt-6"}
+    <div
+      className={`rise-in ${first ? "sm:-mt-6" : "sm:mt-6"}`}
+      style={{ animationDelay: `${first ? 0 : 0.1 + rank * 0.08}s` }}
     >
       <Link
         href={`/players/${leader.player_id}`}
@@ -69,7 +64,7 @@ function PodiumCard({
           </span>
         </div>
       </Link>
-    </motion.div>
+    </div>
   );
 }
 
@@ -131,16 +126,9 @@ export function SeasonLeaders({
             key={tab.metric}
             type="button"
             onClick={() => load(tab.metric, competition)}
-            className={`relative shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${metric === tab.metric ? "text-bg" : "text-muted hover:text-ink"}`}
+            className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-colors duration-200 ${metric === tab.metric ? "bg-brand text-bg" : "text-muted hover:text-ink"}`}
           >
-            {metric === tab.metric && (
-              <motion.span
-                layoutId="leader-tab"
-                className="absolute inset-0 rounded-full bg-brand"
-                transition={{ type: "spring", stiffness: 400, damping: 32 }}
-              />
-            )}
-            <span className="relative">{tab.label}</span>
+            {tab.label}
           </button>
         ))}
       </div>
@@ -174,8 +162,7 @@ export function SeasonLeaders({
         ) : (
           <div className="flex flex-col gap-6">
             <div className="mx-auto grid w-full max-w-4xl grid-cols-3 items-end gap-3 pt-6 sm:gap-6">
-              <AnimatePresence mode="popLayout">
-                {PODIUM_ORDER.filter((rank) => podium[rank]).map((rank) => (
+              {PODIUM_ORDER.filter((rank) => podium[rank]).map((rank) => (
                   <PodiumCard
                     key={`${metric}-${competition}-${podium[rank].player_id}`}
                     leader={podium[rank]}
@@ -183,28 +170,24 @@ export function SeasonLeaders({
                     metric={metric}
                   />
                 ))}
-              </AnimatePresence>
             </div>
 
             <ol className="glass grid grid-cols-1 gap-1 rounded-lg p-3 md:grid-cols-2 md:gap-x-4">
               {rest.map((leader, index) => {
                 const value = valueOf(leader, metric);
                 return (
-                  <motion.li
+                  <li
                     key={`${metric}-${competition}-${leader.player_id}`}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.2 + index * 0.05 }}
+                    className="rise-in"
+                    style={{ animationDelay: `${0.2 + index * 0.05}s` }}
                   >
                     <Link
                       href={`/players/${leader.player_id}`}
                       className="relative flex items-center gap-3 overflow-hidden rounded-lg px-3 py-2.5 transition hover:bg-ink/5"
                     >
-                      <motion.span
-                        className="absolute inset-y-1 left-0 rounded-lg bg-surface-strong"
-                        initial={{ width: 0 }}
-                        animate={{ width: `${(value / maxValue) * 100}%` }}
-                        transition={{ duration: 0.8, delay: 0.3 + index * 0.05 }}
+                      <span
+                        className="grow-x absolute inset-y-1 left-0 rounded-lg bg-surface-strong"
+                        style={{ width: `${(value / maxValue) * 100}%`, animationDelay: `${0.3 + index * 0.05}s` }}
                       />
                       <span className="relative w-5 text-center font-heading text-sm text-muted">
                         {index + 4}
@@ -225,7 +208,7 @@ export function SeasonLeaders({
                         })}
                       </span>
                     </Link>
-                  </motion.li>
+                  </li>
                 );
               })}
             </ol>

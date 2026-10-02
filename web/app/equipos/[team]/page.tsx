@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
 import { ForecastCard, FormPills } from "@/app/components/Forecast";
-import { Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
 import { ScoutNote } from "@/app/components/ScoutNote";
 import {
   getLeagueTable,

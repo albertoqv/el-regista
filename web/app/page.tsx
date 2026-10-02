@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
 import { PlayerPortrait } from "@/app/components/PlayerPortrait";
-import { Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
 import { PlayerSearchForm } from "@/app/components/PlayerSearchForm";
 import { ProductBand, ProductsGrid } from "@/app/components/Products";
 import { RoundHighlights } from "@/app/components/RoundHighlights";

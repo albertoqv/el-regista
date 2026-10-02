@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
-import { Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
 import { ScoutNote } from "@/app/components/ScoutNote";
 import { explorePlayers, type ExploreRow } from "@/lib/api";
 import { COMPETITIONS, OTHER_COMPETITIONS, currentSeasonStartYear, formatMarketValue, positionLabel, seasonDisplay } from "@/lib/format";

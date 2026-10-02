@@ -1,6 +1,5 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@/app/components/Avatar";
 import { IconSearch } from "@/app/components/icons";
@@ -120,15 +119,8 @@ export function PlayerAutocomplete({
           className={`w-full bg-transparent outline-none placeholder:text-muted ${large ? "text-lg" : "text-sm"}`}
         />
       </div>
-      <AnimatePresence>
-        {open && results.length > 0 && (
-          <motion.ul
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-full z-50 mt-2 max-h-96 w-full overflow-auto rounded-lg border border-line bg-bg-deep p-1.5 shadow-2xl"
-          >
+      {open && results.length > 0 && (
+          <ul className="dropdown-in absolute top-full z-50 mt-2 max-h-96 w-full overflow-auto rounded-lg border border-line bg-surface p-1.5 shadow-[0_12px_32px_-12px_rgba(22,23,27,0.25)]">
             {results.map((player, index) => (
               <li key={player.player_id}>
                 <button
@@ -150,9 +142,8 @@ export function PlayerAutocomplete({
                 </button>
               </li>
             ))}
-          </motion.ul>
-        )}
-      </AnimatePresence>
+          </ul>
+      )}
     </div>
   );
 }

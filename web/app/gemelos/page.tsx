@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
 import { PlayerPortrait } from "@/app/components/PlayerPortrait";
 import { HandArrow, Marker, ScoutNote } from "@/app/components/ScoutNote";
 import { TwinCard } from "@/app/components/TwinCard";

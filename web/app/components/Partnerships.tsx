@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Avatar } from "@/app/components/Avatar";
-import { Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
 import { HandArrow, ScoutNote } from "@/app/components/ScoutNote";
 import type { Partnership } from "@/lib/api";
 

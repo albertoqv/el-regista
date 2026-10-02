@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { FormPills } from "@/app/components/Forecast";
-import { Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
 import { ScoutNote } from "@/app/components/ScoutNote";
 import { getLeagueTable, type TableRow } from "@/lib/api";
 import { COMPETITIONS, currentSeasonStartYear, seasonDisplay } from "@/lib/format";

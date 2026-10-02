@@ -187,6 +187,53 @@ h1, h2, h3 {
   }
 }
 
+/* Menus that drop down from a field: a short slide, no library. */
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.dropdown-in {
+  animation: dropdown-in 0.15s ease-out both;
+}
+
+/* Lists and podiums: a short staggered rise (delay set inline). */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Value bars grow from the left. */
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.grow-x {
+  transform-origin: left;
+  animation: grow-x 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
@@ -218,6 +265,9 @@ h1, h2, h3 {
 
 @media (prefers-reduced-motion: reduce) {
   .reveal,
+  .dropdown-in,
+  .rise-in,
+  .grow-x,
   .slow-zoom,
   .skeleton::after {
     animation: none;

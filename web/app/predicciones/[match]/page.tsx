@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { kickoffDate, ProbabilityBar } from "@/app/components/Forecast";
-import { Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
 import { PlayerMarketsTable } from "@/app/components/PlayerMarketsTable";
 import { ScoutNote, Sticker } from "@/app/components/ScoutNote";
 import {

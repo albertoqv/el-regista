@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
 import { Partnerships } from "@/app/components/Partnerships";
 import { PlayerSearchForm } from "@/app/components/PlayerSearchForm";
 import { ScoutNote } from "@/app/components/ScoutNote";

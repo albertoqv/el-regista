@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ForecastCard, kickoffDate } from "@/app/components/Forecast";
-import { Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
 import { RoundHighlights } from "@/app/components/RoundHighlights";
 import { ScoutNote } from "@/app/components/ScoutNote";
 import {

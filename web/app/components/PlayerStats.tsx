@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CountUp, Reveal } from "@/app/components/motion";
+import { Reveal } from "@/app/components/Reveal";
+import { CountUp } from "@/app/components/motion";
 import type { Player } from "@/lib/api";
 import { GROUPS, METRICS, metricValue } from "@/lib/metrics";
 
