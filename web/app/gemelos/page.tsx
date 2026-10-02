@@ -224,6 +224,12 @@ export default async function TwinsPage(props: PageProps<"/gemelos">) {
             >
               Ver su ficha completa →
             </Link>
+            {report.basic && (
+              <p className="mt-2 max-w-xl text-sm text-muted">
+                De {target.competition} solo tenemos goles y asistencias: se parecen en lo que
+                producen, no en su estilo.
+              </p>
+            )}
           </Reveal>
         </div>
       </section>

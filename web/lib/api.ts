@@ -246,7 +246,8 @@ export type Twin = TwinProfile & {
   differences: string[];
 };
 
-export type TwinReport = { target: TwinProfile; twins: Twin[] };
+/** basic: only goals and assists to compare (leagues without a style profile). */
+export type TwinReport = { target: TwinProfile; twins: Twin[]; basic?: boolean };
 
 export type TwinQuery = {
   season?: Season;

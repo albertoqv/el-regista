@@ -259,7 +259,9 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
           <div>
             <h2 className="font-heading text-2xl tracking-tight">Sus gemelos</h2>
             <p className="text-sm text-muted">
-              {twins
+              {twins?.basic
+                ? `Producen como él en su ${seasonDisplay(twins.target.season_label)}: de ${twins.target.competition} solo tenemos goles y asistencias.`
+                : twins
                 ? `Juegan como él en su ${seasonDisplay(twins.target.season_label)} con ${twins.target.team ?? twins.target.competition}. Pulsa uno para verlos cara a cara.`
                 : "Jugadores con un estilo parecido."}
             </p>
