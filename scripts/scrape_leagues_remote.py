@@ -1,4 +1,4 @@
-"""Reads the season in progress of the extra leagues on Transfermarkt and sends it to the API.
+"""Reads the extra leagues' season in progress on Transfermarkt and sends it to the API.
 
 The public dataset stops at the last finished season. Transfermarkt throttles the
 API's own IP (Railway), so the pages are read from this machine (a developer's or
