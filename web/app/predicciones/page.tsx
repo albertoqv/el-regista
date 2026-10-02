@@ -170,7 +170,11 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
       )}
 
       <p className="text-center text-xs text-muted">
-        Orientativo: no incluye lesiones, sanciones ni rotaciones.
+        Orientativo: no incluye lesiones, sanciones ni rotaciones. Son probabilidades, no consejos de
+        apuesta ·{" "}
+        <Link href="/juego-responsable" className="underline underline-offset-4 hover:text-ink">
+          +18 juego responsable
+        </Link>
       </p>
     </div>
   );

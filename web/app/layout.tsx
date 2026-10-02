@@ -75,6 +75,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 </span>
               ))}
             </p>
+            <nav className="flex flex-wrap gap-x-5 gap-y-2">
+              <Link href="/aviso-legal" className="hover:text-ink">
+                Aviso legal
+              </Link>
+              <Link href="/privacidad" className="hover:text-ink">
+                Privacidad
+              </Link>
+              <Link href="/juego-responsable" className="hover:text-ink">
+                Juego responsable · +18
+              </Link>
+            </nav>
           </div>
         </footer>
         <VisitTracker />

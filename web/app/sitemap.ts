@@ -12,6 +12,9 @@ const PAGES: { path: string; changeFrequency: "daily" | "weekly" | "monthly"; pr
   { path: "/explorar", changeFrequency: "weekly", priority: 0.7 },
   { path: "/compare", changeFrequency: "weekly", priority: 0.7 },
   { path: "/como-funciona", changeFrequency: "monthly", priority: 0.5 },
+  { path: "/juego-responsable", changeFrequency: "monthly", priority: 0.3 },
+  { path: "/aviso-legal", changeFrequency: "monthly", priority: 0.2 },
+  { path: "/privacidad", changeFrequency: "monthly", priority: 0.2 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
