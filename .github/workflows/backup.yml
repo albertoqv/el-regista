@@ -1,0 +1,35 @@
+name: Weekly database backup
+
+on:
+  schedule:
+    - cron: "30 3 * * 0"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    env:
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      INGESTION_API_KEY: ${{ secrets.INGESTION_API_KEY }}
+    steps:
+      # The database only lives on Railway's private network: the API streams a
+      # data-only dump (COPY blocks, replayable with psql after alembic upgrade).
+      - name: Download the dump
+        run: |
+          curl -sS --fail-with-body --retry 3 --retry-delay 20 --max-time 1200 \
+            -H "X-Ingestion-Key: $INGESTION_API_KEY" \
+            -o elregista.sql.gz "$API_BASE_URL/ingestion/backup"
+          gzip -t elregista.sql.gz
+          ls -lh elregista.sql.gz
+          tables=$(zcat elregista.sql.gz | grep -c '^COPY ')
+          echo "tables: $tables"
+          [ "$tables" -ge 13 ]
+          # A dump without players means something went badly wrong.
+          [ "$(zcat elregista.sql.gz | sed -n '/^COPY "players"/,/^\\.$/p' | wc -l)" -gt 1000 ]
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: elregista-${{ github.run_number }}
+          path: elregista.sql.gz
+          retention-days: 90
+          compression-level: 0

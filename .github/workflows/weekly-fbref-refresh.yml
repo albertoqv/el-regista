@@ -91,6 +91,13 @@ jobs:
       - name: Log the forecasts of the coming days
         run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/predictions/snapshot?days=7"
 
+      # Right after a refresh every match played days ago must have its result:
+      # if not, a source changed or broke and GitHub emails the failure.
+      - name: Check that played matches have their results
+        run: |
+          curl -sS --max-time 120 "$API_BASE_URL/health/data" | tee "$RUNNER_TEMP/data.json" | jq .
+          [ "$(jq -r .status "$RUNNER_TEMP/data.json")" = "ok" ]
+
       # Transfermarkt throttles Railway's IP, so the lookups run on this runner
       # (a different IP each run) and only the results go to the API.
       - uses: actions/checkout@v4
