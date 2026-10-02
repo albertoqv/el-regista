@@ -19,7 +19,11 @@ from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.percentiles import MetricPercentile
 from player_scouting.domain.season import Season
 from player_scouting.domain.shots import shot_rates
-from player_scouting.domain.twins import style_similarity
+from player_scouting.domain.twins import (
+    BASIC_SHARED_METRICS,
+    MINIMUM_SHARED_METRICS,
+    style_similarity,
+)
 
 # A twin must have played enough for its per-90 profile to mean something.
 TWIN_MINIMUM_MINUTES = 900
@@ -56,6 +60,8 @@ class Twin(TwinProfile):
 class TwinReport:
     target: TwinProfile
     twins: list[Twin]
+    # Only goals and assists to compare (leagues without a style profile).
+    basic: bool = False
 
 
 def _year(season: Season) -> int:
@@ -110,13 +116,20 @@ class FindTwinsUseCase:
 
         target_percentiles = profiles[self._key(target)]
         target_profile = {m: p.percentile for m, p in target_percentiles.items()}
+        basic = len(target_profile) < MINIMUM_SHARED_METRICS
+        role = target.player.detailed_position
         twins = []
         for record in candidates:
             if not self._passes(record, values, filters, today):
                 continue
+            # Without a style profile, the same role keeps it meaningful.
+            if basic and role and record.player.detailed_position != role:
+                continue
             percentiles = profiles[self._key(record)]
             similarity = style_similarity(
-                target_profile, {m: p.percentile for m, p in percentiles.items()}
+                target_profile,
+                {m: p.percentile for m, p in percentiles.items()},
+                BASIC_SHARED_METRICS if basic else MINIMUM_SHARED_METRICS,
             )
             if similarity is None:
                 continue
@@ -142,6 +155,7 @@ class FindTwinsUseCase:
                 percentiles=target_percentiles,
             ),
             twins=twins[: filters.limit],
+            basic=basic,
         )
 
     def _shot_rates(

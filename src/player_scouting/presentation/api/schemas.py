@@ -117,6 +117,7 @@ class TwinOut(TwinProfileOut):
 class TwinReportOut(BaseModel):
     target: TwinProfileOut
     twins: list[TwinOut]
+    basic: bool = False
 
 
 class PendingEnrichmentOut(BaseModel):
@@ -533,6 +534,7 @@ def twin_report_out_from_domain(report: TwinReport) -> TwinReportOut:
             )
             for twin in report.twins
         ],
+        basic=report.basic,
     )
 
 
