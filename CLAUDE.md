@@ -172,6 +172,12 @@ Hecho (2026-09-30), además de lo anterior:
   mejora sobre su media; mínimo 180'. Imagen en `/en-racha/card`.
 - Coste: Dockerfile con `exec uvicorn` y `MALLOC_ARENA_MAX=2`; pool con `pre_ping`;
   la web reintenta 502/503/504 una vez y cachea 30 min (listo para Serverless de Railway).
+- **Técnica (oct 2026)**: Lighthouse en producción: accesibilidad 100, buenas prácticas 100,
+  SEO 100 (la ficha de jugador marca 83 por los metadatos en streaming, pero bots y redes
+  los reciben en `<head>`); rendimiento ~80-90 en móvil lento. `Reveal` es un componente de
+  servidor (`components/Reveal.tsx`) y las animaciones de portada son CSS (`rise-in`,
+  `grow-x`, `dropdown-in`): no importar `motion` en componentes de la portada. Fotos propias
+  con `next/image`; la foto principal del jugador con `priority` + `preconnect`.
 - Auditoría responsive: `scratchpad/audit.py`-style (CDP, 390/768/1024, detectar
   `scrollX` real; el `overflow: clip` del body esconde culpables).
 
