@@ -3,7 +3,13 @@
 import { useRouter } from "next/navigation";
 import { PlayerAutocomplete } from "@/app/components/PlayerAutocomplete";
 
-export function PlayerSearchForm({ size = "lg" }: { size?: "md" | "lg" }) {
+export function PlayerSearchForm({
+  size = "lg",
+  placeholder = "Busca cualquier jugador: Yamal, Haaland, Pedri…",
+}: {
+  size?: "md" | "lg";
+  placeholder?: string;
+}) {
   const router = useRouter();
 
   return (
@@ -14,7 +20,7 @@ export function PlayerSearchForm({ size = "lg" }: { size?: "md" | "lg" }) {
           router.push(`/players/${player.player_id}`);
         }
       }}
-      placeholder="Busca cualquier jugador: Yamal, Haaland, Pedri…"
+      placeholder={placeholder}
     />
   );
 }

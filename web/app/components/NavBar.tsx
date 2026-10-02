@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { IconChevron, IconClose, IconMenu } from "@/app/components/icons";
+import { PlayerSearchForm } from "@/app/components/PlayerSearchForm";
 import { Logo } from "@/app/components/Logo";
 import { locate, PRODUCTS, type Product } from "@/lib/products";
 
@@ -136,9 +137,12 @@ export function NavBar() {
             </Link>
           </div>
           <div className="ml-auto flex items-center gap-2">
-            <Link href="/predicciones" className="shrink-0 bg-brand px-4 py-1.5 font-heading text-lg text-bg transition hover:brightness-110">
-              Pronósticos
-            </Link>
+            {/* Finding a player is useful on every page; /buscar has its own big box. */}
+            {pathname !== "/buscar" ? (
+              <div className="hidden w-60 lg:block xl:w-72">
+                <PlayerSearchForm size="md" placeholder="Buscar jugador" />
+              </div>
+            ) : null}
             <button
               type="button"
               onClick={() => setOpen((value) => !value)}
