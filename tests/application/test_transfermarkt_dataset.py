@@ -1,10 +1,15 @@
 from datetime import date
 
-from player_scouting.application.ports import DatasetProfile, DatasetSeasonRow
+from player_scouting.application.ports import (
+    DatasetProfile,
+    DatasetSeasonRow,
+    ScrapedSeasonRow,
+)
 from player_scouting.application.use_cases.transfermarkt_dataset import (
     TRANSFERMARKT_ID_OFFSET,
     EnrichFromDatasetUseCase,
     IngestDatasetLeaguesUseCase,
+    IngestScrapedLeagueSeasonUseCase,
 )
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
@@ -161,3 +166,62 @@ def test_two_dataset_players_claiming_the_same_player_are_both_ignored():
 
     assert EnrichFromDatasetUseCase(dataset, repository).execute().ingested == 0
     assert repository.get_player(1).photo_url is None
+
+
+def _scraped(tm_id, name, team, goals, minutes=900):
+    return ScrapedSeasonRow(
+        transfermarkt_id=tm_id,
+        name=name,
+        position="Forward",
+        detailed_position="Centre-Forward",
+        team=team,
+        statistics=Statistics(goals=goals, assists=1, minutes_played=minutes),
+    )
+
+
+def test_scraped_league_lines_land_on_players_we_already_know():
+    repository = InMemoryPlayerRepository()
+    repository.save_player(Player(1, "Ivan Perisic", "Forward", None))
+    repository.set_transfermarkt_id(1, 42460)
+
+    result = IngestScrapedLeagueSeasonUseCase(repository).execute(
+        "Eredivisie", "2026", [_scraped(42460, "Ivan Perisic", "PSV Eindhoven", 2)]
+    )
+
+    assert result.ingested == 1
+    season = Season("Eredivisie", "2026")
+    assert repository.get_season_statistics(1, season).goals == 2
+    assert repository.get_season_team(1, season) == "PSV Eindhoven"
+
+
+def test_a_player_new_to_us_is_created_with_his_transfermarkt_id():
+    repository = InMemoryPlayerRepository()
+
+    IngestScrapedLeagueSeasonUseCase(repository).execute(
+        "Eredivisie", "2026", [_scraped(215094, "Nick Olij", "PSV Eindhoven", 0)]
+    )
+
+    new_id = TRANSFERMARKT_ID_OFFSET + 215094
+    created = repository.get_player(new_id)
+    assert (created.name, created.detailed_position) == ("Nick Olij", "Centre-Forward")
+    assert repository.transfermarkt_index()[215094] == new_id
+
+
+def test_a_move_inside_the_league_adds_both_clubs_up():
+    repository = InMemoryPlayerRepository()
+
+    result = IngestScrapedLeagueSeasonUseCase(repository).execute(
+        "Süper Lig",
+        "2026",
+        [
+            _scraped(7, "Mover", "Galatasaray", 2, minutes=300),
+            _scraped(7, "Mover", "Fenerbahce", 1, minutes=200),
+        ],
+    )
+
+    assert result.ingested == 1
+    season = Season("Süper Lig", "2026")
+    player_id = TRANSFERMARKT_ID_OFFSET + 7
+    stats = repository.get_season_statistics(player_id, season)
+    assert (stats.goals, stats.assists, stats.minutes_played) == (3, 2, 500)
+    assert repository.get_season_team(player_id, season) == "Galatasaray, Fenerbahce"

@@ -494,3 +494,45 @@ def test_player_summary_exposes_height_and_detailed_position():
     body = TestClient(app).get("/players/1").json()
 
     assert (body["height_cm"], body["detailed_position"]) == (183, "Right Winger")
+
+
+def test_receives_a_league_season_scraped_elsewhere():
+    repository = InMemoryPlayerRepository()
+
+    response = _enrichment_client(repository).post(
+        "/ingestion/transfermarkt/league-seasons",
+        json={
+            "competition": "Eredivisie",
+            "season_label": "2026",
+            "rows": [
+                {
+                    "transfermarkt_id": 42460,
+                    "name": "Ivan Perisic",
+                    "position": "Forward",
+                    "detailed_position": "Right Winger",
+                    "team": "PSV Eindhoven",
+                    "goals": 2,
+                    "assists": 1,
+                    "minutes_played": 486,
+                    "yellow_cards": 2,
+                    "red_cards": 0,
+                }
+            ],
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["ingested"] == 1
+    statistics = repository.get_season_statistics(
+        500_042_460, Season("Eredivisie", "2026")
+    )
+    assert (statistics.goals, statistics.minutes_played) == (2, 486)
+
+
+def test_only_known_leagues_can_be_received():
+    response = _enrichment_client(InMemoryPlayerRepository()).post(
+        "/ingestion/transfermarkt/league-seasons",
+        json={"competition": "Liga Inventada", "season_label": "2026", "rows": []},
+    )
+
+    assert response.status_code == 422
