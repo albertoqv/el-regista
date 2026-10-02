@@ -157,7 +157,10 @@ Hecho (2026-09-30), además de lo anterior:
   `RAILWAY_WORKSPACE_ID` en el servicio `api`, si no muestra "sin conectar"). También
   `@vercel/analytics` (activar Analytics en el panel de Vercel). `GET /health` público.
   Coste medido: ~0,11 $/día, casi todo memoria.
-- Explorador con 9 ligas más (solo goles/asistencias/minutos/tarjetas, hasta 25/26).
+- Explorador con 9 ligas más (solo goles/asistencias/minutos/tarjetas). El dataset de
+  Kaggle se queda en la última temporada terminada: la temporada en curso sale de las
+  páginas de club de Transfermarkt (`transfermarkt/league_pages.py`,
+  `scripts/scrape_leagues_remote.py` desde el runner → `POST /ingestion/transfermarkt/league-seasons`).
 - **Dos productos** (`web/lib/products.ts`, fuente única de menú, pestañas, portada y pie):
   Scout (`/buscar`, `/explorar`, `/gemelos`, `/compare`, `/en-racha`) y Pronósticos
   (`/predicciones`, `/predicciones/historial`, `/equipos`). El menú móvil va fuera del
@@ -180,6 +183,24 @@ Hecho (2026-09-30), además de lo anterior:
   con `next/image`; la foto principal del jugador con `priority` + `preconnect`.
 - Auditoría responsive: `scratchpad/audit.py`-style (CDP, 390/768/1024, detectar
   `scrollX` real; el `overflow: clip` del body esconde culpables).
+
+- **Bloques SEO, técnica, datos y legal** (2026-10-03):
+  - `/aviso-legal`, `/privacidad`, `/juego-responsable` (+18, enlaces DGOJ verificados;
+    jugarbien.es no resuelve). Nota interna de licencias: `docs/fuentes-y-licencias.md`.
+  - `/ranking` y `/ranking/[liga]/[metrica]` (14 ligas; las 9 extra solo goles/asistencias),
+    JSON-LD (`JsonLd.tsx`: Person, SportsTeam, SportsEvent, ItemList, WebSite), sitemap
+    con ~900 URLs (jugadores, equipos, partidos), `/feed.xml` (solo cifras, sin textos).
+  - `GET /health/data` (503 si hay partidos de hace 3-14 días sin resultado; se comprueba
+    al final del refresco), `GET /ingestion/backup` (volcado COPY en gzip, restaurable con
+    `restore_data` o psql tras `alembic upgrade head`), caché GET en memoria (32 MB, 10 min,
+    se vacía con cualquier POST /ingestion; cabecera `X-Cache`).
+  - Workflows: `monitor.yml` (cada 3 h, no más para no despertar la API serverless),
+    `backup.yml` (domingos, artefacto 90 días), `web-quality.yml` (Playwright `web/e2e`
+    contra producción + Lighthouse CI con `web/lighthouserc.json`).
+  - Gemelos básicos: si el objetivo no tiene perfil de estilo (<5 métricas), compara goles
+    y asistencias con el mismo rol detallado (`basic` en la API, aviso en la web).
+  - Modelo: probados descanso entre partidos (solo vemos liga, no copas: sobreajusta) y
+    vida media 60-240 días (mejora ≤0,001, dentro del ruido por bootstrap). No se cambia.
 
 Ideas siguientes: lesiones/alineaciones (no hay fuente
 gratuita fiable), producto (cuentas, favoritos, alertas, planes).
