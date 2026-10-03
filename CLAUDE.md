@@ -71,7 +71,9 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
   volumen mínimo. Se guardan aparte (`player_season_advanced_stats`) para que el
   refresco de FBref no las pise.
 - **Transfermarkt**: foto, fecha de nacimiento, pie y valor de mercado (robots.txt lo
-  permite). Elegir candidato por edad y nombre, nunca el primero a ciegas. Si
+  permite). **Desde oct 2026 su WAF de AWS bloquea las IPs de centros de datos (runners de
+  GitHub incluidos)**: responde 202 vacío con `x-amzn-waf-action: challenge`; el cliente lo
+  trata como bloqueo (`EnrichmentUnavailableError`). Desde una IP doméstica funciona. Elegir candidato por edad y nombre, nunca el primero a ciegas. Si
   responde 403/429 → `EnrichmentUnavailableError` (parar el lote, no marcar a nadie).
 - **API-Football**: cuenta gratuita suspendida (IP compartida de Railway). Código
   conservado pero sin cron. **StatsBomb**: 21 jugadores históricos de 1984.
