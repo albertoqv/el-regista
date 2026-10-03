@@ -29,6 +29,8 @@ target-version = "py314"
 select = ["E", "F", "I", "UP", "B"]
 
 [tool.ruff.lint.per-file-ignores]
+# Sets DATABASE_URL to the lab database before importing the app.
+"scripts/model_lab.py" = ["E402"]
 # CSV/HTML fixtures copied verbatim from real responses.
 "tests/infrastructure/fbref_kaggle/test_mapper.py" = ["E501"]
 "tests/infrastructure/transfermarkt/test_mapper.py" = ["E501"]

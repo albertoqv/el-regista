@@ -85,7 +85,19 @@ def team_ratings(
     matches: list[TeamMatchRecord],
     today: date,
     half_life_days: float = DEFAULT_HALF_LIFE_DAYS,
+    priors: dict[str, tuple[float, float]] | None = None,
+    prior_matches: float = PRIOR_MATCHES,
 ) -> LeagueRatings:
+    """`priors`: (attack, defence) a team shrinks towards instead of 1.0, with
+    `prior_matches` pseudo-matches (e.g. a promoted side starting below average)."""
+    priors = priors or {}
+
+    def target(team: str) -> tuple[float, float, float]:
+        if team in priors:
+            attack_prior, defence_prior = priors[team]
+            return attack_prior, defence_prior, prior_matches
+        return 1.0, 1.0, PRIOR_MATCHES
+
     weighted = [
         (m, _weight(m.played_on, today, half_life_days))
         for m in matches
@@ -104,8 +116,8 @@ def team_ratings(
     home_goals = venue_average(True, PRIOR_HOME_GOALS)
     away_goals = venue_average(False, PRIOR_AWAY_GOALS)
     teams = {m.team for m, _ in weighted}
-    attack = dict.fromkeys(teams, 1.0)
-    defence = dict.fromkeys(teams, 1.0)
+    attack = {team: target(team)[0] for team in teams}
+    defence = {team: target(team)[1] for team in teams}
 
     for _ in range(ITERATIONS):
         attack_sum: dict[str, float] = defaultdict(float)
@@ -127,13 +139,13 @@ def team_ratings(
             )
             weight_sum[match.team] += w
         attack = {
-            team: (attack_sum[team] + PRIOR_MATCHES)
-            / (weight_sum[team] + PRIOR_MATCHES)
+            team: (attack_sum[team] + target(team)[2] * target(team)[0])
+            / (weight_sum[team] + target(team)[2])
             for team in teams
         }
         defence = {
-            team: (defence_sum[team] + PRIOR_MATCHES)
-            / (weight_sum[team] + PRIOR_MATCHES)
+            team: (defence_sum[team] + target(team)[2] * target(team)[1])
+            / (weight_sum[team] + target(team)[2])
             for team in teams
         }
     return LeagueRatings(home_goals, away_goals, attack, defence)
