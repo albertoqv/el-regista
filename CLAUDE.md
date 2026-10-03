@@ -226,6 +226,19 @@ Hecho (2026-09-30), además de lo anterior:
   que sobrevive a la sesión). `team_ratings(priors=..., prior_matches=...)` permite que un
   equipo (p. ej. ascendido) se encoja hacia su propia referencia.
 
+- **33 ligas, panel y rendimiento** (2026-10-03):
+  - `SEASON_LEAGUES` (28): las 9 del dataset + A1, C1, PL1, TS1, KR1, RO1, SER1, SA1, MEX1, AUS1
+    + segundas GB2, GB3, ES2, IT2, L2, L3, FR2, NL2, PO2 (códigos leídos de las páginas de país
+    de Transfermarkt). Las de año natural (BRA, MLS, ARG, JAP, KOR, NOR, SWE) fuera: su
+    temporada no encaja con "2026 = 26/27". El scraper con `--backfill` rellena la temporada
+    anterior solo si la API no la tiene. Web: `SECOND_DIVISIONS` en `lib/format.ts`, grupo
+    "Segundas" en rankings (`LEAGUE_GROUPS` en `lib/rankings.ts`).
+  - Panel: `POST /metrics/error` (errores del navegador en memoria, agrupados; `ErrorReporter`
+    + `error.tsx`) y `data_quality` en `/admin/dashboard`.
+  - CI: job `web-e2e` (build local contra la API real + Playwright) antes de desplegar.
+  - `/predicciones` enseña 4 días naturales desde el primer partido; el resto con `?todos=1`.
+  - Modelo: vida media 180 días (laboratorio); ascendidos, Elo, calibración y empates descartados.
+
 Ideas siguientes: lesiones/alineaciones (no hay fuente
 gratuita fiable), producto (cuentas, favoritos, alertas, planes).
 No hay fuente gratuita de fotos de cuerpo entero.
