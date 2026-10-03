@@ -19,10 +19,44 @@ from player_scouting.application.ports import EnrichmentUnavailableError
 from player_scouting.infrastructure.transfermarkt.client import TransfermarktClient
 from player_scouting.infrastructure.transfermarkt_dataset.mapper import OTHER_LEAGUES
 
-# The extra leagues the app shows (the dataset has player lines only for these).
+# The leagues read from club pages: the dataset's nine with player lines, its
+# August-to-May top flights without them, and second divisions. Codes read off
+# Transfermarkt's country pages (Oct 2026). Calendar-year leagues (Brazil, MLS,
+# Scandinavia...) are left out: their seasons do not fit "2026 = 26/27".
 SEASON_LEAGUES = {
-    code: OTHER_LEAGUES[code]
-    for code in ("PO1", "NL1", "TR1", "BE1", "SC1", "GR1", "DK1", "UKR1", "RU1")
+    **{
+        code: OTHER_LEAGUES[code]
+        for code in (
+            "PO1",
+            "NL1",
+            "TR1",
+            "BE1",
+            "SC1",
+            "GR1",
+            "DK1",
+            "UKR1",
+            "RU1",
+            "A1",
+            "C1",
+            "PL1",
+            "TS1",
+            "KR1",
+            "RO1",
+            "SER1",
+            "SA1",
+            "MEX1",
+            "AUS1",
+        )
+    },
+    "GB2": "Championship",
+    "GB3": "League One",
+    "ES2": "Segunda División",
+    "IT2": "Serie B",
+    "L2": "2. Bundesliga",
+    "L3": "3. Liga",
+    "FR2": "Ligue 2",
+    "NL2": "Eerste Divisie",
+    "PO2": "Liga Portugal 2",
 }
 
 CLUB_LINK = re.compile(r"^/([^/]+)/startseite/verein/(\d+)/saison_id/\d+$")

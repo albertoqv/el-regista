@@ -34,6 +34,11 @@ def _current_season() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--season", type=int, default=_current_season())
+    parser.add_argument(
+        "--backfill",
+        action="store_true",
+        help="also the previous season, for leagues the API does not have it for",
+    )
     args = parser.parse_args()
     if isinstance(sys.stdout, io.TextIOWrapper):
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -46,9 +51,21 @@ def main() -> int:
     scraper = TransfermarktLeagueScraper(
         TransfermarktClient(http_client=httpx.Client(timeout=30))
     )
-    for code, competition in SEASON_LEAGUES.items():
+    jobs = [
+        (code, competition, args.season) for code, competition in SEASON_LEAGUES.items()
+    ]
+    if args.backfill:
+        previous = args.season - 1
+        for code, competition in SEASON_LEAGUES.items():
+            known = api.get(
+                f"/seasons/{previous}/leaders",
+                params={"competition": competition, "limit": 1},
+            )
+            if known.status_code == 200 and not known.json():
+                jobs.append((code, competition, previous))
+    for code, competition, season in jobs:
         try:
-            lines = scraper.league_season(code, args.season)
+            lines = scraper.league_season(code, season)
         except EnrichmentUnavailableError as error:
             # Leagues already sent are kept; the next run finishes the rest.
             print(f"Transfermarkt is not answering, stopping: {error}")
@@ -69,18 +86,20 @@ def main() -> int:
             for club, line in lines
         ]
         if not rows:
-            print(f"{competition}: no lines (season not started?)")
+            print(f"{competition} {season}: no lines (season not started?)")
             continue
         response = api.post(
             "/ingestion/transfermarkt/league-seasons",
             json={
                 "competition": competition,
-                "season_label": str(args.season),
+                "season_label": str(season),
                 "rows": rows,
             },
         )
         response.raise_for_status()
-        print(f"{competition}: {response.json()['ingested']} players", flush=True)
+        print(
+            f"{competition} {season}: {response.json()['ingested']} players", flush=True
+        )
     return 0
 
 
