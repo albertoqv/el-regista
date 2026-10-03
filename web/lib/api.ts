@@ -242,6 +242,8 @@ export type TwinProfile = PlayerSummary & {
 
 export type Twin = TwinProfile & {
   similarity: number;
+  /** Detailed role compared with the target's; null when either is unknown. */
+  role_match?: "same" | "similar" | "different" | null;
   shared_strengths: string[];
   differences: string[];
 };

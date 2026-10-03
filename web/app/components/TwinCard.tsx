@@ -24,6 +24,12 @@ function compareHref(target: TwinProfile, twin: Twin): string {
   }).toString()}`;
 }
 
+const ROLE_MATCH: Record<NonNullable<Twin["role_match"]>, string> = {
+  same: "mismo rol",
+  similar: "rol parecido",
+  different: "otro rol",
+};
+
 function metricName(key: string): string {
   return PROFILE_LABELS[key] ?? key;
 }
@@ -60,15 +66,16 @@ export function TwinCard({
             </Sticker>
           ))}
         </div>
-        <div className="absolute right-3 top-3 flex h-14 w-14 flex-col items-center justify-center rounded-full border border-ink/15 bg-black/65">
+        <div className="absolute right-3 top-3 flex h-16 w-16 flex-col items-center justify-center rounded-full border border-ink/15 bg-black/65">
           <span className="font-heading text-lg leading-none">{twin.similarity}%</span>
-          <span className="text-[8px] font-semibold text-muted">igual</span>
+          <span className="text-xs font-semibold text-muted">igual</span>
         </div>
         <div className="absolute inset-x-0 bottom-0 p-4">
           <h3 className="font-heading text-xl leading-tight">{twin.name}</h3>
           <p className="flex items-center gap-1.5 text-xs text-ink/75">
             {twin.team ?? twin.competition} · {seasonDisplay(twin.season_label)}
             {twin.detailed_position && ` · ${roleLabel(twin)}`}
+            {twin.role_match ? ` (${ROLE_MATCH[twin.role_match]})` : ""}
             {age && ` · ${age} años`}
           </p>
         </div>
