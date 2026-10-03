@@ -220,6 +220,12 @@ Hecho (2026-09-30), además de lo anterior:
   - Rankings: filtro de ligas en dos grupos; si la temporada actual no tiene datos, enseña
     la última terminada y lo dice en el título.
 
+- **Laboratorio de modelos**: skill `.claude/skills/model-lab` + `scripts/model_lab.py`
+  (base de datos `scouting_lab`, que los tests no tocan; caché por variante en
+  `.cache/model_lab/`, reanudable; largo → `scripts/model_lab_background.ps1`, proceso aparte
+  que sobrevive a la sesión). `team_ratings(priors=..., prior_matches=...)` permite que un
+  equipo (p. ej. ascendido) se encoja hacia su propia referencia.
+
 Ideas siguientes: lesiones/alineaciones (no hay fuente
 gratuita fiable), producto (cuentas, favoritos, alertas, planes).
 No hay fuente gratuita de fotos de cuerpo entero.
