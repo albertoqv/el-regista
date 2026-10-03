@@ -80,8 +80,9 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
-      - run: npx tsc --noEmit && npm run lint
+      # The build generates the route types (PageProps) that tsc needs.
       - run: npm run build
+      - run: npx tsc --noEmit && npm run lint
       - run: npx playwright install --with-deps chromium
       - name: Recorridos contra la build local
         run: |
