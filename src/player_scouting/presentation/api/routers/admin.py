@@ -24,14 +24,19 @@ from player_scouting.presentation.api.dependencies import (
     get_hosting_usage_provider,
     get_visit_repository,
 )
-from player_scouting.presentation.api.security import verify_ingestion_api_key
+from player_scouting.presentation.api.security import (
+    ADMIN_SESSION_SECONDS,
+    admin_token,
+    verify_admin,
+    verify_ingestion_api_key,
+)
 from player_scouting.presentation.api.settings import ApiSettings, get_api_settings
 
 public_router = APIRouter(tags=["admin"])
 router = APIRouter(
     prefix="/admin",
     tags=["admin"],
-    dependencies=[Depends(verify_ingestion_api_key)],
+    dependencies=[Depends(verify_admin)],
 )
 
 VisitRepositoryDep = Annotated[VisitRepository, Depends(get_visit_repository)]
@@ -39,6 +44,13 @@ SettingsDep = Annotated[ApiSettings, Depends(get_api_settings)]
 HostingDep = Annotated[HostingUsageProvider | None, Depends(get_hosting_usage_provider)]
 HOSTING_CACHE_SECONDS = 300
 _hosting_cache: dict[str, tuple[float, HostingUsage]] = {}
+
+
+@public_router.post("/admin/session", dependencies=[Depends(verify_ingestion_api_key)])
+def open_admin_session(settings: SettingsDep) -> dict[str, str]:
+    """Trades the key for a week-long session, so the browser never keeps the key."""
+    expires_at = int(time.time()) + ADMIN_SESSION_SECONDS
+    return {"token": admin_token(settings.ingestion_api_key, expires_at)}
 
 
 @public_router.get("/health")

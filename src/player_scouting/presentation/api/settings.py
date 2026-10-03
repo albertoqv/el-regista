@@ -15,6 +15,12 @@ class ApiSettings(BaseSettings):
     # Optional: show the server bill in the admin panel (Railway workspace token).
     railway_api_token: str = ""
     railway_workspace_id: str = ""
+    # Production (the Dockerfile) fails closed: no key configured = no ingestion.
+    require_ingestion_key: bool = False
+    # Interactive API map at /docs; off in production (it lists every endpoint).
+    expose_docs: bool = True
+    # Requests per minute from one address before answering 429.
+    rate_limit_per_minute: int = 600
 
     @property
     def cors_origins_list(self) -> list[str]:

@@ -7,6 +7,10 @@ from player_scouting.presentation.api.metrics import (
     RequestMetrics,
     metrics_middleware,
 )
+from player_scouting.presentation.api.rate_limit import (
+    RateLimiter,
+    rate_limit_middleware,
+)
 from player_scouting.presentation.api.response_cache import (
     ResponseCache,
     response_cache_middleware,
@@ -19,18 +23,31 @@ from player_scouting.presentation.api.routers import (
     seasons,
     teams,
 )
-from player_scouting.presentation.api.settings import get_api_settings
+from player_scouting.presentation.api.security import FailedAttempts
+from player_scouting.presentation.api.settings import ApiSettings, get_api_settings
 
 
-def create_app() -> FastAPI:
-    app = FastAPI(title="El Regista API")
+def create_app(settings: ApiSettings | None = None) -> FastAPI:
+    settings = settings or get_api_settings()
+    docs = settings.expose_docs
+    app = FastAPI(
+        title="El Regista API",
+        docs_url="/docs" if docs else None,
+        redoc_url="/redoc" if docs else None,
+        openapi_url="/openapi.json" if docs else None,
+    )
+    app.state.failed_attempts = FailedAttempts()
     app.state.metrics = RequestMetrics()
     app.state.response_cache = ResponseCache()
     app.middleware("http")(response_cache_middleware(app.state.response_cache))
     app.middleware("http")(metrics_middleware(app.state.metrics))
+    # Outermost: a flood is refused before it costs any work.
+    app.middleware("http")(
+        rate_limit_middleware(RateLimiter(settings.rate_limit_per_minute))
+    )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=get_api_settings().cors_origins_list,
+        allow_origins=settings.cors_origins_list,
         allow_methods=["*"],
         allow_headers=["*"],
     )
