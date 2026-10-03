@@ -1,6 +1,6 @@
 name: Transfermarkt probe
 
-# Diagnostic: which Transfermarkt pages answer 200 from a GitHub runner.
+# Diagnostic: how Transfermarkt answers a GitHub runner (one step per possible code).
 on:
   push:
     paths: [".github/tm-probe"]
@@ -10,29 +10,20 @@ jobs:
     runs-on: ubuntu-latest
     env:
       UA: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
-      ACCEPT: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
-      LANG_HDR: "en-US,en;q=0.9"
+      URL: https://www.transfermarkt.com/lamine-yamal/profil/spieler/937958
     steps:
-      - name: profile page (works for enrichment)
+      - name: fetch
         run: |
-          test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" https://www.transfermarkt.com/lamine-yamal/profil/spieler/937958)" = 200
-      - name: league generic slug, UA only
-        if: always()
-        run: |
-          test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" https://www.transfermarkt.com/wettbewerb/startseite/wettbewerb/PO1/saison_id/2026)" = 200
-      - name: league real slug, UA only
-        if: always()
-        run: |
-          test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" https://www.transfermarkt.com/liga-portugal/startseite/wettbewerb/PO1/saison_id/2026)" = 200
-      - name: league generic slug, browser headers
-        if: always()
-        run: |
-          test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" -H "Accept: $ACCEPT" -H "Accept-Language: $LANG_HDR" https://www.transfermarkt.com/wettbewerb/startseite/wettbewerb/PO1/saison_id/2026)" = 200
-      - name: club performance page, browser headers
-        if: always()
-        run: |
-          test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" -H "Accept: $ACCEPT" -H "Accept-Language: $LANG_HDR" 'https://www.transfermarkt.com/psv-eindhoven/leistungsdaten/verein/383/reldata/NL1%262026/plus/1')" = 200
-      - name: club performance page, UA only
-        if: always()
-        run: |
-          test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" 'https://www.transfermarkt.com/psv-eindhoven/leistungsdaten/verein/383/reldata/NL1%262026/plus/1')" = 200
+          curl -s -o page.html -w '%{http_code}' -A "$UA" "$URL" > code.txt || true
+          curl -s -o /dev/null -w '%{http_code}' -L -A "$UA" "$URL" > code_follow.txt || true
+          curl -s -o search.html -w '%{http_code}' -A "$UA" "https://www.transfermarkt.com/schnellsuche/ergebnis/schnellsuche?query=Pedri" > code_search.txt || true
+      - { name: "profile is 200", if: always(), run: 'test "$(cat code.txt)" = 200' }
+      - { name: "profile is 403", if: always(), run: 'test "$(cat code.txt)" = 403' }
+      - { name: "profile is 429", if: always(), run: 'test "$(cat code.txt)" = 429' }
+      - { name: "profile is 30x", if: always(), run: 'grep -q "^30" code.txt' }
+      - { name: "profile is 5xx", if: always(), run: 'grep -q "^5" code.txt' }
+      - { name: "profile following redirects is 200", if: always(), run: 'test "$(cat code_follow.txt)" = 200' }
+      - { name: "search is 200", if: always(), run: 'test "$(cat code_search.txt)" = 200' }
+      - { name: "search is 403", if: always(), run: 'test "$(cat code_search.txt)" = 403' }
+      - { name: "search page has player rows", if: always(), run: 'grep -q "spielprofil_tooltip\|/profil/spieler/" search.html' }
+      - { name: "a Cloudflare or bot challenge", if: always(), run: 'grep -qi "cloudflare\|captcha\|challenge\|access denied" page.html search.html' }
