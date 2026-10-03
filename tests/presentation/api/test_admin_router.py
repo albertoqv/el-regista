@@ -33,6 +33,11 @@ def _client(visits, key="secret", hosting=None):
     app.dependency_overrides[get_visit_repository] = lambda: visits
     app.dependency_overrides[get_hosting_usage_provider] = lambda: hosting
     app.dependency_overrides[get_database_overview] = lambda: {"players": 9555}
+    app.dependency_overrides[get_data_freshness] = lambda: DataFreshness(
+        missing_results=["Betis - Sevilla (La Liga, 2026-09-14)"],
+        latest_result=datetime(2026, 9, 20),
+        goal_mismatches=["Off (La Liga): FBref 5, Understat 2"],
+    )
     return TestClient(app)
 
 
@@ -140,4 +145,52 @@ def test_data_health_fails_loudly_when_results_stop_arriving():
     assert response.json()["status"] == "stale"
     assert response.json()["missing_results"] == [
         "Betis - Sevilla (La Liga, 2026-09-14)"
+    ]
+
+
+def test_browser_errors_reach_the_panel_grouped_and_counted():
+    client = _client(InMemoryVisitRepository())
+    error = json.dumps({"message": "TypeError: x is undefined", "path": "/gemelos"})
+    for _ in range(2):
+        response = client.post(
+            "/metrics/error",
+            content=error,
+            headers={"Content-Type": "text/plain", "User-Agent": CHROME},
+        )
+        assert response.status_code == 204
+
+    body = client.get("/admin/dashboard", headers={"X-Ingestion-Key": "secret"}).json()
+
+    [reported] = body["client_errors"]
+    assert reported["message"] == "TypeError: x is undefined"
+    assert reported["path"] == "/gemelos"
+    assert reported["count"] == 2
+
+
+def test_bots_and_garbage_are_not_browser_errors():
+    client = _client(InMemoryVisitRepository())
+    client.post(
+        "/metrics/error",
+        content=json.dumps({"message": "boom", "path": "/"}),
+        headers={"User-Agent": "Googlebot/2.1"},
+    )
+    client.post("/metrics/error", content="not json", headers={"User-Agent": CHROME})
+
+    body = client.get("/admin/dashboard", headers={"X-Ingestion-Key": "secret"}).json()
+
+    assert body["client_errors"] == []
+
+
+def test_the_panel_shows_the_data_quality_report():
+    body = (
+        _client(InMemoryVisitRepository())
+        .get("/admin/dashboard", headers={"X-Ingestion-Key": "secret"})
+        .json()
+    )
+
+    assert body["data_quality"]["missing_results"] == [
+        "Betis - Sevilla (La Liga, 2026-09-14)"
+    ]
+    assert body["data_quality"]["goal_mismatches"] == [
+        "Off (La Liga): FBref 5, Understat 2"
     ]
