@@ -1,0 +1,12 @@
+# The API deployment needs only the Python package (web/ is its own Vercel project).
+web/
+tests/
+docs/
+scripts/
+alembic/
+.cache/
+.github/
+.claude/
+*.md
+docker-compose.yml
+Dockerfile
