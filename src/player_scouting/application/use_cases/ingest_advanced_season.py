@@ -10,6 +10,7 @@ from player_scouting.application.ports import (
     AdvancedSeasonRow,
     PlayerRepository,
 )
+from player_scouting.application.team_names import learn_team_aliases
 from player_scouting.domain.season import Season
 
 
@@ -27,6 +28,8 @@ class IngestAdvancedSeasonUseCase:
         skipped: list[SkippedPlayer] = []
         for competition, rows in rows_by_competition.items():
             season = Season(competition, str(start_year))
+            entries = self.repository.list_season_entries(season)
+            teams = {entry.player.player_id: entry.team for entry in entries}
             candidates = [
                 MatchCandidate(
                     player_id=entry.player.player_id,
@@ -35,7 +38,7 @@ class IngestAdvancedSeasonUseCase:
                     minutes=entry.statistics.minutes_played,
                     goals=entry.statistics.goals,
                 )
-                for entry in self.repository.list_season_entries(season)
+                for entry in entries
             ]
             matches = match_players([row.player for row in rows], candidates)
             for row in rows:
@@ -52,5 +55,12 @@ class IngestAdvancedSeasonUseCase:
                 self.repository.save_season_advanced(player_id, season, row.advanced)
                 self.repository.set_understat_id(player_id, row.player.external_id)
                 ingested += 1
+            aliases = learn_team_aliases(
+                (teams.get(matches[row.player.external_id]), row.player.teams)
+                for row in rows
+                if row.player.external_id in matches
+            )
+            for fbref_team, understat_team in aliases.items():
+                self.repository.rename_season_team(season, fbref_team, understat_team)
 
         return IngestionResult(ingested=ingested, skipped=skipped)

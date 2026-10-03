@@ -22,6 +22,7 @@ from player_scouting.application.ports import (
     SeasonEntry,
     SeasonRecord,
 )
+from player_scouting.application.team_names import renamed
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
@@ -219,6 +220,21 @@ class SqlAlchemyPlayerRepository:
     def get_season_team(self, player_id: int, season: Season) -> str | None:
         model = self._basic_model(player_id, season)
         return model.team if model else None
+
+    def rename_season_team(self, season: Season, old: str, new: str) -> None:
+        models = (
+            self._session.query(Basic)
+            .filter(
+                Basic.competition == season.competition,
+                Basic.season_label == season.label,
+                Basic.team.contains(old),
+            )
+            .all()
+        )
+        for model in models:
+            if model.team is not None:
+                model.team = renamed(model.team, old, new)
+        self._session.flush()
 
     def get_career_statistics(self, player_id: int) -> Statistics:
         rows = (

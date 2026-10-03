@@ -171,7 +171,12 @@ def get_player(player_id: int, repository: PlayerRepositoryDep) -> PlayerOut:
             status_code=404, detail=f"No player found with id {player_id}"
         )
     statistics = repository.get_career_statistics(player_id)
-    return player_out_from_domain(player, statistics)
+    years = [
+        season.start_year
+        for season in repository.list_seasons_for_player(player_id)
+        if season.start_year
+    ]
+    return player_out_from_domain(player, statistics, max(years, default=None))
 
 
 @router.get("/{player_id}/seasons", response_model=list[SeasonOut])

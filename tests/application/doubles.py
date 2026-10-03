@@ -26,6 +26,7 @@ from player_scouting.application.ports import (
     SeasonRecord,
     TeamMatch,
 )
+from player_scouting.application.team_names import renamed
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
@@ -224,6 +225,11 @@ class InMemoryPlayerRepository:
 
     def get_season_team(self, player_id: int, season: Season) -> str | None:
         return self._teams.get((player_id, season))
+
+    def rename_season_team(self, season: Season, old: str, new: str) -> None:
+        for (player_id, entry_season), team in self._teams.items():
+            if entry_season == season and team:
+                self._teams[(player_id, entry_season)] = renamed(team, old, new)
 
     def list_seasons_for_player(self, player_id: int) -> list[Season]:
         return [season for (pid, season) in self._season_statistics if pid == player_id]

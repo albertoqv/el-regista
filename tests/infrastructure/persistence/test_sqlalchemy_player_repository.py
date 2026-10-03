@@ -522,3 +522,21 @@ def test_finds_players_by_their_understat_ids(session):
     found = repository.find_by_understat_ids([11500, 999])
 
     assert list(found) == [11500] and found[11500].name == "Lamine Yamal"
+
+
+def test_renames_a_club_in_one_season_also_inside_moves(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    premier = Season("Premier League", "2026")
+    for player_id, team in ((1, "Manchester Utd"), (2, "Manchester Utd, Everton")):
+        repository.save_player(Player(player_id, f"P{player_id}", "Forward", None))
+        repository.save_season_statistics(player_id, premier, Statistics(1, 0), team)
+    repository.save_season_statistics(
+        1, Season("Premier League", "2025"), Statistics(1, 0), "Manchester Utd"
+    )
+
+    repository.rename_season_team(premier, "Manchester Utd", "Manchester United")
+
+    assert repository.get_season_team(1, premier) == "Manchester United"
+    assert repository.get_season_team(2, premier) == "Manchester United, Everton"
+    other = repository.get_season_team(1, Season("Premier League", "2025"))
+    assert other == "Manchester Utd"
