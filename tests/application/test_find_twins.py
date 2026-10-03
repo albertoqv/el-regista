@@ -217,3 +217,56 @@ def test_leagues_with_only_goals_and_assists_get_a_basic_comparison():
 
 def test_a_full_profile_is_not_a_basic_comparison():
     assert _use_case(_repository()).execute(1).basic is False
+
+
+def _add_role(
+    repository, player_id, name, role, position="Forward", league=LA_LIGA_2025
+):
+    repository.save_player(
+        Player(player_id, name, position, None, birth_year=2000, detailed_position=role)
+    )
+    repository.save_season_statistics(
+        player_id, league, _stats(15, 8, 90, 15), team=f"Team {player_id}"
+    )
+
+
+def test_the_same_role_weighs_more_than_the_same_numbers():
+    repository = InMemoryPlayerRepository()
+    _add_role(repository, 1, "Winger", "Right Winger")
+    _add_role(repository, 2, "Other winger", "Left Winger")
+    _add_role(repository, 3, "Striker", "Centre-Forward")
+    for player_id in range(10, 14):
+        repository.save_player(
+            Player(player_id, f"Filler {player_id}", "Forward", None)
+        )
+        repository.save_season_statistics(
+            player_id, LA_LIGA_2025, _stats(player_id - 8, 2, 40, 5)
+        )
+
+    report = _use_case(repository).execute(1)
+    by_name = {twin.player.name: twin for twin in report.twins}
+
+    assert by_name["Other winger"].similarity > by_name["Striker"].similarity
+    assert by_name["Other winger"].role_match == "similar"
+    assert by_name["Striker"].role_match == "different"
+
+
+def test_hybrid_roles_cross_the_line_between_positions():
+    repository = InMemoryPlayerRepository()
+    _add_role(repository, 1, "Winger", "Right Winger")
+    _add_role(repository, 2, "Wide midfielder", "Right Midfield", position="Midfielder")
+    _add_role(
+        repository, 3, "Holding midfielder", "Defensive Midfield", position="Midfielder"
+    )
+    for player_id in range(10, 14):
+        repository.save_player(
+            Player(player_id, f"Filler {player_id}", "Midfielder", None)
+        )
+        repository.save_season_statistics(
+            player_id, LA_LIGA_2025, _stats(player_id - 9, 2, 30, 20)
+        )
+
+    names = [twin.player.name for twin in _use_case(repository).execute(1).twins]
+
+    assert "Wide midfielder" in names
+    assert "Holding midfielder" not in names
