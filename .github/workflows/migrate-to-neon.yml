@@ -4,6 +4,9 @@ name: Migrate the database (Railway -> Neon)
 # Needs the secrets API_BASE_URL and INGESTION_API_KEY (Railway) and DATABASE_URL (Neon).
 on:
   workflow_dispatch:
+  # Also started by pushing this file, so it can be launched from a commit.
+  push:
+    paths: [".github/neon-migration"]
 
 jobs:
   migrate:
@@ -24,6 +27,18 @@ jobs:
           ls -lh elregista.sql.gz
       - name: Create the tables in the new database
         run: uv run alembic upgrade head
+      # The restore replaces every row: never over a database already in use.
+      - name: Stop if the new database already has players
+        run: |
+          uv run python - <<'PY'
+          import sys
+          from sqlalchemy import create_engine, text
+          from player_scouting.infrastructure.persistence.settings import get_settings
+          with create_engine(get_settings().database_url).connect() as c:
+              players = c.execute(text("select count(*) from players")).scalar()
+          print("players already there:", players)
+          sys.exit(1 if players else 0)
+          PY
       - name: Restore every row
         run: uv run python scripts/db_copy.py restore elregista.sql.gz
       - name: Check what arrived
