@@ -3,5 +3,6 @@
   "framework": "fastapi",
   "functions": {
     "index.py": { "maxDuration": 60 }
-  }
+  },
+  "git": { "deploymentEnabled": false }
 }
