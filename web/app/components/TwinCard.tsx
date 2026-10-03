@@ -66,9 +66,9 @@ export function TwinCard({
             </Sticker>
           ))}
         </div>
-        <div className="absolute right-3 top-3 flex h-16 w-16 flex-col items-center justify-center rounded-full border border-ink/15 bg-black/65">
+        <div className="absolute right-3 top-3 flex h-16 w-16 flex-col items-center justify-center rounded-full border border-ink/15 bg-black/65 text-on-photo">
           <span className="font-heading text-lg leading-none">{twin.similarity}%</span>
-          <span className="text-xs font-semibold text-muted">igual</span>
+          <span className="text-xs font-semibold text-on-photo/80">igual</span>
         </div>
         <div className="absolute inset-x-0 bottom-0 p-4">
           <h3 className="font-heading text-xl leading-tight">{twin.name}</h3>

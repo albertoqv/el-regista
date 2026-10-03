@@ -678,3 +678,29 @@ export type TrackRecord = {
 export function getTrackRecord(season: number): Promise<TrackRecord> {
   return request<TrackRecord>(`/predictions/track-record?season=${season}`);
 }
+
+export type TrendMatch = {
+  played_on: string;
+  opponent: string;
+  home: boolean;
+  minutes: number;
+  goals: number;
+  assists: number;
+  shots: number;
+  xg: number;
+  xa: number;
+  rolling_per90: number;
+};
+
+export type PlayerTrend = {
+  window: number;
+  direction: "up" | "down" | "steady" | null;
+  recent_per90: number | null;
+  earlier_per90: number | null;
+  goals_minus_xg: number;
+  matches: TrendMatch[];
+};
+
+export function getPlayerTrend(playerId: number): Promise<PlayerTrend> {
+  return request<PlayerTrend>(`/players/${playerId}/trend`);
+}

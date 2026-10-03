@@ -23,10 +23,10 @@ export function generateStaticParams() {
   return rankingPages().map(({ league, metric }) => ({ liga: league.slug, metrica: metric.slug }));
 }
 
-function headline(liga: string, metrica: string): string {
+function headline(liga: string, metrica: string, season = currentSeasonStartYear()): string {
   const ranking = findRanking(liga, metrica);
   if (!ranking) return "Ranking";
-  return `${ranking.metric.title} de ${ranking.league.name} ${seasonDisplay(String(currentSeasonStartYear()))}`;
+  return `${ranking.metric.title} de ${ranking.league.name} ${seasonDisplay(String(season))}`;
 }
 
 export async function generateMetadata(props: PageProps<"/ranking/[liga]/[metrica]">): Promise<Metadata> {
@@ -49,14 +49,22 @@ export default async function RankingPage(props: PageProps<"/ranking/[liga]/[met
   const ranking = findRanking(liga, metrica);
   if (!ranking) notFound();
   const { league, metric } = ranking;
-  const season = currentSeasonStartYear();
-  const leaders = await listSeasonLeaders(season, {
-    metric: metric.metric,
-    competition: league.competition,
-    limit: LIMIT,
-  }).catch((): SeasonLeader[] => []);
+  const load = (year: number) =>
+    listSeasonLeaders(year, { metric: metric.metric, competition: league.competition, limit: LIMIT }).catch(
+      (): SeasonLeader[] => [],
+    );
+  // Before the new season's first data arrives, the last finished one (named in the title).
+  let season = currentSeasonStartYear();
+  let leaders = await load(season);
+  if (leaders.length === 0) {
+    const previous = await load(season - 1);
+    if (previous.length > 0) {
+      season -= 1;
+      leaders = previous;
+    }
+  }
   const decimals = METRICS[metric.metric].decimals ?? 0;
-  const title = headline(liga, metrica);
+  const title = headline(liga, metrica, season);
 
   return (
     <div className="flex flex-col gap-8">

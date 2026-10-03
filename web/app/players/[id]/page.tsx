@@ -6,6 +6,7 @@ import { MarketValueChart } from "@/app/components/MarketValueChart";
 import { SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/app/components/JsonLd";
 import { Reveal } from "@/app/components/Reveal";
+import { TrendChart } from "@/app/components/TrendChart";
 import { CountUp } from "@/app/components/motion";
 import { PercentileBars, PercentileLegend } from "@/app/components/PercentileBars";
 import { PlayerPortrait } from "@/app/components/PlayerPortrait";
@@ -22,11 +23,13 @@ import {
   getPlayer,
   getPlayerPercentiles,
   getPlayerShots,
+  getPlayerTrend,
   getPlayerSeason,
   listPlayerSeasons,
   type MarketValueHistory,
   type PercentileReport,
   type PlayerShot,
+  type PlayerTrend,
   type Season,
   type TwinReport,
 } from "@/lib/api";
@@ -96,7 +99,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     throw error;
   }
 
-  const [twins, marketValue, percentiles, shots] = await Promise.all([
+  const [twins, marketValue, percentiles, shots, trend] = await Promise.all([
     findTwins(playerId, { limit: 6 }).catch((): TwinReport | null => null),
     getMarketValue(playerId).catch(
       (): MarketValueHistory => ({ current: null, history: [] }),
@@ -105,6 +108,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       ? getPlayerPercentiles(playerId, season).catch(() => null)
       : Promise.resolve<PercentileReport | null>(null),
     getPlayerShots(playerId, season?.label).catch((): PlayerShot[] => []),
+    getPlayerTrend(playerId).catch((): PlayerTrend | null => null),
   ]);
 
   const age = formatAge(player);
@@ -253,6 +257,12 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       )}
 
       <PlayerStats player={player} />
+
+      {trend && trend.matches.length >= 3 ? (
+        <Reveal>
+          <TrendChart trend={trend} />
+        </Reveal>
+      ) : null}
 
       <section id="parecidos" className="flex scroll-mt-24 flex-col gap-5">
         <Reveal className="flex flex-wrap items-end justify-between gap-3">
