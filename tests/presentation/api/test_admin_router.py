@@ -123,6 +123,7 @@ def test_data_health_is_ok_when_every_played_match_has_its_result():
     assert response.json() == {
         "status": "ok",
         "missing_results": [],
+        "goal_mismatches": [],
         "latest_result": "2026-09-20T00:00:00",
     }
 

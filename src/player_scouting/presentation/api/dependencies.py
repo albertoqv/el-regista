@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Iterator
+from dataclasses import replace
 from datetime import UTC, datetime
 from typing import Annotated
 
@@ -103,6 +104,7 @@ from player_scouting.infrastructure.persistence.overview import (
     DataFreshness,
     data_freshness,
     database_overview,
+    goal_mismatches,
 )
 from player_scouting.infrastructure.persistence.sqlalchemy_league_ingestion_job_repository import (  # noqa: E501
     SqlAlchemyLeagueIngestionJobRepository,
@@ -642,7 +644,12 @@ def get_backup_stream() -> BackupStream:
 
 def get_data_freshness(session: SessionDep) -> DataFreshness:
     # Fixture kick-offs are stored in UTC without a time zone.
-    return data_freshness(session, datetime.now(UTC).replace(tzinfo=None))
+    now = datetime.now(UTC).replace(tzinfo=None)
+    season = str(now.year if now.month >= 7 else now.year - 1)
+    return replace(
+        data_freshness(session, now),
+        goal_mismatches=goal_mismatches(session, season),
+    )
 
 
 def get_hosting_usage_provider(

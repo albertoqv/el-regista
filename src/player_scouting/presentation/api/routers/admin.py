@@ -70,6 +70,8 @@ def data_health(
     return {
         "status": "stale" if stale else "ok",
         "missing_results": report.missing_results,
+        # Informative only: FBref and Understat refresh on different days.
+        "goal_mismatches": report.goal_mismatches,
         "latest_result": report.latest_result.isoformat()
         if report.latest_result
         else None,
