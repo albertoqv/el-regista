@@ -97,3 +97,17 @@ def test_unknown_teams_are_rated_as_average():
     prediction = predict(ratings, "Promoted", "A")
 
     assert prediction.home_win > prediction.away_win  # only home advantage splits them
+
+
+def test_a_team_can_shrink_towards_its_own_prior_instead_of_the_average():
+    games = _both_sides("Promoted", "Rival", 20, 1, 1, 1.2, 1.2)
+
+    neutral = team_ratings(games, TODAY)
+    weaker = team_ratings(
+        games, TODAY, priors={"Promoted": (0.8, 1.2)}, prior_matches=5.0
+    )
+
+    assert weaker.attack["Promoted"] < neutral.attack["Promoted"]
+    assert weaker.defence["Promoted"] > neutral.defence["Promoted"]
+    # Teams without a prior keep the usual shrinkage towards the average.
+    assert weaker.attack["Rival"] == pytest.approx(neutral.attack["Rival"], rel=0.1)
