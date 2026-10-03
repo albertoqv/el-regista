@@ -553,6 +553,7 @@ def test_player_twins_with_price_and_similarity():
     assert 0 <= body["twins"][0]["similarity"] <= 100
     assert "shared_strengths" in body["twins"][0]
     assert body["basic"] is False
+    assert "role_match" in body["twins"][0]
 
 
 def test_player_twins_for_an_unknown_player_is_404():
