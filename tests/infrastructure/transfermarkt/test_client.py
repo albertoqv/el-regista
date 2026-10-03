@@ -1,6 +1,7 @@
 import httpx
 import pytest
 
+from player_scouting.application.ports import EnrichmentUnavailableError
 from player_scouting.infrastructure.transfermarkt.client import TransfermarktClient
 
 BASE_URL = "https://example-transfermarkt.test"
@@ -89,3 +90,24 @@ def test_search_without_results_returns_an_empty_page():
     client = _client_with_handler(handler)
 
     assert client.search_player("Lee Kang-in") == ""
+
+
+# Shape captured from a GitHub runner (Oct 2026): Transfermarkt's AWS WAF answers
+# datacenter IPs with an empty 202 and this header instead of the page.
+def _waf_challenge(request: httpx.Request) -> httpx.Response:
+    return httpx.Response(202, headers={"x-amzn-waf-action": "challenge"}, text="")
+
+
+@pytest.mark.parametrize(
+    "call",
+    [
+        lambda c: c.search_player("Pedri"),
+        lambda c: c.get_profile("/pedri/profil/spieler/683840"),
+        lambda c: c.get_page("/wettbewerb/startseite/wettbewerb/PO1/saison_id/2026"),
+    ],
+)
+def test_a_bot_challenge_is_a_block_not_an_empty_page(call):
+    client = _client_with_handler(_waf_challenge)
+
+    with pytest.raises(EnrichmentUnavailableError):
+        call(client)
