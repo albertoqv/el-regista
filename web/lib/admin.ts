@@ -26,6 +26,8 @@ export type AdminDashboard = {
   hosting_error: string | null;
   hosting_configured: boolean;
   data: Record<string, number>;
+  client_errors: { message: string; path: string; count: number; last_seen: string }[];
+  data_quality: { missing_results: string[]; goal_mismatches: string[]; latest_result: string | null };
   api: {
     since: string;
     requests: number;

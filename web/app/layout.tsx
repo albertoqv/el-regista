@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Schibsted_Grotesk } from "next/font/google";
 import localFont from "next/font/local";
 import Link from "next/link";
+import { ErrorReporter } from "@/app/components/ErrorReporter";
 import { NavBar } from "@/app/components/NavBar";
 import { VisitTracker } from "@/app/components/VisitTracker";
 import { PHOTOS } from "@/lib/photos";
@@ -90,6 +91,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           </div>
         </footer>
         <VisitTracker />
+        <ErrorReporter />
         <Analytics />
       </body>
     </html>

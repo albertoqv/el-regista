@@ -1,7 +1,9 @@
 "use client"; // Error boundaries must be Client Components
 
 import Link from "next/link";
+import { useEffect } from "react";
 import { ScoutNote } from "@/app/components/ScoutNote";
+import { reportError } from "@/lib/report-error";
 
 export default function Error({
   error,
@@ -10,6 +12,11 @@ export default function Error({
   error: Error & { digest?: string };
   retry: () => void;
 }) {
+  // Errors caught here never reach window.onerror: report them from the boundary.
+  useEffect(() => {
+    reportError(`${error.message}${error.digest ? ` (digest ${error.digest})` : ""}`);
+  }, [error]);
+
   return (
     <div className="mx-auto flex max-w-lg flex-col items-center gap-4 py-20 text-center">
       <ScoutNote rotate={-3}>el VAR está revisando…</ScoutNote>

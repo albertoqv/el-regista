@@ -291,6 +291,51 @@ export default async function AdminPage(props: PageProps<"/admin">) {
         </div>
       </section>
 
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <section className="glass flex flex-col gap-3 rounded-lg p-5">
+          <h2 className="font-heading text-lg">Errores en el navegador</h2>
+          {(dashboard.client_errors ?? []).length === 0 ? (
+            <p className="text-sm text-muted">Ninguno desde el último despliegue.</p>
+          ) : (
+            <ul className="flex flex-col gap-2 text-sm">
+              {dashboard.client_errors.slice(0, 15).map((error) => (
+                <li key={`${error.message}-${error.path}`} className="flex flex-col border-b border-line pb-2">
+                  <span className="break-words font-semibold">{error.message}</span>
+                  <span className="text-xs text-muted">
+                    {error.path} · {error.count} {error.count === 1 ? "vez" : "veces"} · última{" "}
+                    {new Date(error.last_seen).toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+        <section className="glass flex flex-col gap-3 rounded-lg p-5">
+          <h2 className="font-heading text-lg">Calidad de los datos</h2>
+          {dashboard.data_quality ? (
+            <>
+              <p className="text-sm">
+                {dashboard.data_quality.missing_results.length === 0
+                  ? "Todos los partidos jugados tienen resultado."
+                  : `${dashboard.data_quality.missing_results.length} partidos jugados sin resultado: ${dashboard.data_quality.missing_results.join(", ")}.`}
+              </p>
+              <p className="text-sm text-muted">
+                {dashboard.data_quality.goal_mismatches.length === 0
+                  ? "FBref y Understat coinciden en los goles."
+                  : `Goles que no cuadran entre FBref y Understat (${dashboard.data_quality.goal_mismatches.length}). Suele ser un día de retraso de una fuente:`}
+              </p>
+              {dashboard.data_quality.goal_mismatches.length > 0 && (
+                <ul className="flex flex-col gap-1 text-sm">
+                  {dashboard.data_quality.goal_mismatches.slice(0, 10).map((line) => (
+                    <li key={line}>{line}</li>
+                  ))}
+                </ul>
+              )}
+            </>
+          ) : null}
+        </section>
+      </div>
+
       <p className="text-xs text-muted">
         También tienes las visitas de Vercel (Web Analytics, gratis en Hobby) en{" "}
         <a href="https://vercel.com/dashboard" target="_blank" rel="noreferrer" className="text-brand-2 hover:underline">
