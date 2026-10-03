@@ -89,3 +89,59 @@ def test_basic_refresh_afterwards_keeps_the_advanced_metrics():
     stats = repository.get_season_statistics(1, LA_LIGA_2026)
     assert stats.goals == 8
     assert stats.expected_goals == 6.08
+
+
+def _united_player(player_id, name, fbref_team="Manchester Utd"):
+    return (
+        Player(player_id, name, "Forward", None, birth_year=2000),
+        fbref_team,
+    )
+
+
+def test_learns_understat_team_names_and_uses_them_everywhere():
+    repository = InMemoryPlayerRepository()
+    premier = Season("Premier League", "2026")
+    players = [
+        _united_player(1, "Bruno Fernandes"),
+        _united_player(2, "Amad Diallo"),
+        _united_player(3, "Kobbie Mainoo"),
+        _united_player(4, "Moved Midfielder", "Manchester Utd, Everton"),
+    ]
+    for player, team in players:
+        repository.save_player(player)
+        repository.save_season_statistics(
+            player.player_id, premier, Statistics(1, 0, minutes_played=500), team=team
+        )
+    rows = [
+        AdvancedSeasonRow(
+            competition="Premier League",
+            player=ExternalPlayer(
+                9000 + p.player_id, p.name, ("Manchester United",), 500, 1
+            ),
+            advanced=YAMAL_ADVANCED,
+        )
+        for p, _ in players[:3]
+    ]
+
+    IngestAdvancedSeasonUseCase(
+        FakeAdvancedSeasonProvider({2026: rows}), repository
+    ).execute(2026)
+
+    assert repository.get_season_team(1, premier) == "Manchester United"
+    # The FBref name inside a two-club season is renamed too.
+    assert repository.get_season_team(4, premier) == "Manchester United, Everton"
+
+
+def test_one_odd_player_does_not_rename_a_team():
+    repository = _repository_with_yamal()
+    row = AdvancedSeasonRow(
+        competition="La Liga",
+        player=ExternalPlayer(9001, "Lamine Yamal", ("Real Madrid",), 600, 7),
+        advanced=YAMAL_ADVANCED,
+    )
+
+    IngestAdvancedSeasonUseCase(
+        FakeAdvancedSeasonProvider({2026: [row]}), repository
+    ).execute(2026)
+
+    assert repository.get_season_team(1, LA_LIGA_2026) == "Barcelona"

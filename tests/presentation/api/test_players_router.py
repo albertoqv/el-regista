@@ -591,3 +591,21 @@ def test_explore_rejects_an_unknown_sort():
     client = _client_with_repository(InMemoryPlayerRepository())
 
     assert client.get("/players/explore?sort=height").status_code == 422
+
+
+def test_a_single_player_says_his_latest_season_too():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Ayase Ueda", "Forward", None),
+        Season("Eredivisie", "2025"),
+        Statistics(25, 3),
+    )
+    repository.add(
+        Player(1, "Ayase Ueda", "Forward", None),
+        Season("Ligue 1", "2026"),
+        Statistics(1, 0),
+    )
+
+    body = _client_with_repository(repository).get("/players/1").json()
+
+    assert body["latest_season_year"] == 2026
