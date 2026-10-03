@@ -11,14 +11,23 @@ jobs:
     env:
       API_BASE_URL: ${{ secrets.API_BASE_URL }}
       INGESTION_API_KEY: ${{ secrets.INGESTION_API_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
-      # The database only lives on Railway's private network: the API streams a
-      # data-only dump (COPY blocks, replayable with psql after alembic upgrade).
-      - name: Download the dump
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      # Neon is reachable from here: dump it directly (COPY blocks, data only).
+      - name: Dump the database
+        if: env.DATABASE_URL != ''
+        run: uv run python scripts/db_copy.py dump elregista.sql.gz
+      # Before the move, the database lived on Railway's private network: through the API.
+      - name: Download the dump through the API
+        if: env.DATABASE_URL == ''
         run: |
           curl -sS --fail-with-body --retry 3 --retry-delay 20 --max-time 1200 \
             -H "X-Ingestion-Key: $INGESTION_API_KEY" \
             -o elregista.sql.gz "$API_BASE_URL/ingestion/backup"
+      - name: Check the dump
+        run: |
           gzip -t elregista.sql.gz
           ls -lh elregista.sql.gz
           tables=$(zcat elregista.sql.gz | grep -c '^COPY ')

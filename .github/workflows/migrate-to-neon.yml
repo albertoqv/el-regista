@@ -1,0 +1,42 @@
+name: Migrate the database (Railway -> Neon)
+
+# One-off: copies every row from the API still on Railway into the new database.
+# Needs the secrets API_BASE_URL and INGESTION_API_KEY (Railway) and DATABASE_URL (Neon).
+on:
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    env:
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      INGESTION_API_KEY: ${{ secrets.INGESTION_API_KEY }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Download the current data from Railway
+        run: |
+          curl -sS --fail-with-body --retry 3 --retry-delay 20 --max-time 1200 \
+            -H "X-Ingestion-Key: $INGESTION_API_KEY" \
+            -o elregista.sql.gz "$API_BASE_URL/ingestion/backup"
+          gzip -t elregista.sql.gz
+          ls -lh elregista.sql.gz
+      - name: Create the tables in the new database
+        run: uv run alembic upgrade head
+      - name: Restore every row
+        run: uv run python scripts/db_copy.py restore elregista.sql.gz
+      - name: Check what arrived
+        run: |
+          uv run python - <<'PY'
+          from sqlalchemy import create_engine, text
+          from player_scouting.infrastructure.persistence.settings import get_settings
+          with create_engine(get_settings().database_url).connect() as c:
+              for table in ("players", "player_season_statistics", "shots", "fixtures", "prediction_snapshots"):
+                  print(table, c.execute(text(f"select count(*) from {table}")).scalar())
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: railway-final-copy
+          path: elregista.sql.gz
+          retention-days: 90

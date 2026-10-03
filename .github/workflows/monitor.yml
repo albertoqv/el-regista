@@ -11,7 +11,8 @@ jobs:
   uptime:
     runs-on: ubuntu-latest
     env:
-      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      # Both public: the API on Vercel and the web.
+      API_BASE_URL: https://el-regista-api.vercel.app
       SITE_URL: https://elregista.vercel.app
     steps:
       # A sleeping API takes a few seconds to wake: retry before failing.
