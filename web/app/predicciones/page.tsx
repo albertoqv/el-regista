@@ -22,6 +22,9 @@ export const metadata: Metadata = {
 };
 
 // Enough to always reach the next matchday, even after an international break.
+// Calendar days from the first match shown before "Ver los partidos siguientes"
+// (a round runs Friday to Monday).
+const ROUND_DAYS = 4;
 const WINDOW_DAYS = 21;
 
 function param(value: string | string[] | undefined): string | undefined {
@@ -112,6 +115,15 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
     byDay.set(day, [...(byDay.get(day) ?? []), forecast]);
   }
 
+  // The next round first (a few days of matches): a hundred cards at once make the page
+  // slow on phones. The rest is one link away.
+  const showAll = param(searchParams.todos) === "1";
+  const days = [...byDay.entries()];
+  const roundEnd = days.length ? Date.parse(days[0][0]) + (ROUND_DAYS - 1) * 864e5 : 0;
+  const shown = showAll ? days : days.filter(([day]) => Date.parse(day) <= roundEnd);
+  const hidden = days.slice(shown.length).reduce((count, [, list]) => count + list.length, 0);
+  const allHref = `/predicciones?${new URLSearchParams({ ...(league ? { liga: league } : {}), todos: "1" }).toString()}`;
+
   return (
     <div className="flex flex-col gap-8">
       <Reveal>
@@ -157,7 +169,7 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
           No hay partidos en las próximas tres semanas.
         </p>
       ) : (
-        [...byDay.entries()].map(([day, list]) => (
+        shown.map(([day, list]) => (
           <section key={day} className="flex flex-col gap-4">
             <h2 className="font-heading text-xl capitalize">{dayLabel(list[0].kickoff)}</h2>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -167,6 +179,15 @@ export default async function PredictionsPage(props: PageProps<"/predicciones">)
             </div>
           </section>
         ))
+      )}
+
+      {hidden > 0 && (
+        <Link
+          href={allHref}
+          className="self-center rounded-full border border-line px-5 py-2.5 text-sm font-semibold hover:border-ink"
+        >
+          Ver los {hidden} partidos siguientes
+        </Link>
       )}
 
       <p className="text-center text-xs text-muted">
