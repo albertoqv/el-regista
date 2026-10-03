@@ -7,6 +7,7 @@ from player_scouting.application.ports import HostingUsage
 from player_scouting.infrastructure.persistence.overview import DataFreshness
 from player_scouting.presentation.api.dependencies import (
     get_data_freshness,
+    get_database_ping,
     get_database_overview,
     get_hosting_usage_provider,
     get_visit_repository,
@@ -194,3 +195,13 @@ def test_the_panel_shows_the_data_quality_report():
     assert body["data_quality"]["goal_mismatches"] == [
         "Off (La Liga): FBref 5, Understat 2"
     ]
+
+
+def test_the_database_round_trip_can_be_measured():
+    app = create_app()
+    app.dependency_overrides[get_database_ping] = lambda: lambda: None
+
+    body = TestClient(app).get("/health/db").json()
+
+    assert body["status"] == "ok"
+    assert body["round_trip_ms"] >= 0
