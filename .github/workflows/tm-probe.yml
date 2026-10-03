@@ -1,0 +1,32 @@
+name: Transfermarkt probe
+
+# Diagnostic: which Transfermarkt pages answer 200 from a GitHub runner.
+on:
+  push:
+    paths: [".github/tm-probe"]
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    env:
+      UA: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+      ACCEPT: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+      LANG_HDR: "en-US,en;q=0.9"
+    steps:
+      - name: profile page (works for enrichment)
+        run: test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" https://www.transfermarkt.com/lamine-yamal/profil/spieler/937958)" = 200
+      - name: league generic slug, UA only
+        if: always()
+        run: test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" https://www.transfermarkt.com/wettbewerb/startseite/wettbewerb/PO1/saison_id/2026)" = 200
+      - name: league real slug, UA only
+        if: always()
+        run: test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" https://www.transfermarkt.com/liga-portugal/startseite/wettbewerb/PO1/saison_id/2026)" = 200
+      - name: league generic slug, browser headers
+        if: always()
+        run: test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" -H "Accept: $ACCEPT" -H "Accept-Language: $LANG_HDR" https://www.transfermarkt.com/wettbewerb/startseite/wettbewerb/PO1/saison_id/2026)" = 200
+      - name: club performance page, browser headers
+        if: always()
+        run: test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" -H "Accept: $ACCEPT" -H "Accept-Language: $LANG_HDR" 'https://www.transfermarkt.com/psv-eindhoven/leistungsdaten/verein/383/reldata/NL1%262026/plus/1')" = 200
+      - name: club performance page, UA only
+        if: always()
+        run: test "$(curl -s -o /dev/null -w '%{http_code}' -A "$UA" 'https://www.transfermarkt.com/psv-eindhoven/leistungsdaten/verein/383/reldata/NL1%262026/plus/1')" = 200
