@@ -70,7 +70,8 @@ jobs:
       run:
         working-directory: web
     env:
-      NEXT_PUBLIC_API_URL: ${{ secrets.API_BASE_URL }}
+      # The public API on Vercel (the build reads live data from it).
+      NEXT_PUBLIC_API_URL: https://el-regista-api.vercel.app
       BASE_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
