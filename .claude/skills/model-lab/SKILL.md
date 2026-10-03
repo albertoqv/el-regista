@@ -52,6 +52,9 @@ clave de caché: si cambias la lógica de una variante, cámbiale el nombre. Lo 
 ## Ya probado (no repetir sin una idea nueva)
 
 - Descanso entre partidos: solo vemos liga, no copas; sobreajusta.
-- Vida media 60-240 días: mejora como mucho 0,001, ruido.
+- Vida media: **180 días publicada** (oct 2026: 25/26 de 0,5930 a 0,5919, P=0,96). 90 y 240, peor.
 - Empate (rho) por liga: sobreajusta (25/26 empeora). Rho global y calibración por potencia: ruido.
+- Ascendidos por debajo de la media (ataque 0,8, defensa 1,2, 5 partidos): mejora 24/25 pero
+  25/26 es ruido (P=0,66).
+- Mezcla con Elo (K 25, ventaja 50, peso 0,1): P=0,947, justo por debajo del umbral.
 - Ventaja de campo por liga: ya existe (cada liga tiene sus medias de local y visitante).

@@ -122,15 +122,16 @@ Unir fuentes sin un identificador común es la parte difícil:
 - Poisson con corrección de Dixon-Coles.
 - La fuerza de ataque y defensa de cada equipo sale de:
   - una mezcla de xG (85%) y goles reales;
-  - decaimiento exponencial (vida media de 120 días);
+  - decaimiento exponencial (vida media de 180 días, elegida en el laboratorio de modelos);
   - ajuste por rival;
   - encogimiento hacia la media.
 - Validación walk-forward (cada partido se predice solo con datos anteriores): Brier 0,594
   en 25/26 frente a 0,649 de la referencia.
 - Las cuotas de cierre llegan a 0,582. Cuando hay cuotas, el 1X2 que se muestra es el del
   mercado, y la web lo dice.
-- **Probado y descartado**: el descanso entre partidos (solo se ven los de liga) y otras vidas
-  medias. Mejoraban menos de 0,001, dentro del ruido según bootstrap.
+- **Probado y descartado** en `scripts/model_lab.py`: el descanso entre partidos, el empate por
+  liga, la calibración, un punto de partida más bajo para los ascendidos y la mezcla con un Elo.
+  Ninguno mejora la temporada de validación con un 95% de confianza.
 
 **Estadísticas del partido** (`domain/counts.py`)
 - Binomial negativa por equipo para córners, faltas, tiros y tarjetas, con encogimiento de

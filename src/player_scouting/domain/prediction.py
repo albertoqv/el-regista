@@ -20,7 +20,9 @@ from datetime import date
 # Tuned by walk-forward backtest on 24/25 and validated on 25/26 (Brier 0.594).
 # Weight of expected goals vs real goals in a team's "performance".
 XG_WEIGHT = 0.85
-DEFAULT_HALF_LIFE_DAYS = 120
+# Model lab (Oct 2026): 180 beats 120 on 24/25 and on 25/26 (Brier 0.5930 -> 0.5919,
+# paired bootstrap P = 0.96).
+DEFAULT_HALF_LIFE_DAYS = 180
 PRIOR_MATCHES = 2.0
 # League venue averages start from typical top-flight values (goals per team
 # per match) and move towards what this league actually shows.

@@ -255,6 +255,16 @@ def run(names: list[str]) -> None:
         best = min(tried, key=lambda days: mean(tried[days][TUNE]))
         save("halflife", {"days": best, **verdict(base, tried[best])})
 
+    if "elo" in names:
+        tried = {}
+        for k in (15.0, 25.0):
+            for edge in (50.0, 80.0):
+                elo = elo_probabilities(lab, k, edge, draw=0.28)
+                for weight in (0.1, 0.2, 0.3):
+                    tried[(k, edge, weight)] = blended(base_rows, elo, weight)
+        best = min(tried, key=lambda key: mean(tried[key][TUNE]))
+        save("elo", {"k_edge_weight": list(best), **verdict(base, tried[best])})
+
     if "promoted" in names:
         tried = {}
         for attack in (0.8, 0.9):
@@ -278,6 +288,54 @@ def run(names: list[str]) -> None:
         save("promoted", {"prior": list(best), **verdict(base, tried[best])})
 
 
+def elo_probabilities(
+    lab: Lab, k: float, home_edge: float, draw: float
+) -> dict[int, list[float]]:
+    """Walk-forward Elo per league: each match priced before its result counts."""
+    games = sorted(
+        (m for m in lab.history if m.home), key=lambda m: (m.played_on, m.match_id)
+    )
+    targets = {f.match_id for f in lab.fixtures}
+    ratings: dict[tuple[str, str], float] = defaultdict(lambda: 1500.0)
+    out = {}
+    for m in games:
+        home, away = (m.competition, m.team), (m.competition, m.opponent)
+        expected = 1 / (1 + 10 ** (-(ratings[home] - ratings[away] + home_edge) / 400))
+        if m.match_id in targets:
+            p_draw = draw * (1 - abs(2 * expected - 1))
+            out[m.match_id] = [
+                max(expected - p_draw / 2, 0.01),
+                p_draw,
+                max(1 - expected - p_draw / 2, 0.01),
+            ]
+        score = (
+            1.0
+            if m.goals_for > m.goals_against
+            else 0.5
+            if m.goals_for == m.goals_against
+            else 0.0
+        )
+        ratings[home] += k * (score - expected)
+        ratings[away] -= k * (score - expected)
+    return out
+
+
+def blended(rows: Rows, elo: dict[int, list[float]], weight: float) -> dict:
+    out: dict[str, dict[int, float]] = defaultdict(dict)
+    for match_id, season, _league, rh, ra, result in rows:
+        p = probabilities(rh, ra, P.DIXON_COLES_RHO, 1.0)
+        if match_id in elo:
+            q = elo[match_id]
+            total = sum(q)
+            p = [
+                (1 - weight) * a + weight * b / total for a, b in zip(p, q, strict=True)
+            ]
+        out[season][match_id] = sum(
+            (p[i] - (1.0 if i == result else 0.0)) ** 2 for i in range(3)
+        )
+    return out
+
+
 def report() -> None:
     if not RESULTS.exists():
         sys.exit("No results yet: run `model_lab.py run all`.")
@@ -291,7 +349,7 @@ if __name__ == "__main__":
     elif command == "run":
         wanted = sys.argv[2:] or ["all"]
         if "all" in wanted:
-            wanted = ["rho", "calibration", "halflife", "promoted"]
+            wanted = ["rho", "calibration", "halflife", "elo", "promoted"]
         run(wanted)
     else:
         report()
