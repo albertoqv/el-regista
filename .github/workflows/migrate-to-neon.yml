@@ -20,7 +20,7 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v7
       - name: Download the current data from the live API
         run: |
           curl -sS --fail-with-body --retry 3 --retry-delay 20 --max-time 1200 \
