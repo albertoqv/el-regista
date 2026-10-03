@@ -46,7 +46,7 @@ flowchart LR
     GA[GitHub Actions<br/>martes y viernes] -->|POST /ingestion/*| API
     FB & US & FD --> API
     TM -->|scraping desde el runner| GA
-    API[FastAPI · Railway] <--> DB[(PostgreSQL)]
+    API[FastAPI · Vercel] <--> DB[(PostgreSQL · Neon)]
     WEB[Next.js 16 · Vercel] -->|servidor: HTTP + caché 30 min| API
     U((Usuario)) --> WEB
     U -.->|navegador: /api/* mismo origen| WEB
@@ -57,7 +57,8 @@ flowchart LR
   los puertos (`application/ports.py`).
 - **La ingesta la dispara GitHub Actions**, no un cron en el servidor. El workflow llama a
   los endpoints `/ingestion/*` (protegidos con clave) en orden. Lo que Transfermarkt bloquea
-  desde la IP de Railway se lee desde el runner y solo viajan los resultados.
+  desde la IP de un servidor se lee desde el runner, que levanta la API en local contra la
+  base de datos: la ingesta no tiene límite de tiempo y la API pública solo lee.
 - **La web renderiza en servidor** y pide a la API con caché incremental (ISR, 30 min). El
   navegador solo llama a la API a través de `/api/*` en el mismo dominio: no hace falta CORS.
 
@@ -67,13 +68,13 @@ flowchart LR
 |---|---|---|
 | Lenguaje y entorno | **Python 3.14**, uv | Tipado estricto (mypy) y entornos reproducibles con lockfile. |
 | API | **FastAPI** | Validación con Pydantic, inyección de dependencias que hace triviales los dobles de test. |
-| Persistencia | **SQLAlchemy 2** + **Alembic** + **PostgreSQL** | Repositorios detrás de puertos; 16 migraciones que corren solas al arrancar. |
+| Persistencia | **SQLAlchemy 2** + **Alembic** + **PostgreSQL** | Repositorios detrás de puertos; 16 migraciones que el refresco aplica antes de cargar datos. |
 | HTTP y scraping | **httpx**, BeautifulSoup | Tests con `httpx.MockTransport` y respuestas reales recortadas. |
 | Web | **Next.js 16** (App Router, Server Components), **TypeScript**, **Tailwind CSS 4** | Casi todo se renderiza en servidor: poco JavaScript y SEO completo. |
 | Gráficos e imágenes | SVG hecho a mano, `next/og` | Radar, mapas de tiro, tendencias y cartas para compartir, sin librerías de gráficos. |
 | Marca | Python (**shapely**, **fontTools**) | La tipografía *Regista Display*, el logo y los iconos se generan con código. |
 | Calidad | pytest, mypy, ruff, Playwright, Lighthouse CI | Más de 500 tests. CI en cada push y recorridos e2e diarios contra producción. |
-| Infraestructura | **Railway** (API + BD), **Vercel** (web), **GitHub Actions** | Todo en planes gratuitos: unos 0,11 $/día de servidor. |
+| Infraestructura | **Vercel** (web y API), **Neon** (PostgreSQL), **GitHub Actions** | Todo en planes gratuitos. Empezó en Railway y se migró sin cortar el servicio para que el coste sea cero. |
 
 ## Cómo funciona
 
@@ -173,8 +174,8 @@ Unir fuentes sin un identificador común es la parte difícil:
 - **Copia de seguridad**: `GET /ingestion/backup` emite en streaming un volcado `COPY` en gzip
   (el mismo formato que `pg_dump --data-only`). Un workflow semanal lo guarda 90 días y se
   restaura con `restore_data` o con `psql`.
-- **Métricas propias**: visitas sin cookies ni IP (hash diario con sal), latencias p50/p95 y
-  coste de Railway, en un panel privado.
+- **Métricas propias**: visitas sin cookies ni IP (hash diario con sal), latencias p50/p95,
+  errores del navegador y calidad de los datos, en un panel privado.
 
 ### Seguridad
 

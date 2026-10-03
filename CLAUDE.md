@@ -78,15 +78,21 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 
 ## Producción
 
-- API: Railway, servicio `api` (https://api-production-5ac3.up.railway.app); las
-  migraciones corren solas al arrancar. `npx @railway/cli up --service api --detach`.
-  El estado de despliegue de la CLI va con retraso: comprobar la API en vivo.
-  La BD solo es accesible por red privada: limpiezas de datos = migración de Alembic.
+- **Todo gratis desde oct 2026** (antes Railway, en plan de prueba): API en Vercel, proyecto
+  `el-regista-api` (https://el-regista-api.vercel.app; entrypoint `index.py` en la raíz,
+  `vercel.json` con framework fastapi, `.vercelignore` deja fuera web/tests/scripts), desde la
+  raíz `npx vercel deploy --prod --yes`. Al ver `VERCEL=1` la API exige clave y oculta /docs.
+  BD en **Neon** (plan Free, Frankfurt, integración de Vercel: `DATABASE_URL` en el proyecto y
+  secreto `DATABASE_URL` de GitHub = conexión sin pooler). Vercel enmascara esas variables al
+  hacer `env pull` ([SENSITIVE]): lo que necesite la BD se hace desde GitHub Actions.
+  Las migraciones NO corren al desplegar: las aplica el refresco (`alembic upgrade head`).
+  Límite de 5 min por función: la ingesta corre en el runner con una API local sobre Neon.
+  Estado en memoria (caché, métricas, errores del navegador) es por instancia de Vercel.
 - Web: Vercel (https://elregista.vercel.app; el antiguo web-seven-tan-39 redirige). `cd web && npx vercel --prod --yes`.
   El navegador llama a la API por `/api/*` (rewrite en `next.config.ts`): sin CORS en ningún dominio.
   URL pública en `web/lib/site.ts` (`NEXT_PUBLIC_SITE_URL`).
-- Secretos solo como variables de entorno (Railway / GitHub secrets
-  `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo.
+- Secretos solo como variables de entorno (Vercel / GitHub secrets `DATABASE_URL`,
+  `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo. Copias: `scripts/db_copy.py`.
 - `.github/workflows/weekly-fbref-refresh.yml`: martes y viernes: FBref, Understat
   (jugadores, equipos/calendario, tiros), dataset de Transfermarkt, fusión de
   duplicados y 400 jugadores de Transfermarkt desde el runner.
