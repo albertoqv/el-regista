@@ -8,6 +8,7 @@ from typing import Annotated
 
 import httpx
 from fastapi import Depends
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from player_scouting.application.league_ingestion_job import (
@@ -623,6 +624,13 @@ def get_visit_repository(session: SessionDep) -> VisitRepository:
 
 def get_database_overview(session: SessionDep) -> dict[str, int]:
     return database_overview(session)
+
+
+def get_database_ping(session: SessionDep) -> Callable[[], None]:
+    def ping() -> None:
+        session.execute(text("SELECT 1"))
+
+    return ping
 
 
 BackupStream = Callable[[], Iterator[bytes]]

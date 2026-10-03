@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Callable
 from dataclasses import asdict
 from typing import Annotated, Any
 from urllib.parse import urlsplit
@@ -22,6 +23,7 @@ from player_scouting.infrastructure.persistence.overview import DataFreshness
 from player_scouting.presentation.api.dependencies import (
     get_data_freshness,
     get_database_overview,
+    get_database_ping,
     get_hosting_usage_provider,
     get_visit_repository,
 )
@@ -57,6 +59,20 @@ def open_admin_session(settings: SettingsDep) -> dict[str, str]:
 @public_router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@public_router.get("/health/db")
+def database_health(
+    ping: Annotated[Callable[[], None], Depends(get_database_ping)],
+) -> dict[str, Any]:
+    """Time of one round trip to the database (after a warm-up), in milliseconds."""
+    ping()
+    start = time.perf_counter()
+    ping()
+    return {
+        "status": "ok",
+        "round_trip_ms": round((time.perf_counter() - start) * 1000, 1),
+    }
 
 
 @public_router.get("/health/data")

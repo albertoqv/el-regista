@@ -7,8 +7,8 @@ from player_scouting.application.ports import HostingUsage
 from player_scouting.infrastructure.persistence.overview import DataFreshness
 from player_scouting.presentation.api.dependencies import (
     get_data_freshness,
-    get_database_ping,
     get_database_overview,
+    get_database_ping,
     get_hosting_usage_provider,
     get_visit_repository,
 )
