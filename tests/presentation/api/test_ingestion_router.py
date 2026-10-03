@@ -536,3 +536,13 @@ def test_only_known_leagues_can_be_received():
     )
 
     assert response.status_code == 422
+
+
+def test_second_divisions_and_more_leagues_can_be_received():
+    client = _enrichment_client(InMemoryPlayerRepository())
+    for competition in ("Championship", "Segunda División", "Serie B", "Liga MX"):
+        response = client.post(
+            "/ingestion/transfermarkt/league-seasons",
+            json={"competition": competition, "season_label": "2026", "rows": []},
+        )
+        assert response.status_code == 200, competition

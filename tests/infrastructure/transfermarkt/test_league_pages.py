@@ -102,3 +102,13 @@ def test_a_blocked_scraper_stops_instead_of_saving_half_a_league():
 
     with pytest.raises(EnrichmentUnavailableError):
         scraper.league_season("NL1", 2026)
+
+
+def test_the_season_leagues_cover_second_divisions_with_verified_codes():
+    from player_scouting.infrastructure.transfermarkt.league_pages import SEASON_LEAGUES
+
+    # Codes read off Transfermarkt's country pages (Oct 2026).
+    assert SEASON_LEAGUES["GB2"] == "Championship"
+    assert SEASON_LEAGUES["ES2"] == "Segunda División"
+    assert SEASON_LEAGUES["L2"] == "2. Bundesliga"
+    assert len(SEASON_LEAGUES) == 28
