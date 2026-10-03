@@ -16,6 +16,12 @@ on:
         required: false
         default: ""
 
+# One refresh at a time: a second one waits instead of writing the same data and
+# reading Transfermarkt twice.
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
 jobs:
   refresh-season:
     runs-on: ubuntu-latest
