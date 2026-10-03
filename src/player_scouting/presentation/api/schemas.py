@@ -110,6 +110,8 @@ class TwinProfileOut(PlayerSummaryOut):
 
 class TwinOut(TwinProfileOut):
     similarity: int
+    # "same", "similar" or "different" detailed role; null when unknown.
+    role_match: str | None = None
     shared_strengths: list[str]
     differences: list[str]
 
@@ -529,6 +531,7 @@ def twin_report_out_from_domain(report: TwinReport) -> TwinReportOut:
             TwinOut(
                 **_twin_profile_fields(twin),
                 similarity=twin.similarity,
+                role_match=twin.role_match,
                 shared_strengths=list(twin.shared_strengths),
                 differences=list(twin.differences),
             )
