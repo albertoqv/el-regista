@@ -17,13 +17,9 @@ jobs:
           curl -s -o page.html -w '%{http_code}' -A "$UA" "$URL" > code.txt || true
           curl -s -o /dev/null -w '%{http_code}' -L -A "$UA" "$URL" > code_follow.txt || true
           curl -s -o search.html -w '%{http_code}' -A "$UA" "https://www.transfermarkt.com/schnellsuche/ergebnis/schnellsuche?query=Pedri" > code_search.txt || true
-      - { name: "profile is 200", if: always(), run: 'test "$(cat code.txt)" = 200' }
-      - { name: "profile is 403", if: always(), run: 'test "$(cat code.txt)" = 403' }
-      - { name: "profile is 429", if: always(), run: 'test "$(cat code.txt)" = 429' }
-      - { name: "profile is 30x", if: always(), run: 'grep -q "^30" code.txt' }
-      - { name: "profile is 5xx", if: always(), run: 'grep -q "^5" code.txt' }
-      - { name: "profile following redirects is 200", if: always(), run: 'test "$(cat code_follow.txt)" = 200' }
-      - { name: "search is 200", if: always(), run: 'test "$(cat code_search.txt)" = 200' }
-      - { name: "search is 403", if: always(), run: 'test "$(cat code_search.txt)" = 403' }
-      - { name: "search page has player rows", if: always(), run: 'grep -q "spielprofil_tooltip\|/profil/spieler/" search.html' }
-      - { name: "a Cloudflare or bot challenge", if: always(), run: 'grep -qi "cloudflare\|captcha\|challenge\|access denied" page.html search.html' }
+      - { name: "profile is 404", if: always(), run: 'test "$(cat code.txt)" = 404' }
+      - { name: "profile is 000 (connection cut)", if: always(), run: 'test "$(cat code.txt)" = 000' }
+      - { name: "profile is another 4xx", if: always(), run: 'grep -q "^4" code.txt' }
+      - { name: "search is 404", if: always(), run: 'test "$(cat code_search.txt)" = 404' }
+      - { name: "search is 000", if: always(), run: 'test "$(cat code_search.txt)" = 000' }
+      - { name: "search is a redirect", if: always(), run: 'grep -q "^30" code_search.txt' }
