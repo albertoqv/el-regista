@@ -48,3 +48,17 @@ jobs:
 
       - name: Run ruff
         run: uv run ruff check .
+
+  audit:
+    # Known vulnerabilities in what production installs (fails the build).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Python dependencies
+        run: |
+          uv export --no-hashes --no-dev --no-emit-project --format requirements-txt > requirements.txt
+          uvx pip-audit -r requirements.txt --no-deps --disable-pip
+      - name: Web dependencies
+        working-directory: web
+        run: npm audit --omit=dev --audit-level=high

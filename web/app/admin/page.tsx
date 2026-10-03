@@ -130,8 +130,7 @@ function LoginForm({ error }: { error?: string }) {
       <h1 className="font-display text-4xl font-bold tracking-tight">Panel</h1>
       <p className="text-sm text-muted">
         Visitas, coste del servidor y salud de la API. Entra con la clave de ingesta (la misma de
-        <code className="mx-1">INGESTION_API_KEY</code>). Se guarda en una cookie solo para esta
-        página.
+        <code className="mx-1">INGESTION_API_KEY</code>). La clave no se guarda: se cambia por una sesión de 7 días.
       </p>
       {error ? <p className="rounded-xl bg-red-500/15 px-3 py-2 text-sm text-red-300">{error}</p> : null}
       <form action={login} className="flex gap-2">
@@ -151,11 +150,19 @@ function LoginForm({ error }: { error?: string }) {
   );
 }
 
-export default async function AdminPage() {
-  const key = (await cookies()).get(ADMIN_COOKIE)?.value;
-  if (!key) return <LoginForm />;
-  const dashboard = await getAdminDashboard(key);
-  if (dashboard === "unauthorized") return <LoginForm error="Clave incorrecta." />;
+const LOGIN_ERRORS: Record<string, string> = {
+  clave: "Clave incorrecta.",
+  bloqueado: "Demasiados intentos fallidos. Espera 15 minutos.",
+};
+
+export default async function AdminPage(props: PageProps<"/admin">) {
+  const error = (await props.searchParams).error;
+  const session = (await cookies()).get(ADMIN_COOKIE)?.value;
+  if (!session) {
+    return <LoginForm error={typeof error === "string" ? (LOGIN_ERRORS[error] ?? undefined) : undefined} />;
+  }
+  const dashboard = await getAdminDashboard(session);
+  if (dashboard === "unauthorized") return <LoginForm error="La sesión ha caducado. Vuelve a entrar." />;
   if (dashboard === "unavailable") {
     return <LoginForm error="La API no responde ahora mismo. Prueba en un minuto." />;
   }

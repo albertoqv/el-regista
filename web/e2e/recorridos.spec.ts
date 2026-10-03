@@ -51,3 +51,28 @@ test("una página que no existe devuelve 404", async ({ page }) => {
   const response = await page.goto("/esto-no-existe");
   expect(response?.status()).toBe(404);
 });
+
+test("ninguna página clave da errores en consola (CSP incluida)", async ({ page }) => {
+  const errors: string[] = [];
+  // Vercel's analytics script only exists on Vercel, not on a local build.
+  const local = (text: string) => text.includes("_vercel/insights");
+  page.on("console", (message) => {
+    const text = message.text();
+    // Failed loads are checked below with their URL.
+    if (message.type() === "error" && !local(text) && !text.startsWith("Failed to load resource")) {
+      errors.push(text);
+    }
+  });
+  page.on("response", (response) => {
+    if (response.status() >= 400 && !local(response.url())) errors.push(`${response.status()} ${response.url()}`);
+  });
+  page.on("pageerror", (error) => errors.push(error.message));
+  for (const path of ["/", "/predicciones", "/ranking/laliga/goleadores", "/gemelos", "/compare"]) {
+    await page.goto(path);
+    await page.waitForLoadState("networkidle");
+  }
+  await page.goto("/ranking/laliga/goleadores");
+  await page.locator("ol li a").first().click();
+  await page.waitForLoadState("networkidle");
+  expect(errors).toEqual([]);
+});
