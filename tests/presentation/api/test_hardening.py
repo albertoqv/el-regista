@@ -1,6 +1,8 @@
 from fastapi.testclient import TestClient
 
+from player_scouting.infrastructure.persistence.overview import DataFreshness
 from player_scouting.presentation.api.dependencies import (
+    get_data_freshness,
     get_database_overview,
     get_hosting_usage_provider,
     get_league_ingestion_job_repository,
@@ -25,6 +27,7 @@ def _client(**settings) -> TestClient:
     app.dependency_overrides[get_visit_repository] = InMemoryVisitRepository
     app.dependency_overrides[get_hosting_usage_provider] = lambda: None
     app.dependency_overrides[get_database_overview] = lambda: {}
+    app.dependency_overrides[get_data_freshness] = lambda: DataFreshness([], None)
     return TestClient(app)
 
 

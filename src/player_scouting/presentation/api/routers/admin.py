@@ -16,6 +16,7 @@ from player_scouting.application.ports import (
 from player_scouting.application.use_cases.admin_dashboard import (
     AdminDashboardUseCase,
     RecordVisitUseCase,
+    is_bot,
 )
 from player_scouting.infrastructure.persistence.overview import DataFreshness
 from player_scouting.presentation.api.dependencies import (
@@ -112,6 +113,20 @@ async def record_visit(
     return Response(status_code=204)
 
 
+@public_router.post("/metrics/error", status_code=204)
+async def record_client_error(request: Request) -> Response:
+    """A JavaScript error from a visitor's browser (text/plain: no preflight)."""
+    if is_bot(request.headers.get("user-agent", "")):
+        return Response(status_code=204)
+    try:
+        body = json.loads(await request.body())
+        message, path = str(body["message"]), str(body.get("path") or "/")
+    except ValueError, KeyError, TypeError:
+        return Response(status_code=204)
+    request.app.state.client_errors.record(message, path)
+    return Response(status_code=204)
+
+
 class _CachedHosting:
     """Railway's numbers move slowly: ask at most every few minutes."""
 
@@ -133,6 +148,7 @@ def dashboard(
     visits: VisitRepositoryDep,
     hosting: HostingDep,
     data: Annotated[dict[str, int], Depends(get_database_overview)],
+    quality: Annotated[DataFreshness, Depends(get_data_freshness)],
     days: Annotated[int, Query(ge=7, le=90)] = 30,
 ) -> dict[str, Any]:
     result = AdminDashboardUseCase(
@@ -142,4 +158,12 @@ def dashboard(
     body["hosting_configured"] = hosting is not None
     body["data"] = data
     body["api"] = request.app.state.metrics.snapshot()
+    body["client_errors"] = request.app.state.client_errors.snapshot()
+    body["data_quality"] = {
+        "missing_results": quality.missing_results,
+        "goal_mismatches": quality.goal_mismatches,
+        "latest_result": quality.latest_result.isoformat()
+        if quality.latest_result
+        else None,
+    }
     return body

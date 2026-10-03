@@ -3,6 +3,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from player_scouting.presentation.api.client_errors import ClientErrorLog
 from player_scouting.presentation.api.metrics import (
     RequestMetrics,
     metrics_middleware,
@@ -37,6 +38,7 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
         openapi_url="/openapi.json" if docs else None,
     )
     app.state.failed_attempts = FailedAttempts()
+    app.state.client_errors = ClientErrorLog()
     app.state.metrics = RequestMetrics()
     app.state.response_cache = ResponseCache()
     app.middleware("http")(response_cache_middleware(app.state.response_cache))
