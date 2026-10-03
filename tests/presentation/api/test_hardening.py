@@ -89,3 +89,23 @@ def test_a_forged_or_expired_session_is_refused():
             "/admin/dashboard", headers={"Authorization": f"Bearer {token}"}
         )
         assert response.status_code == 401
+
+
+def test_on_vercel_the_api_is_closed_and_quiet_by_default(monkeypatch):
+    monkeypatch.setenv("VERCEL", "1")
+
+    settings = ApiSettings()
+
+    assert settings.require_ingestion_key is True
+    assert settings.expose_docs is False
+
+
+def test_locally_the_api_stays_open_for_development(monkeypatch):
+    monkeypatch.delenv("VERCEL", raising=False)
+    monkeypatch.delenv("REQUIRE_INGESTION_KEY", raising=False)
+    monkeypatch.delenv("EXPOSE_DOCS", raising=False)
+
+    settings = ApiSettings()
+
+    assert settings.require_ingestion_key is False
+    assert settings.expose_docs is True
