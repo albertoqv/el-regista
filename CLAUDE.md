@@ -202,6 +202,24 @@ Hecho (2026-09-30), además de lo anterior:
   - Modelo: probados descanso entre partidos (solo vemos liga, no copas: sobreajusta) y
     vida media 60-240 días (mejora ≤0,001, dentro del ruido por bootstrap). No se cambia.
 
+- **Seguridad, fidelidad, gemelos por rol y tendencias** (2026-10-03):
+  - API: `require_ingestion_key`/`expose_docs` (el Dockerfile los pone a true/false),
+    `hmac.compare_digest`, bloqueo tras 10 claves fallidas por IP (15 min), límite por IP
+    (`rate_limit_per_minute`, 600; última IP de X-Forwarded-For), `POST /admin/session` →
+    token firmado de 7 días (la web guarda el token, no la clave). `create_app(settings)`.
+  - Web: CSP y cabeceras en `next.config.ts` (connect-src incluye la API para las visitas);
+    el rewrite `/api/*` excluye ingestion/admin/docs. CI: `pip-audit` + `npm audit`; Dependabot.
+    e2e que falla con cualquier error de consola (detecta violaciones de CSP).
+  - Datos: `application/team_names.py` aprende nombres de equipo de Understat al cruzar
+    jugadores y renombra los de FBref (`rename_season_team`); `/health/data` lista goles que
+    no cuadran FBref/Understat (informativo); `latest_season_year` también en `/players/{id}`.
+  - Gemelos: `domain/roles.py` (grafo de roles de Transfermarkt): penalización 0/4/10/20 por
+    distancia, roles híbridos (distancia 1) cruzan posición, `role_match` en la API y la web.
+  - Tendencias: `domain/trends.py` + `GET /players/{id}/trend` (líneas de Understat, media
+    móvil 5 partidos por 90, dirección ±20%) → `TrendChart` en la ficha (ejes en HTML).
+  - Rankings: filtro de ligas en dos grupos; si la temporada actual no tiene datos, enseña
+    la última terminada y lo dice en el título.
+
 Ideas siguientes: lesiones/alineaciones (no hay fuente
 gratuita fiable), producto (cuentas, favoritos, alertas, planes).
 No hay fuente gratuita de fotos de cuerpo entero.
