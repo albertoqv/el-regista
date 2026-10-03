@@ -10,6 +10,10 @@ import { findRanking, metricsFor, RANKING_LEAGUES, rankingHref, rankingPages } f
 import { SITE_URL } from "@/lib/site";
 
 const LIMIT = 50;
+const LEAGUE_GROUPS = [
+  { label: "5 grandes", leagues: RANKING_LEAGUES.filter((league) => !league.basic) },
+  { label: "Otras ligas", leagues: RANKING_LEAGUES.filter((league) => league.basic) },
+];
 // Below three full matches the per-90 rate is noise (2 goals in 29' = 6.21).
 const MIN_MINUTES_PER_90 = 270;
 
@@ -89,18 +93,29 @@ export default async function RankingPage(props: PageProps<"/ranking/[liga]/[met
           </Link>
         ))}
       </nav>
-      <nav aria-label="Liga" className="no-scrollbar -mx-4 -mt-5 flex gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-        {RANKING_LEAGUES.filter((entry) => metricsFor(entry).some((m) => m.slug === metrica)).map((entry) => (
-          <Link
-            key={entry.slug}
-            href={rankingHref(entry.slug, metrica)}
-            aria-current={entry.slug === liga ? "page" : undefined}
-            className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium ${entry.slug === liga ? "bg-ink/10 text-ink" : "text-muted hover:text-ink"}`}
-          >
-            {entry.competition}
-          </Link>
+      <div className="-mt-4 flex flex-col gap-2">
+        {LEAGUE_GROUPS.map((group) => (
+          <nav key={group.label} aria-label={group.label} className="flex items-center gap-2">
+            <span className="w-24 shrink-0 text-sm font-semibold text-muted">{group.label}</span>
+            <div className="no-scrollbar -mr-4 flex gap-1.5 overflow-x-auto pr-4 sm:mr-0 sm:flex-wrap sm:pr-0">
+              {group.leagues.map((entry) => {
+                // Extra leagues only have goals and assists: other metrics open their scorers.
+                const target = metricsFor(entry).some((m) => m.slug === metrica) ? metrica : "goleadores";
+                return (
+                  <Link
+                    key={entry.slug}
+                    href={rankingHref(entry.slug, target)}
+                    aria-current={entry.slug === liga ? "page" : undefined}
+                    className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-medium ${entry.slug === liga ? "bg-ink text-bg" : "text-muted hover:bg-ink/5 hover:text-ink"}`}
+                  >
+                    {entry.competition}
+                  </Link>
+                );
+              })}
+            </div>
+          </nav>
         ))}
-      </nav>
+      </div>
 
       {leaders.length === 0 ? (
         <p className="glass rounded-lg p-8 text-center text-sm text-muted">Todavía no hay datos de esta temporada.</p>
