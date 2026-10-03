@@ -6,6 +6,9 @@ on:
     - cron: "0 6 * * 2"
     # Friday: fresh results and forecasts before the weekend fixtures.
     - cron: "0 6 * * 5"
+  # Pushing this file starts a run (no token needed to launch it from a commit).
+  push:
+    paths: [".github/refresh-now"]
   workflow_dispatch:
     inputs:
       start_year:
