@@ -412,6 +412,22 @@ class InMemoryShotRepository:
     def list_team_players(self, season_label: str, team: str) -> list:
         return []
 
+    def link_player(self, player_id: int, understat_id: int) -> None:
+        """What players.understat_id does in SQL."""
+        self._links = {**getattr(self, "_links", {}), player_id: understat_id}
+
+    def list_player_lines(self, player_id: int, limit: int) -> list:
+        understat_id = getattr(self, "_links", {}).get(player_id)
+        lines = sorted(
+            (
+                e
+                for e in getattr(self, "_rosters", [])
+                if e.understat_player_id == understat_id
+            ),
+            key=lambda e: e.played_on,
+        )
+        return lines[-limit:]
+
     def save_rosters(self, match_id: int, entries: list) -> None:
         self._rosters = [
             e for e in getattr(self, "_rosters", []) if e.match_id != match_id

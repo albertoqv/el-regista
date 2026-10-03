@@ -345,6 +345,10 @@ class ShotRepository(Protocol):
         self, season_label: str, limit: int
     ) -> list[MatchRef]: ...
 
+    def list_player_lines(self, player_id: int, limit: int) -> list[RosterEntry]:
+        """The player's latest match lines (oldest first), any league or season."""
+        ...
+
     def list_team_players(self, season_label: str, team: str) -> list[ShotLeader]:
         """The team's shooters, by goals then expected goals (value = xG)."""
         ...

@@ -283,6 +283,21 @@ class SqlAlchemyShotRepository:
             for model in self._session.scalars(statement)
         ]
 
+    def list_player_lines(self, player_id: int, limit: int) -> list[RosterEntry]:
+        models = self._session.scalars(
+            select(RosterModel)
+            .join(
+                PlayerModel, PlayerModel.understat_id == RosterModel.understat_player_id
+            )
+            .where(PlayerModel.player_id == player_id)
+            .order_by(RosterModel.played_on.desc())
+            .limit(limit)
+        ).all()
+        return [
+            RosterEntry(**{name: getattr(model, name) for name in _ROSTER_FIELDS})
+            for model in reversed(models)
+        ]
+
     def matches_without_rosters(self, season_label: str, limit: int) -> list[MatchRef]:
         with_rosters = select(RosterModel.match_id).distinct()
         statement = (

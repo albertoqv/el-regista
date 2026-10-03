@@ -19,6 +19,7 @@ from player_scouting.application.use_cases.hot_players import (
     HotPlayersUseCase,
 )
 from player_scouting.domain.season import Season
+from player_scouting.domain.trends import MatchLine, build_trend
 from player_scouting.infrastructure.understat.provider import LEAGUES
 from player_scouting.presentation.api.dependencies import (
     ComparePlayersUseCaseDep,
@@ -177,6 +178,47 @@ def get_player(player_id: int, repository: PlayerRepositoryDep) -> PlayerOut:
         if season.start_year
     ]
     return player_out_from_domain(player, statistics, max(years, default=None))
+
+
+@router.get("/{player_id}/trend")
+def get_player_trend(
+    player_id: int,
+    repository: PlayerRepositoryDep,
+    shots: ShotRepositoryDep,
+    matches: Annotated[int, Query(ge=5, le=60)] = 30,
+) -> dict[str, Any]:
+    """Form match by match (Understat lines): rolling xG + xA per 90."""
+    if repository.get_player(player_id) is None:
+        raise HTTPException(
+            status_code=404, detail=f"No player found with id {player_id}"
+        )
+    trend = build_trend(
+        [
+            MatchLine(
+                played_on=line.played_on,
+                opponent=line.opponent,
+                home=line.home,
+                minutes=line.minutes,
+                goals=line.goals,
+                assists=line.assists,
+                shots=line.shots,
+                xg=line.xg,
+                xa=line.xa,
+            )
+            for line in shots.list_player_lines(player_id, matches)
+        ]
+    )
+    return {
+        "window": trend.window,
+        "direction": trend.direction,
+        "recent_per90": trend.recent_per90,
+        "earlier_per90": trend.earlier_per90,
+        "goals_minus_xg": round(trend.goals_minus_xg, 2),
+        "matches": [
+            asdict(point.line) | {"rolling_per90": round(point.rolling_per90, 3)}
+            for point in trend.points
+        ],
+    }
 
 
 @router.get("/{player_id}/seasons", response_model=list[SeasonOut])
