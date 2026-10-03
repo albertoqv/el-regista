@@ -88,6 +88,9 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
   Las migraciones NO corren al desplegar: las aplica el refresco (`alembic upgrade head`).
   Límite de 5 min por función: la ingesta corre en el runner con una API local sobre Neon.
   Estado en memoria (caché, métricas, errores del navegador) es por instancia de Vercel.
+  **Trampa**: el proyecto `web` de Vercel tiene la integración de GitHub apuntando a la raíz;
+  el `vercel.json` raíz lleva `"git": {"deploymentEnabled": false}` porque si no cada push
+  publicaba la API (FastAPI) en elregista.vercel.app. Web y API se despliegan solo por CLI.
 - Web: Vercel (https://elregista.vercel.app; el antiguo web-seven-tan-39 redirige). `cd web && npx vercel --prod --yes`.
   El navegador llama a la API por `/api/*` (rewrite en `next.config.ts`): sin CORS en ningún dominio.
   URL pública en `web/lib/site.ts` (`NEXT_PUBLIC_SITE_URL`).
