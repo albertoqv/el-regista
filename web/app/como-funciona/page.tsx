@@ -119,8 +119,9 @@ export default async function HowItWorksPage() {
         <p>
           <strong>Transfermarkt</strong> (su web y un dataset público derivado): fotos, fecha de
           nacimiento, pie, altura, posición detallada, valor de mercado con su historial, y las
-          estadísticas de 9 ligas más (Portugal, Países Bajos, Bélgica, Turquía, Escocia, Grecia,
-          Dinamarca, Ucrania y Rusia).
+          estadísticas de 28 ligas más: primeras divisiones como Portugal, Países Bajos, Turquía o
+          México, y las segundas de Inglaterra, España, Italia, Alemania, Francia, Países Bajos y
+          Portugal.
         </p>
         <p>
           Se actualiza solo dos veces por semana (martes y viernes). Un mismo jugador se reconoce entre

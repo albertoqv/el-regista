@@ -33,7 +33,7 @@ export const PRODUCTS: Product[] = [
     key: "scout",
     name: "Scout",
     subject: "Jugadores",
-    pitch: "Encuentra, compara y ficha jugadores con datos reales de 14 ligas.",
+    pitch: "Encuentra, compara y ficha jugadores con datos reales de 33 ligas.",
     color: "#c93c17",
     tools: [
       {

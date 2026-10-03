@@ -6,6 +6,8 @@ export type RankingLeague = {
   name: string;
   /** Only goals and assists (Transfermarkt): no xG, shots or key passes. */
   basic?: boolean;
+  /** Second tiers get their own group in the filter. */
+  second?: boolean;
 };
 
 /** League pages with readable URLs: /ranking/laliga/goleadores. */
@@ -24,6 +26,32 @@ export const RANKING_LEAGUES: RankingLeague[] = [
   { slug: "superliga-danesa", competition: "Danish Superliga", name: "la Superliga danesa", basic: true },
   { slug: "liga-ucraniana", competition: "Ukrainian Premier League", name: "la liga ucraniana", basic: true },
   { slug: "liga-rusa", competition: "Russian Premier League", name: "la liga rusa", basic: true },
+  { slug: "bundesliga-austriaca", competition: "Austrian Bundesliga", name: "la Bundesliga austriaca", basic: true },
+  { slug: "superliga-suiza", competition: "Swiss Super League", name: "la Superliga suiza", basic: true },
+  { slug: "ekstraklasa", competition: "Ekstraklasa", name: "la Ekstraklasa", basic: true },
+  { slug: "liga-checa", competition: "Czech First League", name: "la liga checa", basic: true },
+  { slug: "hnl-croata", competition: "Croatian HNL", name: "la HNL croata", basic: true },
+  { slug: "superliga-rumana", competition: "Romanian Superliga", name: "la Superliga rumana", basic: true },
+  { slug: "superliga-serbia", competition: "Serbian SuperLiga", name: "la Superliga serbia", basic: true },
+  { slug: "saudi-pro-league", competition: "Saudi Pro League", name: "la Saudi Pro League", basic: true },
+  { slug: "liga-mx", competition: "Liga MX", name: "la Liga MX", basic: true },
+  { slug: "a-league", competition: "A-League", name: "la A-League", basic: true },
+  { slug: "championship", competition: "Championship", name: "la Championship", basic: true, second: true },
+  { slug: "league-one", competition: "League One", name: "la League One", basic: true, second: true },
+  { slug: "segunda-division", competition: "Segunda División", name: "la Segunda División", basic: true, second: true },
+  { slug: "serie-b", competition: "Serie B", name: "la Serie B", basic: true, second: true },
+  { slug: "2-bundesliga", competition: "2. Bundesliga", name: "la 2. Bundesliga", basic: true, second: true },
+  { slug: "3-liga", competition: "3. Liga", name: "la 3. Liga", basic: true, second: true },
+  { slug: "ligue-2", competition: "Ligue 2", name: "la Ligue 2", basic: true, second: true },
+  { slug: "eerste-divisie", competition: "Eerste Divisie", name: "la Eerste Divisie", basic: true, second: true },
+  { slug: "liga-portugal-2", competition: "Liga Portugal 2", name: "la Liga Portugal 2", basic: true, second: true },
+];
+
+/** The filter's groups, in order. */
+export const LEAGUE_GROUPS = [
+  { label: "5 grandes", leagues: RANKING_LEAGUES.filter((league) => !league.basic) },
+  { label: "Otras ligas", leagues: RANKING_LEAGUES.filter((league) => league.basic && !league.second) },
+  { label: "Segundas", leagues: RANKING_LEAGUES.filter((league) => league.second) },
 ];
 
 /** Only metrics the current season has (dribbles and tackles stopped in 24/25). */

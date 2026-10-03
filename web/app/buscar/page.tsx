@@ -31,7 +31,7 @@ export default async function SearchPage() {
   return (
     <div className="flex flex-col gap-12">
       <Reveal className="flex flex-col items-center gap-4 pt-6 text-center">
-        <ScoutNote rotate={-2}>cualquier jugador, 14 ligas</ScoutNote>
+        <ScoutNote rotate={-2}>cualquier jugador, 33 ligas</ScoutNote>
         <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Buscar jugador</h1>
         <p className="max-w-xl text-sm text-muted sm:text-base">Ficha completa de cualquier jugador.</p>
         <div className="w-full max-w-2xl">

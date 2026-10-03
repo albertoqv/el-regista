@@ -4,7 +4,7 @@ import { Avatar } from "@/app/components/Avatar";
 import { Reveal } from "@/app/components/Reveal";
 import { ScoutNote } from "@/app/components/ScoutNote";
 import { explorePlayers, type ExploreRow } from "@/lib/api";
-import { COMPETITIONS, OTHER_COMPETITIONS, currentSeasonStartYear, formatMarketValue, positionLabel, seasonDisplay } from "@/lib/format";
+import { COMPETITIONS, OTHER_COMPETITIONS, SECOND_DIVISIONS, currentSeasonStartYear, formatMarketValue, positionLabel, seasonDisplay } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Explorador · El Regista",
@@ -129,7 +129,7 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
   const sortLabel = SORTS.find((entry) => entry.value === values.sort)?.label ?? values.sort;
   const perNinetyShown = values.per_90 && values.sort !== "market_value" && values.sort !== "age";
   const seasons = [0, 1, 2].map((offset) => String(Number(current) - offset));
-  const otherLeague = (OTHER_COMPETITIONS as readonly string[]).includes(values.competition);
+  const otherLeague = ([...OTHER_COMPETITIONS, ...SECOND_DIVISIONS] as readonly string[]).includes(values.competition);
   const stringValues: Record<string, string> = Object.fromEntries(
     Object.entries({ ...values, per_90: values.per_90 ? "true" : "" }).filter(([, value]) => value),
   );
@@ -181,6 +181,13 @@ export default async function ExplorePage(props: PageProps<"/explorar">) {
             </optgroup>
             <optgroup label="Más ligas (goles, asistencias, minutos)">
               {OTHER_COMPETITIONS.map((league) => (
+                <option key={league} value={league}>
+                  {league}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Segundas divisiones (goles, asistencias, minutos)">
+              {SECOND_DIVISIONS.map((league) => (
                 <option key={league} value={league}>
                   {league}
                 </option>

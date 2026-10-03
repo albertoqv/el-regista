@@ -27,8 +27,8 @@ export const COMPETITIONS = [
 ] as const;
 
 /**
- * Leagues with player stats from the Transfermarkt dataset: goals, assists,
- * minutes and cards (no xG), and only for seasons the dataset already covers.
+ * Leagues with player stats from Transfermarkt: goals, assists, minutes and
+ * cards (no xG). Names exactly as the API stores them.
  */
 export const OTHER_COMPETITIONS = [
   "Eredivisie",
@@ -36,10 +36,33 @@ export const OTHER_COMPETITIONS = [
   "Süper Lig",
   "Jupiler Pro League",
   "Scottish Premiership",
+  "Austrian Bundesliga",
+  "Swiss Super League",
   "Greek Super League",
   "Danish Superliga",
+  "Ekstraklasa",
+  "Czech First League",
+  "Croatian HNL",
+  "Romanian Superliga",
+  "Serbian SuperLiga",
   "Ukrainian Premier League",
   "Russian Premier League",
+  "Saudi Pro League",
+  "Liga MX",
+  "A-League",
+] as const;
+
+/** Second tiers, same Transfermarkt numbers. */
+export const SECOND_DIVISIONS = [
+  "Championship",
+  "League One",
+  "Segunda División",
+  "Serie B",
+  "2. Bundesliga",
+  "3. Liga",
+  "Ligue 2",
+  "Eerste Divisie",
+  "Liga Portugal 2",
 ] as const;
 
 const COMPETITION_COLORS: Record<string, string> = {

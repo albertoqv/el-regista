@@ -87,7 +87,7 @@ export default async function HomePage() {
             <br />
             datos de verdad
           </h1>
-          <p className="max-w-xl text-base text-ink/85">Jugadores y partidos de 14 ligas, contados con números reales.</p>
+          <p className="max-w-xl text-base text-ink/85">Jugadores y partidos de 33 ligas, contados con números reales.</p>
         </div>
         <div className="w-full max-w-2xl">
           <PlayerSearchForm />

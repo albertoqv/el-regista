@@ -5,14 +5,17 @@ import { currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 import { RANKING_LEAGUES, RANKING_METRICS, rankingHref } from "@/lib/rankings";
 
 const BIG_FIVE = RANKING_LEAGUES.filter((league) => !league.basic);
-const OTHERS = RANKING_LEAGUES.filter((league) => league.basic);
+const BASIC_GROUPS = [
+  { title: "Otras ligas", leagues: RANKING_LEAGUES.filter((league) => league.basic && !league.second) },
+  { title: "Segundas divisiones", leagues: RANKING_LEAGUES.filter((league) => league.second) },
+];
 
 const season = () => seasonDisplay(String(currentSeasonStartYear()));
 
 export function generateMetadata(): Metadata {
   return {
     title: `Rankings ${season()}: goleadores, asistentes y xG · El Regista`,
-    description: "Goleadores, asistentes, xG, xA, tiros y pases clave de LaLiga, Premier, Serie A, Bundesliga y Ligue 1.",
+    description: "Goleadores, asistentes, xG, xA, tiros y pases clave de las 5 grandes, y goleadores y asistentes de 28 ligas más, segundas divisiones incluidas.",
     alternates: { canonical: "/ranking" },
   };
 }
@@ -30,7 +33,7 @@ export default async function RankingIndexPage() {
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-2">
         <h1 className="font-display text-5xl leading-[0.92] sm:text-6xl">Rankings {season()}</h1>
-        <p className="text-sm text-muted">Catorce ligas, actualizadas martes y viernes.</p>
+        <p className="text-sm text-muted">33 ligas, actualizadas martes y viernes.</p>
       </header>
 
       <div className="grid grid-cols-1 gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
@@ -63,27 +66,29 @@ export default async function RankingIndexPage() {
         ))}
       </div>
 
-      <section className="flex flex-col gap-3 border-t-2 border-ink pt-3">
-        <h2 className="font-heading text-2xl tracking-tight">Otras ligas</h2>
-        <p className="text-sm text-muted">Solo goles y asistencias.</p>
-        <ul className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
-          {OTHERS.map((league) => (
-            <li key={league.slug} className="flex items-baseline justify-between gap-3 border-b border-line py-2">
-              <Link href={rankingHref(league.slug, "goleadores")} className="font-semibold hover:text-brand">
-                {league.competition}
-              </Link>
-              <span className="flex gap-3 text-sm text-muted">
-                <Link href={rankingHref(league.slug, "goleadores")} className="hover:text-ink">
-                  Goles
+      {BASIC_GROUPS.map((group) => (
+        <section key={group.title} className="flex flex-col gap-3 border-t-2 border-ink pt-3">
+          <h2 className="font-heading text-2xl tracking-tight">{group.title}</h2>
+          <p className="text-sm text-muted">Solo goles y asistencias.</p>
+          <ul className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2 lg:grid-cols-3">
+            {group.leagues.map((league) => (
+              <li key={league.slug} className="flex items-baseline justify-between gap-3 border-b border-line py-2">
+                <Link href={rankingHref(league.slug, "goleadores")} className="min-w-0 truncate font-semibold hover:text-brand">
+                  {league.competition}
                 </Link>
-                <Link href={rankingHref(league.slug, "asistentes")} className="hover:text-ink">
-                  Asistencias
-                </Link>
-              </span>
-            </li>
-          ))}
-        </ul>
-      </section>
+                <span className="flex shrink-0 gap-3 text-sm text-muted">
+                  <Link href={rankingHref(league.slug, "goleadores")} className="hover:text-ink">
+                    Goles
+                  </Link>
+                  <Link href={rankingHref(league.slug, "asistentes")} className="hover:text-ink">
+                    Asistencias
+                  </Link>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
     </div>
   );
 }

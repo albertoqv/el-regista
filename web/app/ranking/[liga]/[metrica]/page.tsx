@@ -6,14 +6,11 @@ import { JsonLd } from "@/app/components/JsonLd";
 import { listSeasonLeaders, type SeasonLeader } from "@/lib/api";
 import { currentSeasonStartYear, positionShort, seasonDisplay } from "@/lib/format";
 import { METRICS } from "@/lib/metrics";
-import { findRanking, metricsFor, RANKING_LEAGUES, rankingHref, rankingPages } from "@/lib/rankings";
+import { findRanking, LEAGUE_GROUPS, metricsFor, rankingHref, rankingPages } from "@/lib/rankings";
 import { SITE_URL } from "@/lib/site";
 
 const LIMIT = 50;
-const LEAGUE_GROUPS = [
-  { label: "5 grandes", leagues: RANKING_LEAGUES.filter((league) => !league.basic) },
-  { label: "Otras ligas", leagues: RANKING_LEAGUES.filter((league) => league.basic) },
-];
+
 // Below three full matches the per-90 rate is noise (2 goals in 29' = 6.21).
 const MIN_MINUTES_PER_90 = 270;
 
