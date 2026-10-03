@@ -1,24 +1,27 @@
-name: Migrate the database (Railway -> Neon)
+name: Move the database (live API -> DATABASE_URL)
 
-# Done on 2026-10-03 (identical counts on both sides). Kept as the record of how;
-# the guard below stops it if the target already has data.
-
-# One-off: copies every row from the API still on Railway into the new database.
-# Needs the secrets API_BASE_URL and INGESTION_API_KEY (Railway) and DATABASE_URL (Neon).
+# Copies every row the live API serves into the database in the DATABASE_URL secret.
+# Used for Railway -> Neon Frankfurt and then Neon Frankfurt -> Neon Washington (iad1,
+# next to Vercel's functions and GitHub's runners). The guard stops it if the target
+# already has data. Needs the secrets INGESTION_API_KEY and DATABASE_URL.
 on:
   workflow_dispatch:
+  # Also started by pushing this file, so it can be launched from a commit.
+  push:
+    paths: [".github/database-move"]
 
 jobs:
   migrate:
     runs-on: ubuntu-latest
     env:
-      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      # The live API, still reading the old database until it is redeployed.
+      API_BASE_URL: https://el-regista-api.vercel.app
       INGESTION_API_KEY: ${{ secrets.INGESTION_API_KEY }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
-      - name: Download the current data from Railway
+      - name: Download the current data from the live API
         run: |
           curl -sS --fail-with-body --retry 3 --retry-delay 20 --max-time 1200 \
             -H "X-Ingestion-Key: $INGESTION_API_KEY" \
@@ -52,6 +55,6 @@ jobs:
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: railway-final-copy
+          name: database-move-copy
           path: elregista.sql.gz
           retention-days: 90
