@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 from functools import lru_cache
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,10 +17,11 @@ class ApiSettings(BaseSettings):
     # Optional: show the server bill in the admin panel (Railway workspace token).
     railway_api_token: str = ""
     railway_workspace_id: str = ""
-    # Production (the Dockerfile) fails closed: no key configured = no ingestion.
-    require_ingestion_key: bool = False
+    # Production fails closed: no key configured = no ingestion. Vercel sets VERCEL=1,
+    # so a deployment there is production unless the variables say otherwise.
+    require_ingestion_key: bool = Field(default_factory=lambda: "VERCEL" in os.environ)
     # Interactive API map at /docs; off in production (it lists every endpoint).
-    expose_docs: bool = True
+    expose_docs: bool = Field(default_factory=lambda: "VERCEL" not in os.environ)
     # Requests per minute from one address before answering 429.
     rate_limit_per_minute: int = 600
 
