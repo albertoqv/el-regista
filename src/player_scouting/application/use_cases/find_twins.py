@@ -17,6 +17,13 @@ from player_scouting.application.ports import (
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.percentiles import MetricPercentile
+from player_scouting.domain.roles import (
+    HYBRID_DISTANCE,
+    RoleMatch,
+    role_distance,
+    role_match,
+    role_penalty,
+)
 from player_scouting.domain.season import Season
 from player_scouting.domain.shots import shot_rates
 from player_scouting.domain.twins import (
@@ -52,6 +59,7 @@ class TwinProfile:
 @dataclass(frozen=True)
 class Twin(TwinProfile):
     similarity: int = 0
+    role_match: RoleMatch | None = None
     shared_strengths: tuple[str, ...] = field(default=())
     differences: tuple[str, ...] = field(default=())
 
@@ -133,6 +141,8 @@ class FindTwinsUseCase:
             )
             if similarity is None:
                 continue
+            # Same numbers in another role is a weaker twin: the role weighs too.
+            distance = role_distance(role, record.player.detailed_position)
             twins.append(
                 Twin(
                     player=record.player,
@@ -140,7 +150,8 @@ class FindTwinsUseCase:
                     team=record.team,
                     market_value=values.get(record.player.player_id),
                     percentiles=percentiles,
-                    similarity=similarity.percentage,
+                    similarity=max(0, similarity.percentage - role_penalty(distance)),
+                    role_match=role_match(distance),
                     shared_strengths=similarity.shared_strengths,
                     differences=similarity.differences,
                 )
@@ -208,10 +219,16 @@ class FindTwinsUseCase:
         for record in records:
             if (
                 record.player.player_id == target.player.player_id
-                or record.player.position != target.player.position
                 or record.statistics.minutes_played < TWIN_MINIMUM_MINUTES
             ):
                 continue
+            if record.player.position != target.player.position:
+                # Hybrids cross the line: a winger and a wide midfielder.
+                distance = role_distance(
+                    target.player.detailed_position, record.player.detailed_position
+                )
+                if distance is None or distance > HYBRID_DISTANCE:
+                    continue
             current = best.get(record.player.player_id)
             if current is None or (
                 _year(record.season),
