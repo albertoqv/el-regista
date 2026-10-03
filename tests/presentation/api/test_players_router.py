@@ -2,6 +2,7 @@ from datetime import date
 
 from fastapi.testclient import TestClient
 
+from player_scouting.application.ports import RosterEntry
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
@@ -610,3 +611,51 @@ def test_a_single_player_says_his_latest_season_too():
     body = _client_with_repository(repository).get("/players/1").json()
 
     assert body["latest_season_year"] == 2026
+
+
+def test_player_trend_lists_his_matches_with_the_rolling_threat():
+    repository = InMemoryPlayerRepository()
+    repository.add(
+        Player(1, "Raphinha", "Forward", None),
+        Season("La Liga", "2026"),
+        Statistics(5, 2),
+    )
+    shots = InMemoryShotRepository()
+    shots.link_player(1, 4444)
+    shots.save_rosters(
+        10,
+        [
+            RosterEntry(
+                10,
+                "La Liga",
+                "2026",
+                date(2026, 8, 17),
+                "Barcelona",
+                "Mallorca",
+                False,
+                4444,
+                "Raphinha",
+                "FW",
+                90,
+                1,
+                0,
+                1,
+                3,
+                2,
+                0.8,
+                0.3,
+                0,
+                0,
+            )
+        ],
+    )
+    app = create_app()
+    app.dependency_overrides[get_player_repository] = lambda: repository
+    app.dependency_overrides[get_shot_repository] = lambda: shots
+
+    body = TestClient(app).get("/players/1/trend").json()
+
+    [match] = body["matches"]
+    assert (match["opponent"], match["goals"], match["xg"]) == ("Mallorca", 1, 0.8)
+    assert round(match["rolling_per90"], 2) == 1.1
+    assert body["direction"] is None

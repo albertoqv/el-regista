@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from player_scouting.application.ports import MatchRef
+from player_scouting.application.ports import MatchRef, RosterEntry
 from player_scouting.domain.entities import Player
 from player_scouting.domain.season import Season
 from player_scouting.domain.shots import Shot
@@ -298,3 +298,46 @@ def test_rosters_are_saved_and_listed_and_pending_matches_found(session):
 
     assert repository.list_rosters("La Liga", ["2026"]) == [entry]
     assert [m.match_id for m in repository.matches_without_rosters("2026", 10)] == [2]
+
+
+def test_lists_a_players_latest_match_lines_oldest_first(session):
+    players = SqlAlchemyPlayerRepository(session)
+    players.save_player(Player(1, "Raphinha", "Forward", None))
+    players.set_understat_id(1, 4444)
+    repository = SqlAlchemyShotRepository(session)
+    for day in (3, 10, 17):
+        match_id = 960000 + day
+        repository.save_match(
+            MatchRef(match_id, "La Liga", "2026", date(2026, 8, day), "A", "B"), []
+        )
+        repository.save_rosters(
+            match_id,
+            [
+                RosterEntry(
+                    match_id,
+                    "La Liga",
+                    "2026",
+                    date(2026, 8, day),
+                    "A",
+                    "B",
+                    True,
+                    4444,
+                    "Raphinha",
+                    "FW",
+                    90,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0.1,
+                    0.0,
+                    0,
+                    0,
+                )
+            ],
+        )
+
+    lines = repository.list_player_lines(1, limit=2)
+
+    assert [line.played_on.day for line in lines] == [10, 17]
