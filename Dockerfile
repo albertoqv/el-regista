@@ -15,7 +15,8 @@ RUN uv sync --frozen --no-dev
 
 # Fewer glibc malloc arenas: less resident memory for a single process, and
 # memory is almost all of the Railway bill.
-ENV PATH="/app/.venv/bin:$PATH" MALLOC_ARENA_MAX=2 PYTHONUNBUFFERED=1 \n    REQUIRE_INGESTION_KEY=true EXPOSE_DOCS=false
+ENV PATH="/app/.venv/bin:$PATH" MALLOC_ARENA_MAX=2 PYTHONUNBUFFERED=1 \
+    REQUIRE_INGESTION_KEY=true EXPOSE_DOCS=false
 
 EXPOSE 8000
 
