@@ -15,7 +15,8 @@ if (-not $key) { Write-Error "Sin clave no se instala nada."; exit 1 }
 [Environment]::SetEnvironmentVariable("INGESTION_API_KEY", $key, "User")
 
 $script = Join-Path $PSScriptRoot "home_sync.ps1"
-$action = New-ScheduledTaskAction -Execute "powershell.exe" `
+$powershell = Join-Path $env:SystemRoot "System32\WindowsPowerShell\v1.0\powershell.exe"
+$action = New-ScheduledTaskAction -Execute $powershell -WorkingDirectory (Split-Path -Parent $PSScriptRoot) `
     -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$script`""
 $trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Tuesday, Friday -At 21:00
 $settings = New-ScheduledTaskSettingsSet -StartWhenAvailable -AllowStartIfOnBatteries `
