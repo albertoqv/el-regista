@@ -76,6 +76,9 @@ STAT_COLUMNS = (
     "minutes_played",
 )
 PAUSE_SECONDS = 2.0
+# A slow page is tried again before giving up on the run.
+ATTEMPTS = 3
+RETRY_PAUSE_SECONDS = 10.0
 
 
 @dataclass(frozen=True)
@@ -168,10 +171,14 @@ def extract_club_season(club_html: str) -> list[ScrapedLine]:
 
 class TransfermarktLeagueScraper:
     def __init__(
-        self, client: TransfermarktClient, pause_seconds: float = PAUSE_SECONDS
+        self,
+        client: TransfermarktClient,
+        pause_seconds: float = PAUSE_SECONDS,
+        retry_pause_seconds: float = RETRY_PAUSE_SECONDS,
     ) -> None:
         self._client = client
         self._pause = pause_seconds
+        self._retry_pause = retry_pause_seconds
 
     def league_season(
         self, competition_code: str, start_year: int
@@ -194,9 +201,17 @@ class TransfermarktLeagueScraper:
         return rows
 
     def _page(self, path: str) -> str:
-        try:
-            return self._client.get_page(path)
-        except httpx.HTTPStatusError as error:
-            if error.response.status_code in (403, 429):
-                raise EnrichmentUnavailableError(str(error)) from error
-            raise
+        for attempt in range(ATTEMPTS):
+            try:
+                return self._client.get_page(path)
+            except httpx.HTTPStatusError as error:
+                if error.response.status_code in (403, 429):
+                    raise EnrichmentUnavailableError(str(error)) from error
+                raise
+            except httpx.TransportError as error:
+                # Timeouts and dropped connections: wait and retry, then stop the run
+                # (leagues already sent are kept) instead of crashing it.
+                if attempt == ATTEMPTS - 1:
+                    raise EnrichmentUnavailableError(str(error)) from error
+                time.sleep(self._retry_pause)
+        raise AssertionError("unreachable")
