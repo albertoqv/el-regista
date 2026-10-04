@@ -81,3 +81,19 @@ def test_player_season_percentiles_for_an_unknown_season_is_404():
     response = client.get("/players/1/seasons/La Liga/1999/percentiles")
 
     assert response.status_code == 404
+
+
+def test_without_a_league_the_leaders_are_from_the_big_five_only():
+    repository = _repository()
+    repository.save_player(Player(3, "Samuel Essende", "Forward", None))
+    repository.save_season_statistics(
+        3, Season("Swiss Super League", "2026"), Statistics(20, 1), team="Young Boys"
+    )
+
+    names = [p["name"] for p in _client(repository).get("/seasons/2026/leaders").json()]
+    swiss = _client(repository).get(
+        "/seasons/2026/leaders?competition=Swiss%20Super%20League"
+    )
+
+    assert "Samuel Essende" not in names
+    assert [p["name"] for p in swiss.json()] == ["Samuel Essende"]
