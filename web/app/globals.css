@@ -47,7 +47,8 @@
 }
 
 html {
-  color-scheme: light;
+  /* "only": the browser must not darken the page on its own (Android dark mode). */
+  color-scheme: light only;
   background: var(--bg);
 }
 
@@ -75,6 +76,28 @@ body {
 
 h1, h2, h3 {
   text-wrap: balance;
+}
+
+/* Typed text always in ink, whatever the browser's own form colours are. */
+input,
+textarea,
+select {
+  color: var(--text);
+  -webkit-text-fill-color: var(--text);
+  caret-color: var(--brand);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  -webkit-text-fill-color: var(--muted);
+  opacity: 1;
+}
+
+/* Chrome's autofill paints its own background and text: keep ours. */
+input:-webkit-autofill {
+  -webkit-text-fill-color: var(--text);
+  -webkit-box-shadow: 0 0 0 1000px var(--surface) inset;
 }
 
 ::selection {
@@ -130,6 +153,19 @@ h1, h2, h3 {
 .photo-header [class*="text-muted"],
 .on-photo [class*="text-muted"] {
   color: rgba(251, 250, 247, 0.78);
+}
+
+/* A white box on a photo (search, its suggestions) is back on paper: page colours. */
+.photo-header .on-paper,
+.on-photo .on-paper,
+.photo-header .on-paper [class*="text-ink"],
+.on-photo .on-paper [class*="text-ink"] {
+  color: var(--text);
+}
+
+.photo-header .on-paper [class*="text-muted"],
+.on-photo .on-paper [class*="text-muted"] {
+  color: var(--muted);
 }
 
 .photo-header > img {

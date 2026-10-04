@@ -1,5 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Schibsted_Grotesk } from "next/font/google";
 import localFont from "next/font/local";
 import Link from "next/link";
@@ -25,6 +25,13 @@ const regista = localFont({
   display: "swap",
   fallback: ["Arial Narrow", "sans-serif"],
 });
+
+// Light only: stops Android's forced dark mode from recolouring the page unevenly
+// (it left typed text the same colour as the search box).
+export const viewport: Viewport = {
+  colorScheme: "only light",
+  themeColor: "#f7f6f2",
+};
 
 export const metadata: Metadata = {
   // Absolute URLs for social previews (Open Graph cards).

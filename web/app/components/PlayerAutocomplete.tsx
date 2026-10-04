@@ -81,7 +81,7 @@ export function PlayerAutocomplete({
   const large = size === "lg";
 
   return (
-    <div className="relative w-full" ref={containerRef}>
+    <div className="on-paper relative w-full" ref={containerRef}>
       <div
         className={`glass flex items-center gap-3 rounded-lg transition focus-within:border-ink/25 ${large ? "px-5 py-4" : "px-4 py-2.5"}`}
         style={{ boxShadow: open ? `0 0 0 3px ${accent}33` : undefined }}
