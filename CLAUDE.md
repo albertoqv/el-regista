@@ -73,7 +73,11 @@ cd web && npx tsc --noEmit && npm run lint && npm run build
 - **Transfermarkt**: foto, fecha de nacimiento, pie y valor de mercado (robots.txt lo
   permite). **Desde oct 2026 su WAF de AWS bloquea las IPs de centros de datos (runners de
   GitHub incluidos)**: responde 202 vacío con `x-amzn-waf-action: challenge`; el cliente lo
-  trata como bloqueo (`EnrichmentUnavailableError`). Desde una IP doméstica funciona. Elegir candidato por edad y nombre, nunca el primero a ciegas. Si
+  trata como bloqueo (`EnrichmentUnavailableError`). Desde una IP doméstica funciona:
+  las 28 ligas y el enriquecimiento corren en el PC del usuario con la tarea programada
+  "El Regista - Transfermarkt" (`scripts/home_sync.ps1`, instalada con
+  `scripts/home_sync_install.ps1`; martes/viernes 21:00 o al encender; log en
+  `.cache/home-sync.log`). Elegir candidato por edad y nombre, nunca el primero a ciegas. Si
   responde 403/429 → `EnrichmentUnavailableError` (parar el lote, no marcar a nadie).
 - **API-Football**: cuenta gratuita suspendida (IP compartida de Railway). Código
   conservado pero sin cron. **StatsBomb**: 21 jugadores históricos de 1984.
