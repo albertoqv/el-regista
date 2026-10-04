@@ -263,10 +263,13 @@ class SqlAlchemyPlayerRepository:
         metric: LeaderMetric,
         limit: int,
         competition: str | None = None,
+        competitions: tuple[str, ...] | None = None,
     ) -> list[SeasonRecord]:
         filters = [Basic.season_label == season_label]
         if competition is not None:
             filters.append(Basic.competition == competition)
+        if competitions is not None:
+            filters.append(Basic.competition.in_(competitions))
         rows = (
             self._session.query(Basic, Advanced, PlayerModel)
             .join(PlayerModel, PlayerModel.player_id == Basic.player_id)

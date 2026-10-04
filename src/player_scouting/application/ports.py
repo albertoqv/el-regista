@@ -63,6 +63,7 @@ class PlayerRepository(Protocol):
         metric: LeaderMetric,
         limit: int,
         competition: str | None = None,
+        competitions: tuple[str, ...] | None = None,
     ) -> list[SeasonRecord]: ...
 
     def list_season_records(self, season_labels: list[str]) -> list[SeasonRecord]: ...

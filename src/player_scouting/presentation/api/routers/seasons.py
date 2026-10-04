@@ -5,6 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Query
 
 from player_scouting.application.ports import LeaderMetric, ShotMetric
+from player_scouting.domain.season import BIG_FIVE
 from player_scouting.infrastructure.persistence.overview import database_overview
 from player_scouting.presentation.api.dependencies import (
     PlayerRepositoryDep,
@@ -31,8 +32,14 @@ def list_season_leaders(
     limit: Annotated[int, Query(ge=1, le=50)] = 10,
     competition: str | None = None,
 ) -> list[SeasonLeaderOut]:
+    # "All leagues" means the big five: the others have far fewer stats and would
+    # crowd the boards with goals from much weaker leagues.
     leaders = repository.list_season_leaders(
-        str(start_year), metric, limit, competition
+        str(start_year),
+        metric,
+        limit,
+        competition,
+        competitions=None if competition else BIG_FIVE,
     )
     return [season_leader_out_from_domain(leader) for leader in leaders]
 

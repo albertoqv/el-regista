@@ -126,6 +126,7 @@ class InMemoryPlayerRepository:
         metric: LeaderMetric,
         limit: int,
         competition: str | None = None,
+        competitions: tuple[str, ...] | None = None,
     ) -> list[SeasonRecord]:
         leaders = [
             SeasonRecord(
@@ -137,6 +138,7 @@ class InMemoryPlayerRepository:
             for (player_id, season) in self._season_statistics
             if season.label == season_label
             and competition in (None, season.competition)
+            and (competitions is None or season.competition in competitions)
             and player_id in self._players
         ]
         leaders.sort(
