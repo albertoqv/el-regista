@@ -112,3 +112,33 @@ def test_the_season_leagues_cover_second_divisions_with_verified_codes():
     assert SEASON_LEAGUES["ES2"] == "Segunda División"
     assert SEASON_LEAGUES["L2"] == "2. Bundesliga"
     assert len(SEASON_LEAGUES) == 28
+
+
+def _flaky_scraper(failures_before_success: int):
+    calls = {"n": 0}
+    pages = {
+        "/wettbewerb/startseite/wettbewerb/NL1/saison_id/2026": LEAGUE_HTML,
+        "/psv-eindhoven/leistungsdaten/verein/383/reldata/NL1%262026/plus/1": CLUB_HTML,
+        "/ajax-amsterdam/leistungsdaten/verein/610/reldata/NL1%262026/plus/1": "<table class='items'><tbody></tbody></table>",
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.raw_path.decode()
+        if "psv" in path and calls["n"] < failures_before_success:
+            calls["n"] += 1
+            raise httpx.ReadTimeout("slow page", request=request)
+        return httpx.Response(200, text=pages[path])
+
+    client = TransfermarktClient(httpx.Client(transport=httpx.MockTransport(handler)))
+    return TransfermarktLeagueScraper(client, pause_seconds=0, retry_pause_seconds=0)
+
+
+def test_a_page_that_times_out_once_is_tried_again():
+    rows = _flaky_scraper(failures_before_success=1).league_season("NL1", 2026)
+
+    assert [line.transfermarkt_id for _, line in rows] == [42460]
+
+
+def test_a_page_that_never_answers_stops_the_run_instead_of_crashing_it():
+    with pytest.raises(EnrichmentUnavailableError):
+        _flaky_scraper(failures_before_success=99).league_season("NL1", 2026)
