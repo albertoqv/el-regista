@@ -80,6 +80,8 @@ def _vault_returns(monkeypatch, secrets: dict[str, str]) -> list[str]:
 
 
 def test_with_vault_configured_the_settings_come_from_vault(monkeypatch):
+    # CI sets DATABASE_URL for the other tests, and a variable would win over Vault.
+    monkeypatch.delenv("DATABASE_URL", raising=False)
     _vault_returns(
         monkeypatch,
         {"ingestion_api_key": "from-vault", "database_url": "postgres://u:p@h/db"},
