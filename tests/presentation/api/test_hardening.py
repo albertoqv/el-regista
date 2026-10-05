@@ -109,3 +109,12 @@ def test_locally_the_api_stays_open_for_development(monkeypatch):
 
     assert settings.require_ingestion_key is False
     assert settings.expose_docs is True
+
+
+def test_every_answer_carries_the_security_headers_zap_asked_for():
+    # OWASP ZAP baseline (Oct 2026): 10021 and 90004 on every endpoint.
+    client = TestClient(create_app(ApiSettings(_env_file=None)))
+
+    for response in (client.get("/health"), client.get("/no-such-page")):
+        assert response.headers["X-Content-Type-Options"] == "nosniff"
+        assert response.headers["Cross-Origin-Resource-Policy"] == "same-origin"
