@@ -79,6 +79,11 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
 - BD en **Neon** Free (Washington iad1, junto a Vercel y los runners de GitHub). Vercel
   enmascara `DATABASE_URL` al hacer `env pull`: lo que necesite la BD se hace desde
   GitHub Actions. Las migraciones NO corren al desplegar: las aplica el refresco.
+  **Límite de 5 GB/mes de transferencia** (se agotó en 2 días en oct 2026 y hubo que pasar
+  a un proyecto nuevo con `migrate-to-neon.yml`): las lecturas masivas (gemelos,
+  explorador, pronósticos) se sirven de memoria 3 h (`presentation/api/read_cache.py`), la
+  web cachea 3 h y el e2e contra la API real solo corre si cambia `web/`. Cualquier
+  consulta nueva que lea tablas enteras debe ir por `READ_CACHE`.
 - Secretos solo como variables de entorno (Vercel / GitHub secrets `DATABASE_URL`,
   `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo ni en el chat.
 - Workflows: `weekly-fbref-refresh.yml` (martes y viernes; también con un push que toque

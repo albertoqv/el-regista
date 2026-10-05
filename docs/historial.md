@@ -142,3 +142,8 @@ Hecho (2026-09-30), además de lo anterior:
 
 Ideas descartadas o sin fuente: lesiones/alineaciones (no hay fuente gratuita fiable),
 fotos de cuerpo entero (tampoco). Favoritos y alertas: descartados por el usuario.
+
+- **Límite de transferencia de Neon** (2026-10-05): 5 GB/mes agotados en dos días (gemelos y
+  pronósticos leían tablas enteras en cada petición, y el CI recorría la web contra producción
+  21 veces al día). Caché de lecturas en memoria (3 h), web a 3 h, e2e solo con cambios en
+  `web/` y base copiada a un proyecto nuevo de Neon.
