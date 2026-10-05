@@ -1,0 +1,41 @@
+name: Local stack with Vault
+
+# Starts the Docker Compose stack (Postgres, dev Vault, API) and checks that the API
+# takes its database URL and ingestion key from Vault. Local setup only: production
+# reads environment variables.
+on:
+  push:
+    paths:
+      - "docker-compose.yml"
+      - "Dockerfile"
+      - "src/player_scouting/infrastructure/secrets/**"
+      - "src/player_scouting/**/settings.py"
+      - ".github/workflows/compose-vault.yml"
+  pull_request:
+    paths:
+      - "docker-compose.yml"
+      - "Dockerfile"
+      - "src/player_scouting/infrastructure/secrets/**"
+  workflow_dispatch:
+
+jobs:
+  stack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Start Postgres, Vault and the API
+        run: docker compose up -d --build db vault api
+      - name: The API reaches the database with the URL from Vault
+        run: |
+          for i in $(seq 1 60); do curl -sf http://localhost:8000/health/db && break; sleep 2; done
+          curl -sf http://localhost:8000/health/db | grep -q '"ok"'
+      - name: Ingestion only opens with the key stored in Vault
+        run: |
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/ingestion/leagues)" = 401
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'X-Ingestion-Key: local-ingestion-key' http://localhost:8000/ingestion/leagues)" = 200
+      - name: Logs
+        if: failure()
+        run: docker compose logs vault vault-init api
+      - name: Stop
+        if: always()
+        run: docker compose down -v
