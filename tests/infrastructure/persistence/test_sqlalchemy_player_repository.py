@@ -2,14 +2,12 @@ import os
 from datetime import date
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
-from player_scouting.infrastructure.persistence.models import Base, PlayerModel
+from player_scouting.infrastructure.persistence.models import PlayerModel
 from player_scouting.infrastructure.persistence.sqlalchemy_player_repository import (
     SqlAlchemyPlayerRepository,
 )
@@ -23,20 +21,6 @@ pytestmark = pytest.mark.skipif(
 
 LA_LIGA_2023 = Season("La Liga", "2023")
 PREMIER_LEAGUE_2023 = Season("Premier League", "2023")
-
-
-@pytest.fixture
-def session():
-    engine = create_engine(DATABASE_URL)
-    Base.metadata.create_all(engine)
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
 
 
 def test_saves_and_retrieves_a_player(session):

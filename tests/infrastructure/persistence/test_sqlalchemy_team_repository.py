@@ -2,31 +2,14 @@ import os
 from datetime import date, datetime
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
 from player_scouting.application.ports import Fixture, TeamMatch
-from player_scouting.infrastructure.persistence.models import Base
 from player_scouting.infrastructure.persistence.sqlalchemy_team_repository import (
     SqlAlchemyTeamRepository,
 )
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 pytestmark = pytest.mark.skipif(DATABASE_URL is None, reason="DATABASE_URL is not set")
-
-
-@pytest.fixture
-def session():
-    engine = create_engine(DATABASE_URL)
-    Base.metadata.create_all(engine)
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
 
 
 def _fixture(match_id, day, played=True, league="La Liga"):

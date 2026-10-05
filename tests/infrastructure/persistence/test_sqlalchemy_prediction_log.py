@@ -3,31 +3,14 @@ from dataclasses import replace
 from datetime import datetime
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
 from player_scouting.application.ports import PredictionSnapshot
-from player_scouting.infrastructure.persistence.models import Base
 from player_scouting.infrastructure.persistence.sqlalchemy_prediction_log import (
     SqlAlchemyPredictionLog,
 )
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 pytestmark = pytest.mark.skipif(DATABASE_URL is None, reason="DATABASE_URL is not set")
-
-
-@pytest.fixture
-def session():
-    engine = create_engine(DATABASE_URL)
-    Base.metadata.create_all(engine)
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
 
 
 SNAPSHOT = PredictionSnapshot(

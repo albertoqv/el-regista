@@ -2,14 +2,11 @@ import os
 from datetime import date
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
 from player_scouting.application.ports import MatchRef, RosterEntry
 from player_scouting.domain.entities import Player
 from player_scouting.domain.season import Season
 from player_scouting.domain.shots import Shot
-from player_scouting.infrastructure.persistence.models import Base
 from player_scouting.infrastructure.persistence.sqlalchemy_player_repository import (
     SqlAlchemyPlayerRepository,
 )
@@ -24,20 +21,6 @@ pytestmark = pytest.mark.skipif(DATABASE_URL is None, reason="DATABASE_URL is no
 
 MATCH = MatchRef(1, "La Liga", "2026", date(2026, 8, 15), "Barcelona", "Getafe")
 OTHER_LEAGUE = MatchRef(2, "Serie A", "2026", date(2026, 8, 16), "Inter", "Roma")
-
-
-@pytest.fixture
-def session():
-    engine = create_engine(DATABASE_URL)
-    Base.metadata.create_all(engine)
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
 
 
 def _shot(shot_id, understat_id, minute, result="Goal", home=True, **extra) -> Shot:

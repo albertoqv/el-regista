@@ -1,11 +1,8 @@
 import os
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
 
 from player_scouting.application.league_ingestion_job import LeagueIngestionJob
-from player_scouting.infrastructure.persistence.models import Base
 from player_scouting.infrastructure.persistence.sqlalchemy_league_ingestion_job_repository import (  # noqa: E501
     SqlAlchemyLeagueIngestionJobRepository,
 )
@@ -16,20 +13,6 @@ pytestmark = pytest.mark.skipif(
     DATABASE_URL is None,
     reason="DATABASE_URL is not set; start Postgres with `docker compose up -d db`",
 )
-
-
-@pytest.fixture
-def session():
-    engine = create_engine(DATABASE_URL)
-    Base.metadata.create_all(engine)
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
 
 
 def test_saving_a_new_job_assigns_it_an_id(session):

@@ -2,8 +2,7 @@ import io
 import os
 
 import pytest
-from sqlalchemy import create_engine, text
-from sqlalchemy.orm import Session
+from sqlalchemy import text
 
 from player_scouting.domain.entities import Player
 from player_scouting.domain.season import Season
@@ -16,20 +15,6 @@ from player_scouting.infrastructure.persistence.sqlalchemy_player_repository imp
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 pytestmark = pytest.mark.skipif(DATABASE_URL is None, reason="DATABASE_URL is not set")
-
-
-@pytest.fixture
-def session():
-    engine = create_engine(DATABASE_URL)
-    Base.metadata.create_all(engine)
-    connection = engine.connect()
-    transaction = connection.begin()
-    session = Session(bind=connection)
-    yield session
-    session.close()
-    transaction.rollback()
-    connection.close()
-    engine.dispose()
 
 
 def _raw(session):
