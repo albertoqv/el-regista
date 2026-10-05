@@ -39,14 +39,17 @@ jobs:
         run: |
           uvx --from "bandit[sarif,toml]" bandit -c pyproject.toml -r src \
             -f sarif -o bandit.sarif --exit-zero
+      # Blocking only for high severity; low and medium stay in the report above.
+      - name: Bandit (high severity blocks)
+        run: uvx --from "bandit[toml]" bandit -c pyproject.toml -r src -q --severity-level high
       - uses: github/codeql-action/upload-sarif@v4
         if: always() && github.actor != 'dependabot[bot]'
         with:
           sarif_file: bandit.sarif
           category: bandit
 
-  # Secrets in the code and in every commit of the history. Accepted findings, with
-  # their reason, in .gitleaksignore.
+  # Secrets in the code and in every commit of the history. Blocking: any new finding
+  # fails the run. Accepted findings, with their reason, in .gitleaksignore.
   gitleaks:
     runs-on: ubuntu-latest
     env:
@@ -64,7 +67,7 @@ jobs:
           tar -xzf "$file" gitleaks
       - name: Gitleaks
         run: |
-          ./gitleaks git . --redact --no-banner --exit-code 0 \
+          ./gitleaks git . --redact --no-banner --exit-code 1 \
             --report-format sarif --report-path gitleaks.sarif
       - uses: github/codeql-action/upload-sarif@v4
         if: always() && github.actor != 'dependabot[bot]'
@@ -108,6 +111,15 @@ jobs:
               [.Results[]?.Vulnerabilities[]?] as $v
               | "::notice title=Trivy \($image)::HIGH \([$v[] | select(.Severity=="HIGH")] | length), CRITICAL \([$v[] | select(.Severity=="CRITICAL")] | length): \([$v[] | "\(.PkgName) \(.VulnerabilityID) (\(.PkgPath // "os"))"] | unique | join(", "))"
             ' trivy-$image.json
+          done
+      # Blocking: a CRITICAL CVE with a fix available, or a HIGH/CRITICAL
+      # misconfiguration, fails the run (HIGH CVEs stay in the report).
+      - name: Gate (CRITICAL CVEs, HIGH misconfigurations)
+        run: |
+          ./trivy config --quiet --exit-code 1 --severity HIGH,CRITICAL .
+          for image in api web; do
+            ./trivy image --quiet --exit-code 1 --ignore-unfixed --severity CRITICAL \
+              el-regista-$image
           done
       - uses: github/codeql-action/upload-sarif@v4
         if: always() && github.actor != 'dependabot[bot]'
