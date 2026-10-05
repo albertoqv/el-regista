@@ -1,0 +1,2 @@
+# ZAP rule overrides (tab separated: id, IGNORE|INFO|WARN|FAIL, reason).
+# Empty until findings are reviewed; see "Seguridad (DevSecOps)" in the README.

@@ -59,6 +59,8 @@ services:
     environment:
       <<: *vault-env
       CORS_ORIGINS: http://localhost:3000
+      # Off as in production; the DAST run turns it on to hand ZAP the endpoint list.
+      EXPOSE_DOCS: ${EXPOSE_DOCS:-false}
     ports:
       - "8000:8000"
     depends_on:

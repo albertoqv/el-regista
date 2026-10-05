@@ -1,0 +1,71 @@
+name: DAST (OWASP ZAP)
+
+# Baseline scan (passive: it reads answers, it does not attack) of the API running in
+# the same throwaway stack as compose-vault.yml: Postgres, dev Vault and the API image.
+# Every endpoint is fed to ZAP from the API's OpenAPI description, exposed only here.
+# Production can be scanned too, but only by hand (target: production).
+on:
+  schedule:
+    - cron: "0 5 * * 1"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "local (Compose stack) or production"
+        type: choice
+        options: [local, production]
+        default: local
+  push:
+    paths:
+      - ".github/workflows/dast.yml"
+      - ".zap/rules.tsv"
+
+permissions:
+  contents: read
+
+jobs:
+  zap-baseline:
+    runs-on: ubuntu-latest
+    env:
+      TARGET: ${{ inputs.target || 'local' }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Start the local stack
+        if: env.TARGET == 'local'
+        run: |
+          key=$(openssl rand -hex 24)
+          echo "::add-mask::$key"
+          export LOCAL_INGESTION_API_KEY=$key EXPOSE_DOCS=true
+          docker compose up -d --build db vault api
+          for i in $(seq 1 60); do curl -sf http://localhost:8000/health/db && break; sleep 2; done
+          curl -sf http://localhost:8000/openapi.json > /dev/null
+      - name: ZAP baseline scan
+        run: |
+          mkdir -p zap && chmod 777 zap
+          if [ "$TARGET" = local ]; then
+            url=http://localhost:8000/health
+            extra=(-z "-openapiurl http://localhost:8000/openapi.json")
+          else
+            url=https://el-regista-api.vercel.app/health
+            extra=()
+          fi
+          # -I: report only, warnings do not fail the run.
+          docker run --rm --network host -v "$PWD/zap:/zap/wrk" -v "$PWD/.zap:/zap/rules:ro" \
+            ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t "$url" -I \
+            -c /zap/rules/rules.tsv -r report.html -J report.json -w report.md "${extra[@]}"
+      - name: Summary
+        if: always()
+        run: |
+          test -f zap/report.json || exit 0
+          jq -r '
+            [.site[].alerts[]] as $a
+            | "::notice title=ZAP (\(env.TARGET))::\($a | length) alerts: \([$a[] | "\(.riskdesc | split(" ")[0]) \(.pluginid) \(.name)"] | unique | join("; "))"
+          ' zap/report.json
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: zap-report-${{ env.TARGET }}
+          path: zap/
+          retention-days: 30
+      - name: Stop
+        if: always() && env.TARGET == 'local'
+        run: docker compose down -v
