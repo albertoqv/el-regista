@@ -85,7 +85,10 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
   web cachea 3 h y el e2e contra la API real solo corre si cambia `web/`. Cualquier
   consulta nueva que lea tablas enteras debe ir por `READ_CACHE`.
 - Secretos solo como variables de entorno (Vercel / GitHub secrets `DATABASE_URL`,
-  `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo ni en el chat.
+  `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo ni en el chat. En local
+  (`docker compose up`) salen de un Vault en modo desarrollo (`infrastructure/secrets/vault.py`,
+  fuente de `pydantic-settings` por debajo de las variables; solo si hay `VAULT_ADDR`). Los
+  tests que miran ajustes deben quitar las variables que el CI define (`DATABASE_URL`).
 - Workflows: `weekly-fbref-refresh.yml` (martes y viernes; también con un push que toque
   `.github/refresh-now`; ingesta con una API local sobre Neon en el runner), `monitor.yml`,
   `backup.yml`, `web-quality.yml`, `ci.yml`.
