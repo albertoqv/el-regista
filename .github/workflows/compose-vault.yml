@@ -23,6 +23,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      # A fresh key per run, so no value lives in the repository (gitleaks).
+      - name: Choose this run's ingestion key
+        run: |
+          key=$(openssl rand -hex 24)
+          echo "::add-mask::$key"
+          echo "LOCAL_INGESTION_API_KEY=$key" >> "$GITHUB_ENV"
       - name: Start Postgres, Vault and the API
         run: docker compose up -d --build db vault api
       - name: The API reaches the database with the URL from Vault
@@ -32,7 +38,7 @@ jobs:
       - name: Ingestion only opens with the key stored in Vault
         run: |
           test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8000/ingestion/leagues)" = 401
-          test "$(curl -s -o /dev/null -w '%{http_code}' -H 'X-Ingestion-Key: local-ingestion-key' http://localhost:8000/ingestion/leagues)" = 200
+          test "$(curl -s -o /dev/null -w '%{http_code}' -H "X-Ingestion-Key: $LOCAL_INGESTION_API_KEY" http://localhost:8000/ingestion/leagues)" = 200
       - name: Logs
         if: failure()
         run: docker compose logs vault vault-init api

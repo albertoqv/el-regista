@@ -1,0 +1,4 @@
+# Findings reviewed and accepted (gitleaks fingerprints: commit:file:rule:line).
+# Local test value of the throwaway Docker Compose stack, not a credential; the workflow
+# now generates a random key per run.
+ce50604eccccc06f232a986db3ce2812a7b9507c:.github/workflows/compose-vault.yml:curl-auth-header:30
