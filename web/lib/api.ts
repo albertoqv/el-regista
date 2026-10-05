@@ -2,7 +2,9 @@
 // /api proxy (see next.config.ts), so it works on any domain without CORS.
 const API_URL =
   typeof window === "undefined" ? (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000") : "/api";
-const REVALIDATE_SECONDS = 1800;
+// Data only changes when the refresh runs (Tuesdays and Fridays): three hours keeps
+// pages fresh enough and spares the database's monthly network allowance (Neon free).
+const REVALIDATE_SECONDS = 3 * 3600;
 
 export type PlayerSummary = {
   player_id: number;
