@@ -124,4 +124,7 @@ async def security_headers_middleware(
     response = await call_next(request)
     for name, value in SECURITY_HEADERS.items():
         response.headers.setdefault(name, value)
+    # The web posts visits and browser errors straight here from its own site.
+    if request.url.path.startswith("/metrics/"):
+        response.headers["Cross-Origin-Resource-Policy"] = "cross-origin"
     return response
