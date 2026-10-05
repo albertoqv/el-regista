@@ -11,6 +11,13 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # Both break `npm run lint` (Oct 2026): typescript-eslint does not support
+      # TypeScript 7 and eslint-config-next's React plugin fails on ESLint 10.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:
