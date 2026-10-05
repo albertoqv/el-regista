@@ -118,3 +118,14 @@ def test_every_answer_carries_the_security_headers_zap_asked_for():
     for response in (client.get("/health"), client.get("/no-such-page")):
         assert response.headers["X-Content-Type-Options"] == "nosniff"
         assert response.headers["Cross-Origin-Resource-Policy"] == "same-origin"
+
+
+def test_the_browser_beacons_stay_readable_from_the_web_origin():
+    # The web posts visits and errors straight to the API (another site): same-origin
+    # would make the browser block the answer and log an error on every page.
+    client = TestClient(create_app(ApiSettings(_env_file=None)))
+
+    response = client.post("/metrics/visit", content="not json")
+
+    assert response.headers["Cross-Origin-Resource-Policy"] == "cross-origin"
+    assert response.headers["X-Content-Type-Options"] == "nosniff"
