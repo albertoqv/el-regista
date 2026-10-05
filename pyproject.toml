@@ -37,6 +37,12 @@ select = ["E", "F", "I", "UP", "B"]
 # Brand generators: glyph and icon coordinates read best one shape per line.
 "scripts/brand/*.py" = ["E501", "E731"]
 
+[tool.bandit]
+exclude_dirs = ["tests"]
+# B101 (assert): our asserts only narrow types for mypy on data already filtered (a
+# played match has goals). No permission or input check relies on assert.
+skips = ["B101"]
+
 [tool.mypy]
 python_version = "3.14"
 mypy_path = "src"

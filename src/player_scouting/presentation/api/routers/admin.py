@@ -114,7 +114,8 @@ async def record_visit(
         referrer = body.get("referrer")
     except ValueError, KeyError, TypeError:
         return Response(status_code=204)
-    RecordVisitUseCase(
+    # Semgrep takes this .execute() for a raw SQL cursor; it is a use case (ORM).
+    RecordVisitUseCase(  # nosemgrep
         visits,
         salt=settings.visit_salt or settings.ingestion_api_key or "elregista",
         own_hosts=tuple(

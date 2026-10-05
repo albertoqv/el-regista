@@ -114,7 +114,9 @@ class Lab:
     # --- walk-forward expected goals, cached per variant ---------------------
 
     def rows(self, name: str, ratings: Callable[..., P.LeagueRatings]) -> Rows:
-        key = hashlib.sha1(f"{name}|{self.fingerprint}".encode()).hexdigest()[:12]
+        # A cache file name, not security: SHA-1 keeps the existing cache valid.
+        digest = hashlib.sha1(f"{name}|{self.fingerprint}".encode())  # nosemgrep
+        key = digest.hexdigest()[:12]
         path = CACHE / f"xg-{name}-{key}.json"
         if path.exists():
             return json.loads(path.read_text())
