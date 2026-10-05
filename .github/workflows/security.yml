@@ -71,3 +71,56 @@ jobs:
         with:
           sarif_file: gitleaks.sarif
           category: gitleaks
+
+  # Containers: Dockerfile and Compose configuration, and the HIGH/CRITICAL CVEs of
+  # both images (OS packages and libraries) that already have a fix.
+  trivy:
+    runs-on: ubuntu-latest
+    env:
+      TRIVY_VERSION: 0.75.0
+    steps:
+      - uses: actions/checkout@v7
+      # The binary at a fixed version with its checksum, rather than a third-party
+      # action whose tag could be moved.
+      - name: Install Trivy (checksum verified)
+        run: |
+          base=https://github.com/aquasecurity/trivy/releases/download/v$TRIVY_VERSION
+          file=trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz
+          curl -sSLO "$base/$file" -O "$base/trivy_${TRIVY_VERSION}_checksums.txt"
+          grep " $file\$" trivy_${TRIVY_VERSION}_checksums.txt | sha256sum -c
+          tar -xzf "$file" trivy
+      - name: Configuration (Dockerfiles, Compose)
+        run: |
+          ./trivy config --quiet --exit-code 0 --format sarif --output trivy-config.sarif .
+          ./trivy config --quiet --exit-code 0 .
+      - name: Build the images
+        run: |
+          docker build -t el-regista-api .
+          docker build -t el-regista-web web
+      - name: Image vulnerabilities (HIGH, CRITICAL)
+        run: |
+          for image in api web; do
+            ./trivy image --quiet --exit-code 0 --ignore-unfixed --severity HIGH,CRITICAL \
+              --format sarif --output trivy-$image.sarif el-regista-$image
+            ./trivy image --quiet --exit-code 0 --ignore-unfixed --severity HIGH,CRITICAL \
+              --format json --output trivy-$image.json el-regista-$image
+            jq -r --arg image "$image" '
+              [.Results[]?.Vulnerabilities[]?] as $v
+              | "::notice title=Trivy \($image)::HIGH \([$v[] | select(.Severity=="HIGH")] | length), CRITICAL \([$v[] | select(.Severity=="CRITICAL")] | length): \([$v[] | "\(.PkgName) \(.VulnerabilityID)"] | unique | join(", "))"
+            ' trivy-$image.json
+          done
+      - uses: github/codeql-action/upload-sarif@v4
+        if: always() && github.actor != 'dependabot[bot]'
+        with:
+          sarif_file: trivy-config.sarif
+          category: trivy-config
+      - uses: github/codeql-action/upload-sarif@v4
+        if: always() && github.actor != 'dependabot[bot]'
+        with:
+          sarif_file: trivy-api.sarif
+          category: trivy-image-api
+      - uses: github/codeql-action/upload-sarif@v4
+        if: always() && github.actor != 'dependabot[bot]'
+        with:
+          sarif_file: trivy-web.sarif
+          category: trivy-image-web
