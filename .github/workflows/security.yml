@@ -106,7 +106,7 @@ jobs:
               --format json --output trivy-$image.json el-regista-$image
             jq -r --arg image "$image" '
               [.Results[]?.Vulnerabilities[]?] as $v
-              | "::notice title=Trivy \($image)::HIGH \([$v[] | select(.Severity=="HIGH")] | length), CRITICAL \([$v[] | select(.Severity=="CRITICAL")] | length): \([$v[] | "\(.PkgName) \(.VulnerabilityID)"] | unique | join(", "))"
+              | "::notice title=Trivy \($image)::HIGH \([$v[] | select(.Severity=="HIGH")] | length), CRITICAL \([$v[] | select(.Severity=="CRITICAL")] | length): \([$v[] | "\(.PkgName) \(.VulnerabilityID) (\(.PkgPath // "os"))"] | unique | join(", "))"
             ' trivy-$image.json
           done
       - uses: github/codeql-action/upload-sarif@v4

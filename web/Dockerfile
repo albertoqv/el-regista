@@ -10,9 +10,13 @@ RUN npm run build
 # Runtime: patched base and the image's own unprivileged "node" user (Trivy DS-0002).
 # The files belong to it because Next writes its cache under .next at run time.
 FROM node:24-slim AS runner
+# npm and corepack are not needed to run server.js, and the copies bundled with the
+# base image carried HIGH CVEs (tar, brace-expansion, ip-address, undici).
 RUN apt-get update \
     && apt-get upgrade -y --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+        /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=builder --chown=node:node /app/public ./public
