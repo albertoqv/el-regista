@@ -63,7 +63,7 @@ class ResponseCache:
 
 
 def response_cache_middleware(
-    cache: ResponseCache,
+    cache: ResponseCache, *also_clear: Callable[[], None]
 ) -> Callable[[Request, CallNext], Awaitable[Response]]:
     async def middleware(request: Request, call_next: CallNext) -> Response:
         path = request.url.path
@@ -72,6 +72,8 @@ def response_cache_middleware(
                 return await call_next(request)
             finally:
                 cache.clear()
+                for clear in also_clear:
+                    clear()
         if request.method != "GET" or not path.startswith(CACHEABLE_PREFIXES):
             return await call_next(request)
 

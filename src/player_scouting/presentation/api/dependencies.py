@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from typing import Annotated
 
 import httpx
-from fastapi import Depends
+from fastapi import Depends, Request
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -153,13 +153,28 @@ from player_scouting.infrastructure.understat.shot_provider import (
 from player_scouting.infrastructure.understat.team_provider import (
     UnderstatTeamProvider,
 )
+from player_scouting.presentation.api.read_cache import READ_CACHE, cached_reads
 from player_scouting.presentation.api.settings import ApiSettings, get_api_settings
+
+
+def _cached_on_get[T](request: Request, repository: T, methods: set[str]) -> T:
+    """Bulk reads from memory on GETs; ingestion always reads what it just wrote."""
+    if request.method != "GET":
+        return repository
+    return cached_reads(repository, READ_CACHE, methods)
+
 
 SessionDep = Annotated[Session, Depends(get_session)]
 
 
-def get_player_repository(session: SessionDep) -> SqlAlchemyPlayerRepository:
-    return SqlAlchemyPlayerRepository(session)
+def get_player_repository(
+    request: Request, session: SessionDep
+) -> SqlAlchemyPlayerRepository:
+    return _cached_on_get(
+        request,
+        SqlAlchemyPlayerRepository(session),
+        {"list_season_records", "latest_market_values", "list_all_season_statistics"},
+    )
 
 
 def get_similarity_calculator() -> SimilarityCalculator:
@@ -457,8 +472,14 @@ RecordEnrichmentUseCaseDep = Annotated[
 ]
 
 
-def get_shot_repository(session: SessionDep) -> SqlAlchemyShotRepository:
-    return SqlAlchemyShotRepository(session)
+def get_shot_repository(
+    request: Request, session: SessionDep
+) -> SqlAlchemyShotRepository:
+    return _cached_on_get(
+        request,
+        SqlAlchemyShotRepository(session),
+        {"list_rosters", "list_shot_totals"},
+    )
 
 
 ShotRepositoryDep = Annotated[SqlAlchemyShotRepository, Depends(get_shot_repository)]
@@ -557,8 +578,14 @@ IngestDatasetLeaguesUseCaseDep = Annotated[
 ]
 
 
-def get_team_repository(session: SessionDep) -> SqlAlchemyTeamRepository:
-    return SqlAlchemyTeamRepository(session)
+def get_team_repository(
+    request: Request, session: SessionDep
+) -> SqlAlchemyTeamRepository:
+    return _cached_on_get(
+        request,
+        SqlAlchemyTeamRepository(session),
+        {"list_team_matches", "list_fixtures"},
+    )
 
 
 TeamRepositoryDep = Annotated[SqlAlchemyTeamRepository, Depends(get_team_repository)]
@@ -580,8 +607,12 @@ IngestTeamSeasonUseCaseDep = Annotated[
 ]
 
 
-def get_match_stats_repository(session: SessionDep) -> SqlAlchemyMatchStatsRepository:
-    return SqlAlchemyMatchStatsRepository(session)
+def get_match_stats_repository(
+    request: Request, session: SessionDep
+) -> SqlAlchemyMatchStatsRepository:
+    return _cached_on_get(
+        request, SqlAlchemyMatchStatsRepository(session), {"list_match_stats"}
+    )
 
 
 MatchStatsRepositoryDep = Annotated[

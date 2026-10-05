@@ -12,6 +12,7 @@ from player_scouting.presentation.api.rate_limit import (
     RateLimiter,
     rate_limit_middleware,
 )
+from player_scouting.presentation.api.read_cache import READ_CACHE
 from player_scouting.presentation.api.response_cache import (
     ResponseCache,
     response_cache_middleware,
@@ -41,7 +42,9 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
     app.state.client_errors = ClientErrorLog()
     app.state.metrics = RequestMetrics()
     app.state.response_cache = ResponseCache()
-    app.middleware("http")(response_cache_middleware(app.state.response_cache))
+    app.middleware("http")(
+        response_cache_middleware(app.state.response_cache, READ_CACHE.clear)
+    )
     app.middleware("http")(metrics_middleware(app.state.metrics))
     # Outermost: a flood is refused before it costs any work.
     app.middleware("http")(
