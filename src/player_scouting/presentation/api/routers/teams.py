@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Query
@@ -34,6 +35,8 @@ predictions_router = APIRouter(prefix="/predictions", tags=["predictions"])
 # Walk-forward backtests replay a whole season: keep the result for an hour.
 BACKTEST_CACHE_SECONDS = 3600
 _backtest_cache: dict[tuple, tuple[float, BacktestReport]] = {}
+# The clock, swapped in tests so their fixtures never fall into the past.
+_now = datetime.now
 
 
 @teams_router.get("/table", response_model=list[TableRowOut])
@@ -71,7 +74,7 @@ def predictions(
     days: Annotated[int, Query(ge=1, le=4000)] = 10,
     competition: str | None = None,
 ) -> list[FixtureForecastOut]:
-    forecasts = PredictFixturesUseCase(repository).execute(days, competition)
+    forecasts = PredictFixturesUseCase(repository, now=_now).execute(days, competition)
     return [fixture_forecast_out_from_domain(f) for f in forecasts]
 
 

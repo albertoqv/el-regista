@@ -6,8 +6,9 @@ from player_scouting.presentation.api.dependencies import (
     get_team_repository,
 )
 from player_scouting.presentation.api.main import create_app
+from player_scouting.presentation.api.routers import teams
 from tests.application.doubles import InMemoryShotRepository
-from tests.application.test_team_analytics import FakeTeamProvider, _repository
+from tests.application.test_team_analytics import NOW, FakeTeamProvider, _repository
 
 
 def _client(repository=None, provider=None) -> TestClient:
@@ -34,7 +35,9 @@ def test_team_matches():
     assert body[0]["opponent"] == "Getafe"
 
 
-def test_predictions_for_the_coming_days():
+def test_predictions_for_the_coming_days(monkeypatch):
+    # Fixed clock: the fixture match (4 Oct 2026) must still be ahead.
+    monkeypatch.setattr(teams, "_now", lambda: NOW)
     app_client = _client()
 
     body = app_client.get("/predictions?days=4000").json()
