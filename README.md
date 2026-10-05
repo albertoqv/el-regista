@@ -19,6 +19,13 @@
   <img alt="Tailwind CSS" src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white">
 </p>
 
+<p align="center">
+  <a href="https://github.com/albertoqv/el-regista/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/albertoqv/el-regista/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/albertoqv/el-regista/actions/workflows/security.yml"><img alt="Security" src="https://github.com/albertoqv/el-regista/actions/workflows/security.yml/badge.svg"></a>
+  <a href="https://github.com/albertoqv/el-regista/actions/workflows/dast.yml"><img alt="DAST" src="https://github.com/albertoqv/el-regista/actions/workflows/dast.yml/badge.svg"></a>
+  <a href="https://github.com/albertoqv/el-regista/actions/workflows/compose-vault.yml"><img alt="Stack con Vault" src="https://github.com/albertoqv/el-regista/actions/workflows/compose-vault.yml/badge.svg"></a>
+</p>
+
 ![Portada de El Regista](docs/img/portada.jpg)
 
 El Regista tiene dos productos sobre la misma base de datos:
@@ -187,8 +194,8 @@ Unir fuentes sin un identificador común es la parte difícil:
   clave.
 - La web manda CSP, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy` y HSTS.
 - Su proxy `/api/*` no deja pasar ni la ingesta ni el panel.
-- Las dependencias se auditan en cada push (`pip-audit`, `npm audit`) y Dependabot propone
-  actualizaciones.
+- Cabeceras `nosniff` y `Cross-Origin-Resource-Policy` en todas las respuestas de la API.
+- Análisis de código, dependencias, secretos, contenedores y DAST en el CI (ver abajo).
 - Los secretos no están nunca en el código (ver abajo).
 
 ### Secretos: Vault en local, variables en producción
@@ -212,6 +219,51 @@ historial de git no las expone nunca y cada entorno tiene las suyas.
   probar en local y no se usa nunca en producción. `compose-vault.yml` levanta el stack en CI
   y comprueba que la API llega a la base y solo abre la ingesta con la clave de Vault.
 
+### Seguridad (DevSecOps)
+
+Cada capa tiene su herramienta en el CI. Todas son gratuitas y no necesitan cuenta. Los
+resultados se suben en SARIF a la pestaña **Security** de GitHub. Las herramientas
+empezaron en modo informe; tras revisar los hallazgos, bloquean las que no dan falsos
+positivos.
+
+| Capa | Herramienta | Cuándo | Bloquea |
+|---|---|---|---|
+| SAST | **Semgrep** (`p/python`, `p/typescript`, `p/secrets`) | cada push y PR | no: informe |
+| SAST | **Bandit** (backend) | cada push y PR | severidad alta |
+| SCA | **pip-audit** y **npm audit** | cada push y PR | dependencias de producción |
+| SCA | **Dependabot** (uv, npm, Actions, Docker, Compose) | semanal | — |
+| Secretos | **gitleaks** sobre todo el historial | cada push y PR | sí |
+| Contenedores | **Trivy**: Dockerfiles, Compose e imágenes | cada push y PR | CVE CRITICAL y configuración HIGH |
+| DAST | **OWASP ZAP** baseline | lunes y a mano | no: informe |
+
+- **ZAP** escanea el mismo stack local que `compose-vault.yml` (Postgres, Vault y la imagen
+  de la API), con la lista de endpoints que da su OpenAPI. Producción solo se escanea a
+  mano (`workflow_dispatch`, `target: production`). El informe queda como artefacto.
+- **gitleaks y Trivy** se instalan desde sus binarios con versión fija y checksum
+  verificado, no desde acciones de terceros cuya etiqueta podría moverse.
+- Los falsos positivos se marcan **en la línea**, con el motivo (`# nosec`, `# nosemgrep`,
+  `# trivy:ignore`, `.gitleaksignore`, `.zap/rules.tsv`). No se apaga ninguna regla para
+  todo el proyecto, salvo B101 de Bandit (motivo en `pyproject.toml`).
+
+**Hallazgos y cómo se resolvieron**
+
+| Herramienta | Hallazgo | Resolución |
+|---|---|---|
+| Trivy | Los dos contenedores arrancaban como `root` (DS-0002, HIGH) | Usuario sin privilegios: `app` (uid 10001) en la API y `node` en la web |
+| Trivy | `python:3.14-slim`: 5 CVE HIGH (`libpcre2`, y `urllib3`, `msgpack` y `setuptools` de `pip`) | Imagen en dos etapas: `uv` solo al construir; la final con los parches de Debian y sin `pip` → 0 |
+| Trivy | `node:20-slim`: Node 20 sin soporte y 39 CVE (6 CRITICAL) | `node:24-slim` (LTS) con los parches de Debian |
+| Trivy | 7 CVE HIGH en el `npm` que trae la imagen (`tar`, `brace-expansion`, `ip-address`, `undici`) | `npm` y `corepack` fuera de la imagen final: solo se ejecuta `node server.js` → 0 |
+| Trivy | Sin `HEALTHCHECK` (DS-0026) | Añadido en las dos imágenes |
+| Trivy | "Secreto en ENV" por `REQUIRE_INGESTION_KEY` (DS-0031, CRITICAL) | Falso positivo: es un interruptor `true`/`false`; se ignora solo esa línea |
+| ZAP | Faltaba `X-Content-Type-Options` (10021) | `nosniff` en todas las respuestas de la API |
+| ZAP | Faltaba `Cross-Origin-Resource-Policy` (90004) | `same-origin`, salvo `/metrics/*`, que la web llama desde otro dominio (`cross-origin`) |
+| ZAP | Contenido cacheable (10049, informativo) | Intencionado: datos públicos cacheados para ahorrar transferencia |
+| gitleaks | Cabecera con clave en `compose-vault.yml` | No era un secreto, sino el valor de prueba del stack local. Ahora cada ejecución genera una clave aleatoria; el commit antiguo, en `.gitleaksignore`. Historial limpio: 452 commits |
+| Semgrep | "SQL injection" en `admin.py` | Falso positivo: es el `.execute()` de un caso de uso; las consultas van por el ORM |
+| Semgrep | SHA-1 en `model_lab.py` | Falso positivo: nombre de un fichero de caché, no seguridad |
+| Bandit | 7 × `assert` (B101) y "contraseña" en una ruta de Vault (B105) | Falsos positivos: los `assert` solo estrechan tipos para mypy; la ruta no es secreta |
+| npm audit | `braces` ≤ 3.0.3 (GHSA-vfj7-8cjw-p6xm) en una dependencia de ESLint | Sin versión corregida publicada; solo en desarrollo y con patrones propios. Informe, sin bloquear |
+
 ### Web
 
 - **Server Components**, con JavaScript de cliente solo donde hay interacción (buscador,
@@ -232,6 +284,8 @@ historial de git no las expone nunca y cada entorno tiene las suyas.
 | `ci.yml` | cada push | pytest contra Postgres, mypy, ruff y auditoría de dependencias |
 | `web-e2e.yml` | push que cambia `web/` | Build de producción y recorridos Playwright |
 | `compose-vault.yml` | cambios en compose, Dockerfile o secretos | Stack local con Vault: la API arranca con sus secretos |
+| `security.yml` | cada push y PR | Semgrep, Bandit, gitleaks y Trivy (SARIF a Security) |
+| `dast.yml` | lunes y a mano | OWASP ZAP baseline contra el stack local |
 | `weekly-fbref-refresh.yml` | martes y viernes | Ingesta completa y comprobación de los datos |
 | `web-quality.yml` | diario | Recorridos Playwright y Lighthouse CI contra producción |
 | `monitor.yml` | cada 3 h | La API y la web responden, con datos reales |

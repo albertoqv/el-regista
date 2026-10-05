@@ -89,6 +89,11 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
   (`docker compose up`) salen de un Vault en modo desarrollo (`infrastructure/secrets/vault.py`,
   fuente de `pydantic-settings` por debajo de las variables; solo si hay `VAULT_ADDR`). Los
   tests que miran ajustes deben quitar las variables que el CI define (`DATABASE_URL`).
+- **DevSecOps** (`security.yml` en cada push; `dast.yml` los lunes): Semgrep e informe de
+  Bandit, gitleaks (bloquea), Trivy (bloquea CVE CRITICAL y configuración HIGH), ZAP
+  baseline contra el stack de Compose. Falsos positivos marcados en la línea con su motivo
+  (`# nosec`, `# nosemgrep`, `# trivy:ignore`, `.gitleaksignore`, `.zap/rules.tsv`); tabla
+  de hallazgos en el README. Contenedores sin root (`app` uid 10001, `node`).
 - Workflows: `weekly-fbref-refresh.yml` (martes y viernes; también con un push que toque
   `.github/refresh-now`; ingesta con una API local sobre Neon en el runner), `monitor.yml`,
   `backup.yml`, `web-quality.yml`, `ci.yml`.

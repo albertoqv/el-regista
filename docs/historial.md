@@ -147,3 +147,9 @@ fotos de cuerpo entero (tampoco). Favoritos y alertas: descartados por el usuari
   pronósticos leían tablas enteras en cada petición, y el CI recorría la web contra producción
   21 veces al día). Caché de lecturas en memoria (3 h), web a 3 h, e2e solo con cambios en
   `web/` y base copiada a un proyecto nuevo de Neon.
+
+- **Vault y DevSecOps** (2026-10-05): secretos de Vault en el stack local (fuente de
+  `pydantic-settings` por debajo de las variables). Pipeline de seguridad por fases:
+  Semgrep y Bandit, SCA (pip-audit y npm audit; Dependabot con Docker y Compose), gitleaks,
+  Trivy (imágenes sin root, en dos etapas, parcheadas y sin pip ni npm: 0 HIGH/CRITICAL) y
+  ZAP (cabeceras nosniff y CORP en la API).
