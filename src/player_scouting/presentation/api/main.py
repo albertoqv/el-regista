@@ -25,7 +25,10 @@ from player_scouting.presentation.api.routers import (
     seasons,
     teams,
 )
-from player_scouting.presentation.api.security import FailedAttempts
+from player_scouting.presentation.api.security import (
+    FailedAttempts,
+    security_headers_middleware,
+)
 from player_scouting.presentation.api.settings import ApiSettings, get_api_settings
 
 
@@ -50,6 +53,8 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
     app.middleware("http")(
         rate_limit_middleware(RateLimiter(settings.rate_limit_per_minute))
     )
+    # Around everything, so refusals (429, 401) carry the headers too.
+    app.middleware("http")(security_headers_middleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins_list,

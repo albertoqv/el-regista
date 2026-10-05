@@ -4,9 +4,11 @@ import hashlib
 import hmac
 import time
 from collections import defaultdict, deque
+from collections.abc import Awaitable, Callable
 from typing import Annotated
 
 from fastapi import Depends, Header, HTTPException, Request
+from starlette.responses import Response
 
 from player_scouting.presentation.api.settings import ApiSettings, get_api_settings
 
@@ -105,3 +107,21 @@ def verify_admin(
     if authorization and authorization.startswith("Bearer "):
         token = authorization.removeprefix("Bearer ").strip()
     _check(request, settings, x_ingestion_key, token)
+
+
+# Sent with every answer (OWASP ZAP baseline, Oct 2026): no MIME sniffing of the JSON,
+# and no other site may embed the API's responses (the web reads them through its own
+# /api proxy, so same-origin is enough).
+SECURITY_HEADERS = {
+    "X-Content-Type-Options": "nosniff",
+    "Cross-Origin-Resource-Policy": "same-origin",
+}
+
+
+async def security_headers_middleware(
+    request: Request, call_next: Callable[[Request], Awaitable[Response]]
+) -> Response:
+    response = await call_next(request)
+    for name, value in SECURITY_HEADERS.items():
+        response.headers.setdefault(name, value)
+    return response
