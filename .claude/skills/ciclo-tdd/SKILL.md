@@ -32,7 +32,14 @@ comportamiento, no el código: `test: un partido sin cuotas usa el modelo` →
   `httpx.MockTransport`; nada de red en los tests.
 - Si tocas `SqlAlchemyPlayerRepository` o similar, el doble en
   `tests/application/doubles.py` debe comportarse igual.
+- **Nunca dependas del reloj real.** Si el código usa `datetime.now`/`date.today`, recíbelo
+  como parámetro (`now=`/`today=` en el caso de uso, `_now` en el router) y fíjalo en el
+  test: con fechas de prueba cercanas a hoy, el test caduca solo cuando pasa el día.
+  Para buscar tests así, ejecuta la suite en otra fecha con `time-machine`
+  (`uv run --with time-machine pytest` + un plugin que haga `time_machine.travel(...)`).
 - Tests de persistencia: necesitan `DATABASE_URL` (Postgres local, puerto 5433); sin ella
-  se saltan, así que si tocas persistencia ejecútalos con la BD encendida.
+  se saltan, así que si tocas persistencia ejecútalos con la BD encendida. Usan el
+  `session` de `tests/infrastructure/persistence/conftest.py` (tablas vacías dentro de una
+  transacción que se deshace).
 - `except A, B:` sin paréntesis es válido en Python 3.14 (PEP 758).
 - No hacer push salvo que el usuario lo pida.
