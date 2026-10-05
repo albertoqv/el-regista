@@ -16,6 +16,9 @@ export function VisitTracker() {
   useEffect(() => {
     // Once per navigation, even if React runs the effect twice.
     if (!pathname || pathname === lastPath.current || pathname.startsWith("/admin")) return;
+    // Automated browsers (our e2e and Lighthouse runs) are not visitors; their mobile
+    // runs carry a real phone user agent, so the API's bot filter cannot tell.
+    if (navigator.webdriver) return;
     // The external referrer only matters for the page people landed on.
     const referrer = lastPath.current === null ? document.referrer : "";
     lastPath.current = pathname;
