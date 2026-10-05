@@ -16,7 +16,8 @@ import httpx
 from pydantic.fields import FieldInfo
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 
-DEFAULT_SECRET_PATH = "secret/el-regista"  # nosec B105 - a Vault path, not a password
+# A Vault path, not a password (Bandit B105 reads "secret" in the value).
+DEFAULT_SECRET_PATH = "secret/el-regista"  # nosec B105
 
 
 class VaultUnavailableError(RuntimeError):
