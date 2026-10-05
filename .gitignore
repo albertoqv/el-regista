@@ -8,3 +8,6 @@ __pycache__/
 .vercel/
 .vercel
 .env*
+
+# Notas de Claude solo para este PC
+CLAUDE.local.md
