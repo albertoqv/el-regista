@@ -1,5 +1,6 @@
 import pytest
 
+from player_scouting.presentation.api.read_cache import READ_CACHE
 from player_scouting.presentation.api.settings import get_api_settings
 
 # Variables a developer machine may carry (the home sync stores the ingestion key)
@@ -18,5 +19,7 @@ def _isolated_api_settings(monkeypatch):
     for name in _MACHINE_VARIABLES:
         monkeypatch.delenv(name, raising=False)
     get_api_settings.cache_clear()
+    READ_CACHE.clear()
     yield
     get_api_settings.cache_clear()
+    READ_CACHE.clear()
