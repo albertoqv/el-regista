@@ -4,7 +4,13 @@ import os
 from functools import lru_cache
 
 from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import (
+    BaseSettings,
+    PydanticBaseSettingsSource,
+    SettingsConfigDict,
+)
+
+from player_scouting.infrastructure.secrets.vault import sources_with_vault
 
 
 class ApiSettings(BaseSettings):
@@ -24,6 +30,24 @@ class ApiSettings(BaseSettings):
     expose_docs: bool = Field(default_factory=lambda: "VERCEL" not in os.environ)
     # Requests per minute from one address before answering 429.
     rate_limit_per_minute: int = 600
+
+    @classmethod
+    def settings_customise_sources(
+        cls,
+        settings_cls: type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> tuple[PydanticBaseSettingsSource, ...]:
+        # Locally (Docker Compose) the secrets can come from Vault; see vault.py.
+        return sources_with_vault(
+            settings_cls,
+            init_settings,
+            env_settings,
+            dotenv_settings,
+            file_secret_settings,
+        )
 
     @property
     def cors_origins_list(self) -> list[str]:
