@@ -189,7 +189,28 @@ Unir fuentes sin un identificador común es la parte difícil:
 - Su proxy `/api/*` no deja pasar ni la ingesta ni el panel.
 - Las dependencias se auditan en cada push (`pip-audit`, `npm audit`) y Dependabot propone
   actualizaciones.
-- Los secretos viven solo en variables de entorno.
+- Los secretos no están nunca en el código (ver abajo).
+
+### Secretos: Vault en local, variables en producción
+
+La clave de la API y las credenciales de la base de datos no aparecen en el código ni en el
+repositorio. Así se pueden cambiar sin tocar el código ni redesplegar con otro build, el
+historial de git no las expone nunca y cada entorno tiene las suyas.
+
+- **En local** (`docker compose up`) hay un **HashiCorp Vault** en modo desarrollo. Un paso
+  de arranque (`vault-init`) guarda los secretos en `secret/el-regista` (KV v2) y la API los
+  lee al arrancar con `VAULT_ADDR` y `VAULT_TOKEN`.
+- **En producción** no hay Vault: Vercel y GitHub guardan los secretos como variables de
+  entorno cifradas, y la API las lee igual que siempre.
+- Las dos vías entran por el mismo sitio: una fuente de configuración de
+  `pydantic-settings` (`infrastructure/secrets/vault.py`) que va por debajo de las variables
+  de entorno. Una variable siempre manda y Vault rellena lo que falta. Sin `VAULT_ADDR` no se
+  consulta nada.
+- Si Vault está configurado pero no responde o niega el acceso, la API **no arranca**. Es
+  mejor que arrancar sin clave de ingesta.
+- El modo desarrollo guarda todo en memoria, sin sellar y con un token fijo: sirve para
+  probar en local y no se usa nunca en producción. `compose-vault.yml` levanta el stack en CI
+  y comprueba que la API llega a la base y solo abre la ingesta con la clave de Vault.
 
 ### Web
 
@@ -209,6 +230,8 @@ Unir fuentes sin un identificador común es la parte difícil:
 | Workflow | Cuándo | Qué hace |
 |---|---|---|
 | `ci.yml` | cada push | pytest contra Postgres, mypy, ruff y auditoría de dependencias |
+| `web-e2e.yml` | push que cambia `web/` | Build de producción y recorridos Playwright |
+| `compose-vault.yml` | cambios en compose, Dockerfile o secretos | Stack local con Vault: la API arranca con sus secretos |
 | `weekly-fbref-refresh.yml` | martes y viernes | Ingesta completa y comprobación de los datos |
 | `web-quality.yml` | diario | Recorridos Playwright y Lighthouse CI contra producción |
 | `monitor.yml` | cada 3 h | La API y la web responden, con datos reales |
@@ -226,8 +249,9 @@ cd web && npm install && npm run dev         # web en http://localhost:3000
 cd web && npm run e2e                        # Playwright (BASE_URL=... para otro entorno)
 ```
 
-La base de datos local se levanta con `docker compose up -d db` o con
-`scripts/local_postgres_start.ps1`. Se migra con `uv run alembic upgrade head` y se llena
+`docker compose up` levanta Postgres, Vault, la API (en `:8000`, con la clave de ingesta
+`local-ingestion-key`) y la web. La base de datos sola se levanta con
+`docker compose up -d db` o con `scripts/local_postgres_start.ps1`. Se migra con `uv run alembic upgrade head` y se llena
 llamando a los endpoints `/ingestion/*` en el orden del workflow semanal.
 
 ## Licencia
