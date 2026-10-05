@@ -62,3 +62,12 @@ jobs:
       - name: Web dependencies
         working-directory: web
         run: npm audit --omit=dev --audit-level=high
+      # Build and test tools too, as a report: they never reach production. Known and
+      # accepted: braces <=3.0.3 (GHSA-vfj7-8cjw-p6xm) under eslint-config-next, no fix
+      # published yet; ESLint only globs our own file patterns.
+      - name: Development dependencies (report only)
+        continue-on-error: true
+        run: |
+          uv export --no-hashes --no-emit-project --format requirements-txt > requirements-dev.txt
+          uvx pip-audit -r requirements-dev.txt --no-deps --disable-pip
+          cd web && npm audit --audit-level=high

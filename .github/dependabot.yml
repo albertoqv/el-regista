@@ -21,4 +21,16 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: monthly
+      interval: weekly
+  # Base images of both Dockerfiles (backend at the root, web in /web).
+  - package-ecosystem: docker
+    directories:
+      - /
+      - /web
+    schedule:
+      interval: weekly
+  # Images of the local stack (Postgres, Vault).
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
