@@ -19,8 +19,8 @@ jobs:
       INGESTION_API_KEY: ${{ secrets.INGESTION_API_KEY }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
       - name: Download the current data from the live API
         run: |
           curl -sS --fail-with-body --retry 3 --retry-delay 20 --max-time 1200 \
@@ -53,7 +53,7 @@ jobs:
               for table in ("players", "player_season_statistics", "shots", "fixtures", "prediction_snapshots"):
                   print(table, c.execute(text(f"select count(*) from {table}")).scalar())
           PY
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: database-move-copy
           path: elregista.sql.gz

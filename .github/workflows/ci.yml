@@ -27,10 +27,10 @@ jobs:
       DATABASE_URL: postgresql+psycopg://scouting:scouting@localhost:5432/scouting
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v3
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
 
@@ -53,8 +53,8 @@ jobs:
     # Known vulnerabilities in what production installs (fails the build).
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v3
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
       - name: Python dependencies
         run: |
           uv export --no-hashes --no-dev --no-emit-project --format requirements-txt > requirements.txt
@@ -74,8 +74,8 @@ jobs:
       NEXT_PUBLIC_API_URL: https://el-regista-api.vercel.app
       BASE_URL: http://localhost:3000
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 20
           cache: npm
@@ -90,7 +90,7 @@ jobs:
           npx next start -p 3000 &
           for i in $(seq 1 30); do curl -sf http://localhost:3000/robots.txt > /dev/null && break; sleep 2; done
           npx playwright test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: failure()
         with:
           name: playwright-traces-ci
