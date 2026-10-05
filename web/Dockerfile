@@ -1,4 +1,4 @@
-FROM node:24-slim AS builder
+FROM node:26-slim AS builder
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -9,7 +9,7 @@ RUN npm run build
 
 # Runtime: patched base and the image's own unprivileged "node" user (Trivy DS-0002).
 # The files belong to it because Next writes its cache under .next at run time.
-FROM node:24-slim AS runner
+FROM node:26-slim AS runner
 # npm and corepack are not needed to run server.js, and the copies bundled with the
 # base image carried HIGH CVEs (tar, brace-expansion, ip-address, undici).
 RUN apt-get update \
