@@ -142,3 +142,54 @@ def test_a_page_that_times_out_once_is_tried_again():
 def test_a_page_that_never_answers_stops_the_run_instead_of_crashing_it():
     with pytest.raises(EnrichmentUnavailableError):
         _flaky_scraper(failures_before_success=99).league_season("NL1", 2026)
+
+
+# Shape captured from a real participants page (Oct 2026),
+# https://www.transfermarkt.com/uefa-champions-league/teilnehmer/pokalwettbewerb/CL/saison_id/2026
+# Its club links carry no season.
+PARTICIPANTS_HTML = """
+<table class="items"><tbody>
+<tr class="odd">
+<td class="zentriert no-border-rechts"><a href="/como-1907/startseite/verein/1047" title="Como 1907"><img alt="Como 1907" class="tiny_wappen" src="https://img.a.transfermarkt.technology/wappen/tiny/1047.png?lm=1789459228" title="Como 1907"/></a></td><td class="links no-border-links hauptlink"><a href="/como-1907/startseite/verein/1047" title="Como 1907">Como 1907</a></td><td class="zentriert">27</td><td class="zentriert">25.6</td><td class="rechts">€568.15m</td><td class="rechts">€21.04m</td></tr>
+<tr class="even">
+<td class="zentriert no-border-rechts"><a href="/sporting-lissabon/startseite/verein/336" title="Sporting CP"><img alt="Sporting CP" class="tiny_wappen" src="https://img.a.transfermarkt.technology/wappen/tiny/336.png?lm=1789459184" title="Sporting CP"/></a></td><td class="links no-border-links hauptlink"><a href="/sporting-lissabon/startseite/verein/336" title="Sporting CP">Sporting CP</a></td><td class="zentriert">29</td><td class="zentriert">23.6</td><td class="rechts">€413.70m</td><td class="rechts">€14.27m</td></tr>
+</tbody></table>
+"""
+
+
+def test_the_participants_of_a_cup_are_read_like_a_league_table():
+    assert extract_league_clubs(PARTICIPANTS_HTML) == [
+        ClubLink("Como 1907", "como-1907", 1047),
+        ClubLink("Sporting CP", "sporting-lissabon", 336),
+    ]
+
+
+def test_a_competition_season_reads_each_participant_filtered_by_that_competition():
+    scraper, requested = _scraper(
+        {
+            "/uefa-champions-league/teilnehmer/pokalwettbewerb/CL/saison_id/2026": PARTICIPANTS_HTML,
+            "/como-1907/leistungsdaten/verein/1047/reldata/CL%262026/plus/1": CLUB_HTML,
+            "/sporting-lissabon/leistungsdaten/verein/336/reldata/CL%262026/plus/1": "<table class='items'><tbody></tbody></table>",
+        }
+    )
+
+    clubs = scraper.participants("uefa-champions-league", "CL", 2026)
+    rows = scraper.club_lines(clubs, "CL", 2026)
+
+    assert len(requested) == 3
+    [(team, line)] = rows
+    assert (team, line.transfermarkt_id, line.goals) == ("Como 1907", 42460, 2)
+
+
+def test_cups_are_read_only_for_the_clubs_of_the_top_flight():
+    from player_scouting.infrastructure.transfermarkt.league_pages import (
+        clubs_also_in,
+    )
+
+    participants = [
+        ClubLink("Como 1907", "como-1907", 1047),
+        ClubLink("AC Amateur", "x", 9),
+    ]
+    top_flight = [ClubLink("Como", "como-1907", 1047)]
+
+    assert clubs_also_in(participants, top_flight) == [participants[0]]
