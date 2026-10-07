@@ -60,11 +60,21 @@ jobs:
           echo "START_YEAR=$START_YEAR" >> "$GITHUB_ENV"
           # post PATH: authenticated POST to the ingestion API, fails the step on errors.
           cat > "$RUNNER_TEMP/post.sh" <<'EOF'
+          # On an error it leaves an annotation with the status and the start of the body.
           post() {
-            curl --fail-with-body -sS --max-time 900 -X POST \
-              "$API_BASE_URL$1" \
-              -H "X-Ingestion-Key: $INGESTION_API_KEY"
-            echo
+            local out status body
+            if ! out=$(curl -sS --max-time 900 -X POST -w '\n%{http_code}' \
+                "$API_BASE_URL$1" -H "X-Ingestion-Key: $INGESTION_API_KEY" 2>&1); then
+              echo "::error title=POST $1::${out:0:300}"
+              return 1
+            fi
+            status=${out##*$'\n'}
+            body=${out%$'\n'*}
+            if [ "$status" -ge 400 ]; then
+              echo "::error title=POST $1 ($status)::${body:0:300}"
+              return 1
+            fi
+            echo "$body"
           }
           # until_done PATH: repeat a batched ingestion until nothing is left.
           until_done() {
@@ -134,5 +144,5 @@ jobs:
       - name: Why the local API failed
         if: failure() && env.DATABASE_URL != ''
         run: |
-          grep -nE "Error|Exception|Traceback" "$RUNNER_TEMP/api.log" | tail -8 \
-            | sed -E 's/postgres(ql)?(\+psycopg)?:\/\/[^ ]*/<database-url>/g; s/^/::error title=API log::/'
+          tail -n 12 "$RUNNER_TEMP/api.log" \
+            | sed -E 's/postgres(ql)?(\+psycopg)?:\/\/[^ ]*/<database-url>/g; s/^/::notice title=API log::/'
