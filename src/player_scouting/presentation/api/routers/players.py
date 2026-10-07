@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from player_scouting.application.exceptions import PlayerNotFoundError
 from player_scouting.application.ports import PlayerSort
+from player_scouting.application.use_cases.career import CareerCurveUseCase
 from player_scouting.application.use_cases.explore_players import (
     ExploreFilters,
     ExploreSort,
@@ -307,6 +308,20 @@ def list_player_shots(
 ) -> list[PlayerShotOut]:
     shots = repository.list_player_shots(player_id, season_label)
     return [player_shot_out_from_domain(entry) for entry in shots]
+
+
+@router.get("/{player_id}/career")
+def player_career(
+    player_id: int,
+    players: PlayerRepositoryDep,
+    competitions: CompetitionStatsRepositoryDep,
+) -> dict[str, Any]:
+    """Goals + assists per 90, season by season at his age, and his position's."""
+    try:
+        curve = CareerCurveUseCase(players, competitions).execute(player_id)
+    except PlayerNotFoundError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
+    return asdict(curve)
 
 
 @router.get("/{player_id}/competitions", response_model=list[CompetitionLineOut])

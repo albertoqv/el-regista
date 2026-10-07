@@ -556,9 +556,12 @@ TransfermarktDatasetProviderDep = Annotated[
 
 
 def get_competition_stats_repository(
-    session: SessionDep,
+    request: Request, session: SessionDep
 ) -> SqlAlchemyCompetitionStatsRepository:
-    return SqlAlchemyCompetitionStatsRepository(session)
+    # The age benchmark aggregates the whole table: kept in memory like the others.
+    return _cached_on_get(
+        request, SqlAlchemyCompetitionStatsRepository(session), {"age_benchmark"}
+    )
 
 
 CompetitionStatsRepositoryDep = Annotated[
