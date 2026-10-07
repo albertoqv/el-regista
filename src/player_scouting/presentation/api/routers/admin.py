@@ -10,6 +10,8 @@ from urllib.parse import urlsplit
 from fastapi import APIRouter, Depends, Query, Request, Response
 
 from player_scouting.application.ports import (
+    DatabaseUsage,
+    DatabaseUsageProvider,
     HostingUsage,
     HostingUsageProvider,
     VisitRepository,
@@ -24,6 +26,7 @@ from player_scouting.presentation.api.dependencies import (
     get_data_freshness,
     get_database_overview,
     get_database_ping,
+    get_database_usage_provider,
     get_hosting_usage_provider,
     get_visit_repository,
 )
@@ -159,6 +162,27 @@ class _CachedHosting:
         return usage
 
 
+# Neon is asked at most every ten minutes, however often the panel is reloaded.
+DATABASE_USAGE_SECONDS = 600
+
+
+def _database_usage(
+    request: Request, provider: DatabaseUsageProvider | None
+) -> tuple[DatabaseUsage | None, str | None]:
+    if provider is None:
+        return None, None
+    cache: dict[str, tuple[float, DatabaseUsage]] = request.app.state.database_usage
+    cached = cache.get("usage")
+    if cached and time.monotonic() - cached[0] < DATABASE_USAGE_SECONDS:
+        return cached[1], None
+    try:
+        usage = provider.current_usage()
+    except Exception as error:  # noqa: BLE001 - the panel must still load
+        return None, str(error) or type(error).__name__
+    cache["usage"] = (time.monotonic(), usage)
+    return usage, None
+
+
 @router.get("/dashboard")
 def dashboard(
     request: Request,
@@ -166,6 +190,9 @@ def dashboard(
     hosting: HostingDep,
     data: Annotated[dict[str, int], Depends(get_database_overview)],
     quality: Annotated[DataFreshness, Depends(get_data_freshness)],
+    database: Annotated[
+        DatabaseUsageProvider | None, Depends(get_database_usage_provider)
+    ],
     days: Annotated[int, Query(ge=7, le=90)] = 30,
 ) -> dict[str, Any]:
     result = AdminDashboardUseCase(
@@ -173,6 +200,10 @@ def dashboard(
     ).execute(days)
     body = asdict(result)
     body["hosting_configured"] = hosting is not None
+    usage, usage_error = _database_usage(request, database)
+    body["database_usage"] = asdict(usage) if usage else None
+    body["database_usage_error"] = usage_error
+    body["database_usage_configured"] = database is not None
     body["data"] = data
     body["api"] = request.app.state.metrics.snapshot()
     body["client_errors"] = request.app.state.client_errors.snapshot()

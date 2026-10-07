@@ -15,6 +15,7 @@ from player_scouting.application.league_ingestion_job import (
     LeagueIngestionJobRepository,
 )
 from player_scouting.application.ports import (
+    DatabaseUsageProvider,
     HostingUsageProvider,
     PredictionLogRepository,
     VisitRepository,
@@ -103,6 +104,7 @@ from player_scouting.infrastructure.football_data.client import FootballDataClie
 from player_scouting.infrastructure.football_data.provider import (
     FootballDataProvider,
 )
+from player_scouting.infrastructure.neon.provider import NeonUsageProvider
 from player_scouting.infrastructure.persistence.backup import dump_data
 from player_scouting.infrastructure.persistence.database import engine, get_session
 from player_scouting.infrastructure.persistence.overview import (
@@ -740,6 +742,16 @@ def get_hosting_usage_provider(
         return None
     return RailwayUsageProvider(
         httpx.Client(), settings.railway_api_token, settings.railway_workspace_id
+    )
+
+
+def get_database_usage_provider(
+    settings: Annotated[ApiSettings, Depends(get_api_settings)],
+) -> DatabaseUsageProvider | None:
+    if not (settings.neon_api_key and settings.neon_project_id):
+        return None
+    return NeonUsageProvider(
+        httpx.Client(), settings.neon_api_key, settings.neon_project_id
     )
 
 

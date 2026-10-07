@@ -23,6 +23,9 @@ class ApiSettings(BaseSettings):
     # Optional: show the server bill in the admin panel (Railway workspace token).
     railway_api_token: str = ""
     railway_workspace_id: str = ""
+    # Optional: the database's monthly transfer in the admin panel (Neon API key).
+    neon_api_key: str = ""
+    neon_project_id: str = ""
     # Production fails closed: no key configured = no ingestion. Vercel sets VERCEL=1,
     # so a deployment there is production unless the variables say otherwise.
     require_ingestion_key: bool = Field(default_factory=lambda: "VERCEL" in os.environ)

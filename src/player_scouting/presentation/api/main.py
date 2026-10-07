@@ -44,6 +44,7 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
     app.state.failed_attempts = FailedAttempts()
     app.state.client_errors = ClientErrorLog()
     app.state.metrics = RequestMetrics()
+    app.state.database_usage = {}
     app.state.response_cache = ResponseCache()
     app.middleware("http")(
         response_cache_middleware(app.state.response_cache, READ_CACHE.clear)
