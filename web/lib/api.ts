@@ -727,3 +727,22 @@ export type CompetitionLine = {
 export function getPlayerCompetitions(playerId: number): Promise<CompetitionLine[]> {
   return request<CompetitionLine[]>(`/players/${playerId}/competitions`);
 }
+
+export type CareerPoint = {
+  season_label: string;
+  age: number;
+  appearances: number;
+  goals: number;
+  assists: number;
+  minutes_played: number;
+  per90: number;
+};
+
+export type AgePoint = { age: number; per90: number; players: number };
+
+/** Goals + assists per 90 by age, next to the level of his position at each age. */
+export type CareerCurve = { position: string; points: CareerPoint[]; benchmark: AgePoint[] };
+
+export function getPlayerCareer(playerId: number): Promise<CareerCurve> {
+  return request<CareerCurve>(`/players/${playerId}/career`);
+}

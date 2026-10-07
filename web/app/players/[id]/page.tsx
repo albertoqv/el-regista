@@ -2,6 +2,7 @@ import { preconnect } from "react-dom";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CareerChart } from "@/app/components/CareerChart";
 import { CompetitionStats } from "@/app/components/CompetitionStats";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
 import { SITE_URL } from "@/lib/site";
@@ -19,9 +20,11 @@ import { ShotProfile } from "@/app/components/ShotProfile";
 import { SimilarPlayers } from "@/app/components/SimilarPlayers";
 import {
   ApiError,
+  type CareerCurve,
   type CompetitionLine,
   findTwins,
   getMarketValue,
+  getPlayerCareer,
   getPlayerCompetitions,
   getPlayer,
   getPlayerPercentiles,
@@ -102,7 +105,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     throw error;
   }
 
-  const [twins, marketValue, percentiles, shots, trend, competitions] = await Promise.all([
+  const [twins, marketValue, percentiles, shots, trend, competitions, career] = await Promise.all([
     findTwins(playerId, { limit: 6 }).catch((): TwinReport | null => null),
     getMarketValue(playerId).catch(
       (): MarketValueHistory => ({ current: null, history: [] }),
@@ -113,6 +116,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     getPlayerShots(playerId, season?.label).catch((): PlayerShot[] => []),
     getPlayerTrend(playerId).catch((): PlayerTrend | null => null),
     getPlayerCompetitions(playerId).catch((): CompetitionLine[] => []),
+    getPlayerCareer(playerId).catch((): CareerCurve | null => null),
   ]);
 
   const age = formatAge(player);
@@ -265,6 +269,12 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       {competitions.length > 0 && (
         <Reveal>
           <CompetitionStats lines={competitions} />
+        </Reveal>
+      )}
+
+      {career && career.points.length >= 2 && (
+        <Reveal>
+          <CareerChart curve={career} color={accent} />
         </Reveal>
       )}
 
