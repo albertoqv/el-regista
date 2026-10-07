@@ -27,6 +27,7 @@ from player_scouting.application.ports import (
     TeamMatch,
 )
 from player_scouting.application.team_names import renamed
+from player_scouting.domain.competitions import CompetitionLine, sorted_lines
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
@@ -576,3 +577,20 @@ class InMemoryPredictionLog:
 
     def list_snapshots(self) -> list[PredictionSnapshot]:
         return sorted(self._snapshots.values(), key=lambda s: (s.kickoff, s.match_id))
+
+
+class InMemoryCompetitionStatsRepository:
+    def __init__(self) -> None:
+        self._lines: dict[tuple[int, str, str], CompetitionLine] = {}
+
+    def save_competition_lines(
+        self, lines_by_player: dict[int, list[CompetitionLine]]
+    ) -> None:
+        for player_id, lines in lines_by_player.items():
+            for line in lines:
+                self._lines[(player_id, line.competition, line.season_label)] = line
+
+    def list_competition_lines(self, player_id: int) -> list[CompetitionLine]:
+        return sorted_lines(
+            [line for (pid, _, _), line in self._lines.items() if pid == player_id]
+        )
