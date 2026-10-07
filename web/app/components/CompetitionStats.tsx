@@ -4,6 +4,13 @@ import { seasonDisplay } from "@/lib/format";
 // Seasons shown open; older ones fold away.
 const OPEN_SEASONS = 3;
 
+// Finals tournaments carry their year (Mundial 2026); the rest a season (Nations League 26/27).
+const TOURNAMENTS = new Set(["Mundial", "Eurocopa", "Copa América", "Copa África", "Copa Asia", "Copa Confederaciones"]);
+
+function nationalLabel(line: CompetitionLine) {
+  return TOURNAMENTS.has(line.competition) ? line.season_label : seasonDisplay(line.season_label);
+}
+
 function sum(lines: CompetitionLine[], key: "appearances" | "goals" | "assists" | "minutes_played") {
   return lines.reduce((total, line) => total + line[key], 0);
 }
@@ -117,7 +124,7 @@ export function CompetitionStats({ lines }: { lines: CompetitionLine[] }) {
         <div className="flex flex-col gap-1">
           <h3 className="font-heading text-lg tracking-tight">Con su selección</h3>
           <LinesTable
-            lines={national.map((line) => ({ ...line, competition: `${line.competition} ${line.season_label}` }))}
+            lines={national.map((line) => ({ ...line, competition: `${line.competition} ${nationalLabel(line)}` }))}
           />
         </div>
       )}

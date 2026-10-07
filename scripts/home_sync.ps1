@@ -31,6 +31,9 @@ if (-not $uv) { $uv = Join-Path $env:USERPROFILE ".local\bin\uv.exe" }
 & $uv run python scripts/scrape_leagues_remote.py --backfill *>> $Log
 # Big five leagues, Europe and domestic cups of the season in progress, per competition.
 & $uv run python scripts/scrape_competitions_remote.py *>> $Log
-# Photos, birth dates and market values of the players still pending.
-& $uv run python scripts/enrich_remote.py --limit 400 *>> $Log
+# National teams: Nations League, qualifiers, tournaments and friendlies (150 pages a run).
+& $uv run python scripts/scrape_national_teams_remote.py *>> $Log
+# Photos, birth dates and market values of the players still pending (most are done:
+# a smaller batch keeps the night's pages within what Transfermarkt tolerates).
+& $uv run python scripts/enrich_remote.py --limit 150 *>> $Log
 "$(Get-Date -Format s) Fin" | Add-Content $Log

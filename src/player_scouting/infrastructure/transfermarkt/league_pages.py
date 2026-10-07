@@ -239,6 +239,10 @@ class TransfermarktLeagueScraper:
             )
         )
 
+    def performance_page(self, club: ClubLink) -> str:
+        """The club's (or national team's) performance page, with its competitions."""
+        return self._page(f"/{club.slug}/leistungsdaten/verein/{club.club_id}/plus/1")
+
     def club_lines(
         self, clubs: list[ClubLink], competition_code: str, start_year: int
     ) -> list[tuple[str, ScrapedLine]]:
