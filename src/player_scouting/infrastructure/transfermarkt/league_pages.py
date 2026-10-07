@@ -59,7 +59,31 @@ SEASON_LEAGUES = {
     "PO2": "Liga Portugal 2",
 }
 
-CLUB_LINK = re.compile(r"^/([^/]+)/startseite/verein/(\d+)/saison_id/\d+$")
+# League tables link clubs with the season; participants pages of cups without it.
+CLUB_LINK = re.compile(r"^/([^/]+)/startseite/verein/(\d+)(?:/saison_id/\d+)?$")
+
+# The season in progress beyond the leagues (codes and slugs verified on Transfermarkt's
+# participants pages, Oct 2026). Domestic cups are read only for the top-flight clubs:
+# the rest are amateurs without a page here.
+BIG_FIVE_LEAGUES = {
+    "GB1": "Premier League",
+    "ES1": "La Liga",
+    "L1": "Bundesliga",
+    "IT1": "Serie A",
+    "FR1": "Ligue 1",
+}
+EUROPEAN_CUPS = {
+    "CL": ("uefa-champions-league", "Champions League"),
+    "EL": ("uefa-europa-league", "Europa League"),
+    "UCOL": ("uefa-conference-league", "Conference League"),
+}
+DOMESTIC_CUPS = {
+    "CDR": ("copa-del-rey", "Copa del Rey", "ES1"),
+    "FAC": ("fa-cup", "FA Cup", "GB1"),
+    "DFB": ("dfb-pokal", "DFB-Pokal", "L1"),
+    "CIT": ("italy-cup", "Coppa Italia", "IT1"),
+    "FRC": ("coupe-de-france", "Coupe de France", "FR1"),
+}
 PROFILE_LINK = re.compile(r"/profil/spieler/(\d+)")
 # After the shirt number, player and age columns: these come in this order.
 STAT_COLUMNS = (
@@ -169,6 +193,12 @@ def extract_club_season(club_html: str) -> list[ScrapedLine]:
     return [line for line in lines if line is not None and line.appearances > 0]
 
 
+def clubs_also_in(clubs: list[ClubLink], others: list[ClubLink]) -> list[ClubLink]:
+    """The clubs that are also among `others` (same Transfermarkt id)."""
+    ids = {club.club_id for club in others}
+    return [club for club in clubs if club.club_id in ids]
+
+
 class TransfermarktLeagueScraper:
     def __init__(
         self,
@@ -184,12 +214,35 @@ class TransfermarktLeagueScraper:
         self, competition_code: str, start_year: int
     ) -> list[tuple[str, ScrapedLine]]:
         """(club, line) for every player who has played; stops if blocked."""
-        clubs = extract_league_clubs(
+        return self.club_lines(
+            self.league_clubs(competition_code, start_year),
+            competition_code,
+            start_year,
+        )
+
+    def league_clubs(self, competition_code: str, start_year: int) -> list[ClubLink]:
+        return extract_league_clubs(
             self._page(
                 f"/wettbewerb/startseite/wettbewerb/{competition_code}"
                 f"/saison_id/{start_year}"
             )
         )
+
+    def participants(
+        self, slug: str, competition_code: str, start_year: int
+    ) -> list[ClubLink]:
+        """The clubs of a cup or European competition in that season."""
+        return extract_league_clubs(
+            self._page(
+                f"/{slug}/teilnehmer/pokalwettbewerb/{competition_code}"
+                f"/saison_id/{start_year}"
+            )
+        )
+
+    def club_lines(
+        self, clubs: list[ClubLink], competition_code: str, start_year: int
+    ) -> list[tuple[str, ScrapedLine]]:
+        """(club, line) of each club's players in that competition only."""
         rows: list[tuple[str, ScrapedLine]] = []
         for club in clubs:
             time.sleep(self._pause)
