@@ -70,8 +70,20 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
   de clubes de primera) y `scrape_national_teams_remote.py` (selecciones de Mundial y
   Eurocopa; códigos del selector de su página de rendimiento, `.cache/national-teams.json`,
   150 páginas por noche). Los torneos llevan su año (Mundial 2026), lo demás la temporada.
-- Las ligas de año natural (Brasil, MLS, Escandinavia...) quedan fuera: no encajan con
-  "2026 = 26/27".
+- Las ligas de año natural (Brasil, MLS, Escandinavia...) quedan fuera de rankings y
+  gemelos (no encajan con "2026 = 26/27"); sí salen en la ficha por competición, con la
+  temporada en la que Transfermarkt las archiva. Quien jugó en las 5 grandes o en Europa
+  desde 2019 y no teníamos (Messi) se crea desde el perfil del dataset.
+- **Valor estimado** (`domain/valuation.py`): ridge en Python puro sobre log(valor) con edad,
+  posición, liga, minutos, goles/asist. por 90, Europa y selección de la última temporada
+  terminada; factores multiplicativos frente al jugador medio y error mediano medido con 1 de
+  cada 5 jugadores apartado. Se recalcula en el refresco (`/ingestion/valuations`), tablas
+  `player_value_estimates` y `value_model`. Web: bloque en la ficha y `/infravalorados`.
+- **Carrera por edad** (`domain/career.py`, `/players/{id}/career`): G+A por 90 de club por
+  temporada frente a la media de su posición (agregado en SQL, `READ_CACHE`).
+- **Buscador**: `f_unaccent` + `pg_trgm` (`word_similarity` ≥ 0,5; migración 0020).
+- **"Errores de cuota"**: estudiados con datos reales y descartados (no dan dinero;
+  `scripts/research_odds_value.py`). No vender apuestas de valor.
 
 ## Producción (todo gratis)
 
