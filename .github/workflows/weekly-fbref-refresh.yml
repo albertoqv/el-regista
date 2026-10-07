@@ -93,6 +93,8 @@ jobs:
           for YEAR in $START_YEAR $((START_YEAR - 1)); do
             post "/ingestion/transfermarkt-dataset/seasons/$YEAR" | jq -c '{ingested, skipped: (.skipped | length)}'
           done
+          # Champions League, cups, super cups and national teams, season by season.
+          post "/ingestion/transfermarkt-dataset/competitions" | jq -c '{ingested}'
 
       - name: Merge players FBref spelled in two ways
         run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/maintenance/merge-duplicates"

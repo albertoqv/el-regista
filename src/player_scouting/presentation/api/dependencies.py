@@ -20,6 +20,10 @@ from player_scouting.application.ports import (
     VisitRepository,
 )
 from player_scouting.application.use_cases.compare_players import ComparePlayersUseCase
+from player_scouting.application.use_cases.competition_lines import (
+    IngestDatasetCompetitionsUseCase,
+    RecordCompetitionLinesUseCase,
+)
 from player_scouting.application.use_cases.enqueue_league_ingestion import (
     EnqueueLeagueIngestionUseCase,
 )
@@ -106,6 +110,9 @@ from player_scouting.infrastructure.persistence.overview import (
     data_freshness,
     database_overview,
     goal_mismatches,
+)
+from player_scouting.infrastructure.persistence.sqlalchemy_competition_stats_repository import (  # noqa: E501
+    SqlAlchemyCompetitionStatsRepository,
 )
 from player_scouting.infrastructure.persistence.sqlalchemy_league_ingestion_job_repository import (  # noqa: E501
     SqlAlchemyLeagueIngestionJobRepository,
@@ -543,6 +550,41 @@ def get_transfermarkt_dataset_provider() -> TransfermarktDatasetZipProvider:
 
 TransfermarktDatasetProviderDep = Annotated[
     TransfermarktDatasetZipProvider, Depends(get_transfermarkt_dataset_provider)
+]
+
+
+def get_competition_stats_repository(
+    session: SessionDep,
+) -> SqlAlchemyCompetitionStatsRepository:
+    return SqlAlchemyCompetitionStatsRepository(session)
+
+
+CompetitionStatsRepositoryDep = Annotated[
+    SqlAlchemyCompetitionStatsRepository, Depends(get_competition_stats_repository)
+]
+
+
+def get_record_competition_lines_use_case(
+    repository: PlayerRepositoryDep, competitions: CompetitionStatsRepositoryDep
+) -> RecordCompetitionLinesUseCase:
+    return RecordCompetitionLinesUseCase(repository, competitions)
+
+
+RecordCompetitionLinesUseCaseDep = Annotated[
+    RecordCompetitionLinesUseCase, Depends(get_record_competition_lines_use_case)
+]
+
+
+def get_ingest_dataset_competitions_use_case(
+    provider: TransfermarktDatasetProviderDep,
+    repository: PlayerRepositoryDep,
+    competitions: CompetitionStatsRepositoryDep,
+) -> IngestDatasetCompetitionsUseCase:
+    return IngestDatasetCompetitionsUseCase(provider, repository, competitions)
+
+
+IngestDatasetCompetitionsUseCaseDep = Annotated[
+    IngestDatasetCompetitionsUseCase, Depends(get_ingest_dataset_competitions_use_case)
 ]
 
 

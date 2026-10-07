@@ -32,6 +32,7 @@ from player_scouting.application.use_cases.team_analytics import (
     TableRow,
 )
 from player_scouting.domain.comparison import Comparison
+from player_scouting.domain.competitions import CompetitionKind, CompetitionLine
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
@@ -679,4 +680,32 @@ def backtest_report_out_from_domain(report: BacktestReport) -> BacktestReportOut
             )
             for bucket in report.calibration
         ],
+    )
+
+
+class CompetitionLineOut(BaseModel):
+    competition: str
+    kind: CompetitionKind
+    season_label: str
+    team: str | None
+    appearances: int
+    goals: int
+    assists: int
+    minutes_played: int
+    yellow_cards: int
+    red_cards: int
+
+
+def competition_line_out_from_domain(line: CompetitionLine) -> CompetitionLineOut:
+    return CompetitionLineOut(
+        competition=line.competition,
+        kind=line.kind,
+        season_label=line.season_label,
+        team=line.team,
+        appearances=line.appearances,
+        goals=line.goals,
+        assists=line.assists,
+        minutes_played=line.minutes_played,
+        yellow_cards=line.yellow_cards,
+        red_cards=line.red_cards,
     )

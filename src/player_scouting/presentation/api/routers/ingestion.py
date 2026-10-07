@@ -23,6 +23,7 @@ from player_scouting.presentation.api.dependencies import (
     EnrichPlayerMarketValueUseCaseDep,
     IngestAdvancedSeasonUseCaseDep,
     IngestCompetitionUseCaseDep,
+    IngestDatasetCompetitionsUseCaseDep,
     IngestDatasetLeaguesUseCaseDep,
     IngestMatchStatsUseCaseDep,
     IngestPlayerSeasonUseCaseDep,
@@ -161,6 +162,14 @@ def ingest_transfermarkt_dataset_season(
     start_year: int, use_case: IngestDatasetLeaguesUseCaseDep
 ) -> IngestionResultOut:
     return ingestion_result_out_from_domain(use_case.execute(start_year))
+
+
+@router.post("/transfermarkt-dataset/competitions", response_model=IngestionResultOut)
+def ingest_transfermarkt_dataset_competitions(
+    use_case: IngestDatasetCompetitionsUseCaseDep,
+) -> IngestionResultOut:
+    """Europe, cups, super cups and national teams of the finished seasons."""
+    return ingestion_result_out_from_domain(use_case.execute())
 
 
 @router.post("/transfermarkt/league-seasons", response_model=IngestionResultOut)

@@ -23,6 +23,7 @@ from player_scouting.domain.trends import MatchLine, build_trend
 from player_scouting.infrastructure.understat.provider import LEAGUES
 from player_scouting.presentation.api.dependencies import (
     ComparePlayersUseCaseDep,
+    CompetitionStatsRepositoryDep,
     ExplorePlayersUseCaseDep,
     FindSimilarPlayersUseCaseDep,
     FindTwinsUseCaseDep,
@@ -32,6 +33,7 @@ from player_scouting.presentation.api.dependencies import (
 )
 from player_scouting.presentation.api.schemas import (
     ComparisonOut,
+    CompetitionLineOut,
     ExploreRowOut,
     MarketValueHistoryOut,
     PercentileReportOut,
@@ -41,6 +43,7 @@ from player_scouting.presentation.api.schemas import (
     SimilarPlayerMatchOut,
     TwinReportOut,
     comparison_out_from_domain,
+    competition_line_out_from_domain,
     explore_row_out_from_domain,
     market_value_history_out_from_domain,
     percentile_report_out_from_domain,
@@ -304,6 +307,15 @@ def list_player_shots(
 ) -> list[PlayerShotOut]:
     shots = repository.list_player_shots(player_id, season_label)
     return [player_shot_out_from_domain(entry) for entry in shots]
+
+
+@router.get("/{player_id}/competitions", response_model=list[CompetitionLineOut])
+def list_player_competitions(
+    player_id: int, repository: CompetitionStatsRepositoryDep
+) -> list[CompetitionLineOut]:
+    """Season by season, every competition: league, Europe, cups, national team."""
+    lines = repository.list_competition_lines(player_id)
+    return [competition_line_out_from_domain(line) for line in lines]
 
 
 @router.get("/{player_id}/market-value", response_model=MarketValueHistoryOut)
