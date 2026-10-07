@@ -413,9 +413,9 @@ class DatasetCompetitionRow:
 
 class CompetitionStatsRepository(Protocol):
     def save_competition_lines(
-        self, player_id: int, lines: list[CompetitionLine]
+        self, lines_by_player: dict[int, list[CompetitionLine]]
     ) -> None:
-        """Adds or replaces each (competition, season) line of the player."""
+        """Adds or replaces each (player, competition, season) line, in bulk."""
         ...
 
     def list_competition_lines(self, player_id: int) -> list[CompetitionLine]: ...
@@ -615,6 +615,22 @@ class HostingUsage:
 
 class HostingUsageProvider(Protocol):
     def current_usage(self) -> HostingUsage: ...
+
+
+@dataclass(frozen=True)
+class DatabaseUsage:
+    """The database's consumption in the current period (Neon)."""
+
+    period_start: datetime
+    period_end: datetime
+    transfer_bytes: int
+    transfer_limit_bytes: int
+    compute_seconds: int
+    written_bytes: int
+
+
+class DatabaseUsageProvider(Protocol):
+    def current_usage(self) -> DatabaseUsage: ...
 
 
 @dataclass(frozen=True)
