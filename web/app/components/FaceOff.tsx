@@ -83,7 +83,8 @@ export function FaceOff({
 }: {
   a: FaceOffSide;
   b: FaceOffSide;
-  similarity: number;
+  /** Null for a whole-season duel: no style metrics to compare. */
+  similarity: number | null;
 }) {
   return (
     <section className="relative -mx-4 overflow-x-clip px-4 py-2 sm:mx-0 sm:px-0">
@@ -100,7 +101,7 @@ export function FaceOff({
               VS
             </div>
           </div>
-          <SimilarityMeter percentage={similarity} size={140} />
+          {similarity !== null && <SimilarityMeter percentage={similarity} size={140} />}
         </motion.div>
         <Fighter side={b} color="#c93c17" fromLeft={false} />
       </div>

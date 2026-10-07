@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PlayerAutocomplete } from "@/app/components/PlayerAutocomplete";
-import { listPlayerSeasons, type PlayerSummary, type Season } from "@/lib/api";
+import { getPlayerCompetitions, listPlayerSeasons, type PlayerSummary, type Season } from "@/lib/api";
 import { seasonDisplay, sortSeasonsByRecency } from "@/lib/format";
-import { CAREER } from "@/lib/seasons";
+import { CAREER, clubSeasons } from "@/lib/seasons";
 
 const LATEST = "";
 
@@ -25,6 +25,9 @@ function SeasonSelect({
   color: string;
 }) {
   const [seasons, setSeasons] = useState<Season[]>([]);
+  // Whole club seasons (every competition), back to 2019: older than the league
+  // seasons with detailed metrics.
+  const [whole, setWhole] = useState<Season[]>([]);
 
   useEffect(() => {
     if (playerId === null) return;
@@ -35,6 +38,13 @@ function SeasonSelect({
       })
       .catch(() => {
         if (!cancelled) setSeasons([]);
+      });
+    getPlayerCompetitions(playerId)
+      .then((lines) => {
+        if (!cancelled) setWhole(clubSeasons(lines));
+      })
+      .catch(() => {
+        if (!cancelled) setWhole([]);
       });
     return () => {
       cancelled = true;
@@ -51,12 +61,26 @@ function SeasonSelect({
       style={{ borderColor: `${color}55` }}
     >
       <option value={LATEST}>Última temporada</option>
-      {seasons.map((season) => (
-        <option key={seasonKey(season)} value={seasonKey(season)}>
-          {season.competition} {seasonDisplay(season.label)}
-          {season.team ? ` · ${season.team}` : ""}
-        </option>
-      ))}
+      {seasons.length > 0 && (
+        <optgroup label="Liga, con métricas detalladas">
+          {seasons.map((season) => (
+            <option key={seasonKey(season)} value={seasonKey(season)}>
+              {season.competition} {seasonDisplay(season.label)}
+              {season.team ? ` · ${season.team}` : ""}
+            </option>
+          ))}
+        </optgroup>
+      )}
+      {whole.length > 0 && (
+        <optgroup label="Temporada completa (liga, Europa y copas)">
+          {whole.map((season) => (
+            <option key={seasonKey(season)} value={seasonKey(season)}>
+              {seasonDisplay(season.label)}
+              {season.team ? ` · ${season.team}` : ""}
+            </option>
+          ))}
+        </optgroup>
+      )}
       <option value={CAREER}>Carrera completa</option>
     </select>
   );
