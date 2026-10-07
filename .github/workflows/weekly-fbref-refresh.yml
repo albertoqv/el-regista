@@ -58,6 +58,9 @@ jobs:
             if [ "$MONTH" -ge 7 ]; then START_YEAR=$YEAR; else START_YEAR=$((YEAR - 1)); fi
           fi
           echo "START_YEAR=$START_YEAR" >> "$GITHUB_ENV"
+          # A secret pasted from a Windows file can end in CR/LF, which turns the
+          # X-Ingestion-Key header into an invalid HTTP request (uvicorn refuses it).
+          echo "INGESTION_API_KEY=$(printf '%s' "$INGESTION_API_KEY" | tr -d '[:space:]')" >> "$GITHUB_ENV"
           # post PATH: authenticated POST to the ingestion API, fails the step on errors.
           cat > "$RUNNER_TEMP/post.sh" <<'EOF'
           # On an error it leaves an annotation with the status and the start of the body.
@@ -65,13 +68,13 @@ jobs:
             local out status body
             if ! out=$(curl -sS --max-time 900 -X POST -w '\n%{http_code}' \
                 "$API_BASE_URL$1" -H "X-Ingestion-Key: $INGESTION_API_KEY" 2>&1); then
-              echo "::error title=POST $1::${out:0:300}"
+              echo "::error title=POST $1::${out:0:300}" >&2
               return 1
             fi
             status=${out##*$'\n'}
             body=${out%$'\n'*}
             if [ "$status" -ge 400 ]; then
-              echo "::error title=POST $1 ($status)::${body:0:300}"
+              echo "::error title=POST $1 ($status)::${body:0:300}" >&2
               return 1
             fi
             echo "$body"
