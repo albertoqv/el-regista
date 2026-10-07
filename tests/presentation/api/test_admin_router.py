@@ -3,12 +3,13 @@ from datetime import datetime
 
 from fastapi.testclient import TestClient
 
-from player_scouting.application.ports import HostingUsage
+from player_scouting.application.ports import DatabaseUsage, HostingUsage
 from player_scouting.infrastructure.persistence.overview import DataFreshness
 from player_scouting.presentation.api.dependencies import (
     get_data_freshness,
     get_database_overview,
     get_database_ping,
+    get_database_usage_provider,
     get_hosting_usage_provider,
     get_visit_repository,
 )
@@ -205,3 +206,52 @@ def test_the_database_round_trip_can_be_measured():
 
     assert body["status"] == "ok"
     assert body["round_trip_ms"] >= 0
+
+
+class FakeDatabase:
+    def current_usage(self):
+        return DatabaseUsage(
+            datetime(2026, 10, 1),
+            datetime(2026, 11, 1),
+            1_250_000_000,
+            5_000_000_000,
+            86_400,
+            52_000_000,
+        )
+
+
+class BrokenDatabase:
+    def current_usage(self):
+        raise RuntimeError("authorization failed")
+
+
+def test_the_dashboard_shows_how_much_of_the_database_transfer_is_used():
+    client = _client(InMemoryVisitRepository())
+    client.app.dependency_overrides[get_database_usage_provider] = FakeDatabase
+
+    body = client.get("/admin/dashboard", headers={"X-Ingestion-Key": "secret"}).json()
+
+    assert body["database_usage"]["transfer_bytes"] == 1_250_000_000
+    assert body["database_usage"]["transfer_limit_bytes"] == 5_000_000_000
+    assert body["database_usage_configured"] is True
+
+
+def test_the_panel_still_loads_when_neon_does_not_answer():
+    client = _client(InMemoryVisitRepository())
+    client.app.dependency_overrides[get_database_usage_provider] = BrokenDatabase
+
+    body = client.get("/admin/dashboard", headers={"X-Ingestion-Key": "secret"}).json()
+
+    assert body["database_usage"] is None
+    assert body["database_usage_error"] == "authorization failed"
+
+
+def test_without_a_neon_key_the_panel_says_so():
+    body = (
+        _client(InMemoryVisitRepository())
+        .get("/admin/dashboard", headers={"X-Ingestion-Key": "secret"})
+        .json()
+    )
+
+    assert body["database_usage"] is None
+    assert body["database_usage_configured"] is False
