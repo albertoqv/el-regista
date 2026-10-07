@@ -100,6 +100,28 @@ def main() -> int:
         print(
             f"{competition} {season}: {response.json()['ingested']} players", flush=True
         )
+        # The same lines, with games played, for the player's page per competition.
+        api.post(
+            "/ingestion/transfermarkt/competition-lines",
+            json={
+                "competition": competition,
+                "kind": "league",
+                "season_label": str(season),
+                "rows": [
+                    {
+                        "transfermarkt_id": line.transfermarkt_id,
+                        "team": club,
+                        "appearances": line.appearances,
+                        "goals": line.goals,
+                        "assists": line.assists,
+                        "minutes_played": line.minutes_played,
+                        "yellow_cards": line.yellow_cards,
+                        "red_cards": line.red_cards,
+                    }
+                    for club, line in lines
+                ],
+            },
+        ).raise_for_status()
     return 0
 
 

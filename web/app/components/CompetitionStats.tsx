@@ -96,7 +96,7 @@ export function CompetitionStats({ lines }: { lines: CompetitionLine[] }) {
     <section className="flex flex-col gap-6">
       <div>
         <h2 className="font-heading text-2xl tracking-tight">Por competición</h2>
-        <p className="text-sm text-muted">Liga, Europa y copas de cada temporada terminada.</p>
+        <p className="text-sm text-muted">Liga, Europa y copas, temporada a temporada.</p>
       </div>
       {seasons.slice(0, OPEN_SEASONS).map((label) => (
         <ClubSeason key={label} label={label} lines={bySeason(label)} />
