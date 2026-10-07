@@ -8,10 +8,16 @@ from collections.abc import Iterator
 from pathlib import Path
 from typing import Protocol
 
-from player_scouting.application.ports import DatasetProfile, DatasetSeasonRow
+from player_scouting.application.ports import (
+    DatasetCompetitionRow,
+    DatasetProfile,
+    DatasetSeasonRow,
+)
+from player_scouting.domain.competitions import CompetitionLine
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.statistics import Statistics
 from player_scouting.infrastructure.transfermarkt_dataset.mapper import (
+    DATASET_COMPETITIONS,
     OTHER_LEAGUES,
     to_profile,
     to_valuation,
@@ -99,8 +105,66 @@ class TransfermarktDatasetZipProvider:
             for (player_id, competition_id), values in totals.items()
         ]
 
+    def competition_rows(self, since: int) -> list[DatasetCompetitionRow]:
+        games = {
+            row["game_id"]: row
+            for row in self._rows("games.csv")
+            if row["competition_id"] in DATASET_COMPETITIONS
+            and row["season"]
+            and int(row["season"]) >= since
+        }
+        clubs = {row["club_id"]: row["name"] for row in self._rows("clubs.csv")}
+        fields = ("goals", "assists", "minutes_played", "yellow_cards", "red_cards")
+        totals: dict[tuple[str, str, str], dict[str, int]] = defaultdict(
+            lambda: defaultdict(int)
+        )
+        latest: dict[tuple[str, str, str], tuple[str, str | None]] = {}
+        for row in self._rows("appearances.csv"):
+            game = games.get(row["game_id"])
+            if game is None:
+                continue
+            key = (row["player_id"], row["competition_id"], game["season"])
+            totals[key]["appearances"] += 1
+            for field in fields:
+                totals[key][field] += int(row[field] or 0)
+            if key not in latest or row["date"] >= latest[key][0]:
+                latest[key] = (row["date"], _team(row["player_club_id"], game, clubs))
+        rows = []
+        for (player_id, code, season), values in totals.items():
+            name, kind = DATASET_COMPETITIONS[code]
+            last_date, team = latest[(player_id, code, season)]
+            rows.append(
+                DatasetCompetitionRow(
+                    transfermarkt_id=int(player_id),
+                    line=CompetitionLine(
+                        competition=name,
+                        kind=kind,
+                        # A tournament is known by its year, a club season by its start.
+                        season_label=last_date[:4] if kind == "national" else season,
+                        team=team,
+                        appearances=values["appearances"],
+                        goals=values["goals"],
+                        assists=values["assists"],
+                        minutes_played=values["minutes_played"],
+                        yellow_cards=values["yellow_cards"],
+                        red_cards=values["red_cards"],
+                    ),
+                )
+            )
+        return rows
+
     def _rows(self, name: str) -> Iterator[dict[str, str]]:
         if self._path is None:
             self._path = self._client.download_archive()
         with zipfile.ZipFile(self._path) as archive, archive.open(name) as raw:
             yield from csv.DictReader(io.TextIOWrapper(raw, encoding="utf-8"))
+
+
+def _team(club_id: str, game: dict[str, str], clubs: dict[str, str]) -> str | None:
+    """The club's name; national teams are not in clubs.csv, the game names them."""
+    if club_id in clubs:
+        return clubs[club_id]
+    for side in ("home", "away"):
+        if game.get(f"{side}_club_id") == club_id:
+            return game.get(f"{side}_club_name") or None
+    return None

@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import Literal, Protocol
 
 from player_scouting.application.player_matching import ExternalPlayer
+from player_scouting.domain.competitions import CompetitionLine
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
@@ -398,6 +399,26 @@ class TransfermarktDatasetProvider(Protocol):
     def season_rows(self, start_year: int) -> list[DatasetSeasonRow]:
         """League seasons outside the five big leagues (those come from FBref)."""
         ...
+
+    def competition_rows(self, since: int) -> list[DatasetCompetitionRow]:
+        """Every competition a player took part in, season by season, from `since`."""
+        ...
+
+
+@dataclass(frozen=True)
+class DatasetCompetitionRow:
+    transfermarkt_id: int
+    line: CompetitionLine
+
+
+class CompetitionStatsRepository(Protocol):
+    def save_competition_lines(
+        self, player_id: int, lines: list[CompetitionLine]
+    ) -> None:
+        """Adds or replaces each (competition, season) line of the player."""
+        ...
+
+    def list_competition_lines(self, player_id: int) -> list[CompetitionLine]: ...
 
 
 @dataclass(frozen=True)

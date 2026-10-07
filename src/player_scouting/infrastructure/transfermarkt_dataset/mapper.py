@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from player_scouting.application.ports import DatasetProfile
+from player_scouting.domain.competitions import CompetitionKind
 from player_scouting.domain.market_value import MarketValuePoint
 
 # Dataset position -> the vocabulary the rest of the app uses.
@@ -81,3 +82,53 @@ def to_profile(
         club=row.get("current_club_name") or None,
         valuations=valuations,
     )
+
+
+# Competitions shown on a player's page, by dataset code (competitions.csv, Oct 2026).
+# Calendar-year leagues are left out, as everywhere else in the app.
+_LEAGUES = {
+    "GB1": "Premier League",
+    "ES1": "La Liga",
+    "L1": "Bundesliga",
+    "IT1": "Serie A",
+    "FR1": "Ligue 1",
+    **{
+        code: name
+        for code, name in OTHER_LEAGUES.items()
+        if code not in {"ARG1", "BRA1", "JAP1", "MLS1", "NO1", "RSK1", "SE1"}
+    },
+}
+DATASET_COMPETITIONS: dict[str, tuple[str, CompetitionKind]] = {
+    **{code: (name, "league") for code, name in _LEAGUES.items()},
+    "CL": ("Champions League", "continental"),
+    "CLQ": ("Champions League (previa)", "continental"),
+    "EL": ("Europa League", "continental"),
+    "ELQ": ("Europa League (previa)", "continental"),
+    "UCOL": ("Conference League", "continental"),
+    "ECLQ": ("Conference League (previa)", "continental"),
+    "CDR": ("Copa del Rey", "cup"),
+    "FAC": ("FA Cup", "cup"),
+    "DFB": ("DFB-Pokal", "cup"),
+    "CIT": ("Coppa Italia", "cup"),
+    "NLP": ("KNVB Beker", "cup"),
+    "SFA": ("Scottish Cup", "cup"),
+    "DKP": ("Copa de Dinamarca", "cup"),
+    "GRP": ("Copa de Grecia", "cup"),
+    "RUP": ("Copa de Rusia", "cup"),
+    "UKRP": ("Copa de Ucrania", "cup"),
+    "USC": ("Supercopa de Europa", "supercup"),
+    "SUC": ("Supercopa de España", "supercup"),
+    "GBCS": ("Community Shield", "supercup"),
+    "DFL": ("Supercopa de Alemania", "supercup"),
+    "SCI": ("Supercopa de Italia", "supercup"),
+    "FRCH": ("Trophée des Champions", "supercup"),
+    "NLSC": ("Johan Cruijff Schaal", "supercup"),
+    "POSU": ("Supercopa de Portugal", "supercup"),
+    "BESC": ("Supercopa de Bélgica", "supercup"),
+    "RUSS": ("Supercopa de Rusia", "supercup"),
+    "FIWC": ("Mundial", "national"),
+    "EURO": ("Eurocopa", "national"),
+    "COPA": ("Copa América", "national"),
+    "AFCN": ("Copa África", "national"),
+    "AFAC": ("Copa Asia", "national"),
+}
