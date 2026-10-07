@@ -524,3 +524,37 @@ def test_renames_a_club_in_one_season_also_inside_moves(session):
     assert repository.get_season_team(2, premier) == "Manchester United, Everton"
     other = repository.get_season_team(1, Season("Premier League", "2025"))
     assert other == "Manchester Utd"
+
+
+def _named(session, *names):
+    repository = SqlAlchemyPlayerRepository(session)
+    for player_id, name in enumerate(names, 1):
+        repository.save_player(Player(player_id, name, "Forward", date(2000, 1, 1)))
+    return repository
+
+
+def _names(repository, query):
+    return [
+        s.player.name for s in repository.search_player_summaries(query, "recent", 10)
+    ]
+
+
+def test_search_ignores_accents_and_case(session):
+    repository = _named(session, "Kylian Mbappé", "Pedri", "Ousmane Dembélé")
+
+    assert _names(repository, "dembele") == ["Ousmane Dembélé"]
+    assert _names(repository, "MBAPPE") == ["Kylian Mbappé"]
+
+
+def test_search_forgives_typos(session):
+    repository = _named(session, "Kylian Mbappé", "Lamine Yamal", "Pedri")
+
+    assert _names(repository, "mbape") == ["Kylian Mbappé"]
+    assert _names(repository, "lamin yamal") == ["Lamine Yamal"]
+    assert _names(repository, "xyzzy") == []
+
+
+def test_exact_matches_come_before_look_alikes(session):
+    repository = _named(session, "Pedro Porro", "Pedri", "Pedro")
+
+    assert _names(repository, "pedri")[0] == "Pedri"
