@@ -66,7 +66,7 @@ jobs:
           # On an error it leaves an annotation with the status and the start of the body.
           post() {
             local out status body
-            if ! out=$(curl -sS --max-time 900 -X POST -w '\n%{http_code}' \
+            if ! out=$(curl -sS --max-time "${POST_MAX_TIME:-900}" -X POST -w '\n%{http_code}' \
                 "$API_BASE_URL$1" -H "X-Ingestion-Key: $INGESTION_API_KEY" 2>&1); then
               echo "::error title=POST $1::${out:0:300}" >&2
               return 1
@@ -100,6 +100,10 @@ jobs:
           post "/ingestion/understat/seasons/$START_YEAR" | jq -c '{ingested, skipped: (.skipped | length)}'
 
       - name: Photos, height, roles and other leagues (Transfermarkt dataset)
+        # One request walks ~19k profiles against the database: its time depends on
+        # how far from Neon the runner lands, so it gets an hour.
+        env:
+          POST_MAX_TIME: "3600"
         run: |
           source "$RUNNER_TEMP/post.sh"
           post "/ingestion/transfermarkt-dataset/profiles" | jq -c '{ingested}'
