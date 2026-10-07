@@ -282,3 +282,25 @@ class PredictionSnapshotModel(Base):
     market_draw: Mapped[float | None] = mapped_column(Float, nullable=True)
     market_away: Mapped[float | None] = mapped_column(Float, nullable=True)
     over_2_5: Mapped[float] = mapped_column(Float, nullable=False)
+
+
+class PlayerCompetitionStatsModel(Base):
+    """A player's line in one competition of one season (league, Europe, cups,
+    super cups, national teams). Kept apart from player_season_statistics, which
+    rankings, twins and the explorer read as league seasons."""
+
+    __tablename__ = "player_competition_stats"
+
+    player_id: Mapped[int] = mapped_column(
+        ForeignKey("players.player_id", ondelete="CASCADE"), primary_key=True
+    )
+    competition: Mapped[str] = mapped_column(String, primary_key=True)
+    season_label: Mapped[str] = mapped_column(String, primary_key=True)
+    kind: Mapped[str] = mapped_column(String, nullable=False)
+    team: Mapped[str | None] = mapped_column(String, nullable=True)
+    appearances: Mapped[int] = mapped_column(Integer, nullable=False)
+    goals: Mapped[int] = mapped_column(Integer, nullable=False)
+    assists: Mapped[int] = mapped_column(Integer, nullable=False)
+    minutes_played: Mapped[int] = mapped_column(Integer, nullable=False)
+    yellow_cards: Mapped[int] = mapped_column(Integer, nullable=False)
+    red_cards: Mapped[int] = mapped_column(Integer, nullable=False)
