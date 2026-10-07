@@ -161,3 +161,8 @@ fotos de cuerpo entero (tampoco). Favoritos y alertas: descartados por el usuari
   Ficha: sección "Por competición" y "Con su selección". El refresco falló dos días por
   un salto de línea en el secreto `INGESTION_API_KEY` (cabecera HTTP inválida): ahora se
   limpia y los errores de ingesta salen como anotación.
+
+- **Estudio de "errores de cuota"** (2026-10-08, `scripts/research_odds_value.py`): apostar a la
+  cuota máxima cuando supera la justa del consenso (media o Pinnacle sin margen) pierde en
+  1X2 en las tres temporadas (−8% a −54%) y en más/menos de 2,5 es ruido. No se ofrece como
+  producto: las "gangas" de las cuotas máximas casi nunca se pueden apostar.
