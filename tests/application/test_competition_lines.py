@@ -69,3 +69,22 @@ def test_the_dataset_brings_the_recent_seasons_of_every_competition():
 
     assert dataset.since == 2019
     assert result.ingested == 1
+
+
+def test_a_player_in_two_clubs_of_one_competition_gets_one_line_added_up():
+    # A mid-season move inside the league: both clubs' pages list him.
+    players, competitions = _repositories()
+    first = replace(
+        CHAMPIONS, team="Villarreal", appearances=3, goals=1, minutes_played=200
+    )
+    second = replace(
+        CHAMPIONS, team="FC Barcelona", appearances=4, goals=2, minutes_played=330
+    )
+
+    RecordCompetitionLinesUseCase(players, competitions).execute(
+        [DatasetCompetitionRow(937958, first), DatasetCompetitionRow(937958, second)]
+    )
+
+    [line] = competitions.list_competition_lines(7)
+    assert (line.appearances, line.goals, line.minutes_played) == (7, 3, 530)
+    assert line.team == "FC Barcelona"
