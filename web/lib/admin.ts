@@ -25,6 +25,16 @@ export type AdminDashboard = {
   } | null;
   hosting_error: string | null;
   hosting_configured: boolean;
+  database_usage: {
+    period_start: string;
+    period_end: string;
+    transfer_bytes: number;
+    transfer_limit_bytes: number;
+    compute_seconds: number;
+    written_bytes: number;
+  } | null;
+  database_usage_error: string | null;
+  database_usage_configured: boolean;
   data: Record<string, number>;
   client_errors: { message: string; path: string; count: number; last_seen: string }[];
   data_quality: { missing_results: string[]; goal_mismatches: string[]; latest_result: string | null };

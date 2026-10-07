@@ -38,16 +38,16 @@ function pageLabel(path: string): string {
   return path;
 }
 
-function dollars(value: number): string {
-  return `${value.toLocaleString("es-ES", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $`;
-}
-
 function number(value: number): string {
   return value.toLocaleString("es-ES");
 }
 
 function people(value: number): string {
   return `${number(value)} ${value === 1 ? "persona" : "personas"}`;
+}
+
+function gigabytes(bytes: number): string {
+  return `${(bytes / 1e9).toLocaleString("es-ES", { maximumFractionDigits: 2 })} GB`;
 }
 
 function shortDate(iso: string): string {
@@ -167,9 +167,8 @@ export default async function AdminPage(props: PageProps<"/admin">) {
     return <LoginForm error="La API no responde ahora mismo. Prueba en un minuto." />;
   }
 
-  const hosting = dashboard.hosting;
-  const lineItems = hosting ? Object.entries(hosting.line_items).sort((a, b) => b[1] - a[1]) : [];
-  const lineMax = Math.max(0.0001, ...lineItems.map(([, value]) => value));
+  const database = dashboard.database_usage;
+  const transferShare = database ? database.transfer_bytes / database.transfer_limit_bytes : 0;
   const api = dashboard.api;
 
   return (
@@ -193,9 +192,9 @@ export default async function AdminPage(props: PageProps<"/admin">) {
         <Kpi label="Visitas hoy" value={number(dashboard.views_today)} hint={people(dashboard.visitors_today)} />
         <Kpi label={`Visitas ${dashboard.days} días`} value={number(dashboard.views_period)} hint={`${number(dashboard.visitors_period)} visitantes diarios sumados`} />
         <Kpi
-          label="Coste servidor (periodo)"
-          value={hosting ? dollars(hosting.current_dollars) : "—"}
-          hint={hosting?.estimated_dollars != null ? `Estimado al cierre: ${dollars(hosting.estimated_dollars)}` : "Railway sin conectar"}
+          label="Transferencia de la base"
+          value={database ? `${Math.round(transferShare * 100)} %` : "—"}
+          hint={database ? `${gigabytes(database.transfer_bytes)} de ${gigabytes(database.transfer_limit_bytes)}` : "Neon sin conectar"}
         />
         <Kpi label="Web (Vercel Hobby)" value="0,00 $" hint="Plan gratuito" />
       </div>
@@ -218,42 +217,48 @@ export default async function AdminPage(props: PageProps<"/admin">) {
 
       <div className="grid gap-4 md:grid-cols-2">
         <section className="glass flex flex-col gap-3 rounded-lg p-5">
-          <h2 className="font-heading text-lg">Servidor (Railway)</h2>
-          {hosting ? (
+          <h2 className="font-heading text-lg">Base de datos (Neon)</h2>
+          {database ? (
             <>
               <p className="text-sm text-muted">
-                Periodo de facturación {shortDate(hosting.period_start)} – {shortDate(hosting.period_end)}.
-                {hosting.usage_limit_dollars
-                  ? ` Límite de gasto: ${dollars(hosting.usage_limit_dollars)}.`
-                  : " Sin límite de gasto configurado."}
+                Periodo {shortDate(database.period_start)} – {shortDate(database.period_end)}. Plan gratuito: si
+                la transferencia pasa de {gigabytes(database.transfer_limit_bytes)}, Neon puede parar la base hasta
+                el mes siguiente.
               </p>
-              <ul className="flex flex-col gap-1.5">
-                {lineItems.map(([label, value]) => (
-                  <li key={label} className="relative overflow-hidden rounded-xl px-3 py-1.5 text-sm">
-                    <span className="absolute inset-y-0 left-0 rounded-xl bg-[#c93c17]/20" style={{ width: `${(value / lineMax) * 100}%` }} />
-                    <span className="relative flex justify-between">
-                      <span>{label}</span>
-                      <span className="tabular-nums">{dollars(value)}</span>
-                    </span>
-                  </li>
-                ))}
+              <div className="relative h-3 overflow-hidden rounded-full bg-line/60">
+                <span
+                  className={`absolute inset-y-0 left-0 rounded-full ${transferShare >= 0.8 ? "bg-[#c93c17]" : "bg-ink/70"}`}
+                  style={{ width: `${Math.min(100, transferShare * 100)}%` }}
+                />
+              </div>
+              <ul className="flex flex-col gap-1 text-sm">
+                <li className="flex justify-between">
+                  <span>Transferencia</span>
+                  <span className="tabular-nums">
+                    {gigabytes(database.transfer_bytes)} de {gigabytes(database.transfer_limit_bytes)}
+                  </span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Cómputo</span>
+                  <span className="tabular-nums">{number(Math.round(database.compute_seconds / 3600))} h</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Datos escritos</span>
+                  <span className="tabular-nums">{gigabytes(database.written_bytes)}</span>
+                </li>
               </ul>
-              <p className="text-xs text-muted">
-                Precios de Railway: 10 $/GB de memoria al mes y 20 $/vCPU al mes. La memoria encendida
-                24 h es casi todo el coste.
-              </p>
             </>
-          ) : dashboard.hosting_configured ? (
-            <p className="text-sm text-red-300">Railway no respondió: {dashboard.hosting_error}</p>
+          ) : dashboard.database_usage_configured ? (
+            <p className="text-sm text-red-300">Neon no respondió: {dashboard.database_usage_error}</p>
           ) : (
             <p className="text-sm text-muted">
-              Para ver aquí el coste, crea un token de workspace en Railway (Account Settings →
-              Tokens) y añádelo al servicio <code>api</code> como <code>RAILWAY_API_TOKEN</code>, junto
-              a <code>RAILWAY_WORKSPACE_ID</code>. Mientras, lo tienes con <code>railway usage</code>.
+              Para ver aquí el consumo, crea una clave en Neon (Account settings → API keys) y añádela al
+              proyecto <code>el-regista-api</code> de Vercel como <code>NEON_API_KEY</code>, junto a{" "}
+              <code>NEON_PROJECT_ID</code> (Project settings → General).
             </p>
           )}
-          <a href="https://railway.com/dashboard" target="_blank" rel="noreferrer" className="text-sm text-brand-2 hover:underline">
-            Abrir Railway →
+          <a href="https://console.neon.tech" target="_blank" rel="noreferrer" className="text-sm text-brand-2 hover:underline">
+            Abrir Neon →
           </a>
         </section>
 
