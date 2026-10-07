@@ -88,3 +88,60 @@ def test_a_player_in_two_clubs_of_one_competition_gets_one_line_added_up():
     [line] = competitions.list_competition_lines(7)
     assert (line.appearances, line.goals, line.minutes_played) == (7, 3, 530)
     assert line.team == "FC Barcelona"
+
+
+def _profile(tm_id: int, name: str):
+    from datetime import date
+
+    from player_scouting.application.ports import DatasetProfile
+    from player_scouting.domain.market_value import MarketValuePoint
+
+    return DatasetProfile(
+        transfermarkt_id=tm_id,
+        name=name,
+        date_of_birth=date(1987, 6, 24),
+        position="Forward",
+        detailed_position="Right Winger",
+        foot="left",
+        height_cm=170,
+        photo_url=f"https://img.a.transfermarkt.technology/portrait/header/{tm_id}.jpg",
+        club="Inter Miami",
+        valuations=(MarketValuePoint(date(2026, 6, 1), 15_000_000, "Inter Miami"),),
+    )
+
+
+class FakeDatasetWithProfiles(FakeDataset):
+    def __init__(self, rows, profiles):
+        super().__init__(rows)
+        self._profiles = profiles
+
+    def profiles(self):
+        return self._profiles
+
+
+def test_a_star_we_did_not_have_is_created_from_his_dataset_profile():
+    # Messi left Europe before our league data starts: the dataset still has his
+    # Barcelona, PSG and Champions League seasons.
+    players, competitions = _repositories()
+    messi_ligue = replace(CHAMPIONS, competition="Ligue 1", kind="league")
+    unknown_eredivisie = replace(CHAMPIONS, competition="Eredivisie", kind="league")
+    dataset = FakeDatasetWithProfiles(
+        [
+            DatasetCompetitionRow(28003, CHAMPIONS),
+            DatasetCompetitionRow(28003, messi_ligue),
+            DatasetCompetitionRow(555, unknown_eredivisie),
+        ],
+        [_profile(28003, "Lionel Messi"), _profile(555, "Someone")],
+    )
+
+    result = IngestDatasetCompetitionsUseCase(dataset, players, competitions).execute(
+        since=2019
+    )
+
+    messi_id = players.transfermarkt_index()[28003]
+    assert players.get_player(messi_id).name == "Lionel Messi"
+    assert len(competitions.list_competition_lines(messi_id)) == 2
+    assert players.list_market_value_history(messi_id)[0].amount_eur == 15_000_000
+    # Only big-five and European football brings someone new; the rest waits.
+    assert 555 not in players.transfermarkt_index()
+    assert result.ingested == 3
