@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from player_scouting.application.ingestion_result import IngestionResult
 from player_scouting.application.league_ingestion_job import LeagueIngestionJob
 from player_scouting.application.ports import (
+    DatasetCompetitionRow,
     LeagueSummary,
     Partnership,
     PlayerShot,
@@ -168,6 +169,46 @@ class ScrapedLeagueSeasonIn(BaseModel):
     competition: str
     season_label: str
     rows: list[ScrapedSeasonRowIn]
+
+
+class CompetitionRowIn(BaseModel):
+    transfermarkt_id: int
+    team: str | None = None
+    appearances: int = 0
+    goals: int = 0
+    assists: int = 0
+    minutes_played: int = 0
+    yellow_cards: int = 0
+    red_cards: int = 0
+
+
+class CompetitionLinesIn(BaseModel):
+    """One competition of one season, read from Transfermarkt's club pages."""
+
+    competition: str
+    kind: CompetitionKind
+    season_label: str
+    rows: list[CompetitionRowIn]
+
+    def to_domain(self) -> list[DatasetCompetitionRow]:
+        return [
+            DatasetCompetitionRow(
+                transfermarkt_id=row.transfermarkt_id,
+                line=CompetitionLine(
+                    competition=self.competition,
+                    kind=self.kind,
+                    season_label=self.season_label,
+                    team=row.team,
+                    appearances=row.appearances,
+                    goals=row.goals,
+                    assists=row.assists,
+                    minutes_played=row.minutes_played,
+                    yellow_cards=row.yellow_cards,
+                    red_cards=row.red_cards,
+                ),
+            )
+            for row in self.rows
+        ]
 
 
 class EnrichmentIn(BaseModel):

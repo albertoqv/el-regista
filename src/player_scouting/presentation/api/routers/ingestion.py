@@ -39,11 +39,13 @@ from player_scouting.presentation.api.dependencies import (
     PlayerRepositoryDep,
     PredictionLogDep,
     ProcessLeagueIngestionBatchUseCaseDep,
+    RecordCompetitionLinesUseCaseDep,
     RecordEnrichmentUseCaseDep,
     TeamRepositoryDep,
     get_backup_stream,
 )
 from player_scouting.presentation.api.schemas import (
+    CompetitionLinesIn,
     EnrichmentIn,
     IngestionResultOut,
     LeagueIngestionBatchSummaryOut,
@@ -170,6 +172,14 @@ def ingest_transfermarkt_dataset_competitions(
 ) -> IngestionResultOut:
     """Europe, cups, super cups and national teams of the finished seasons."""
     return ingestion_result_out_from_domain(use_case.execute())
+
+
+@router.post("/transfermarkt/competition-lines", response_model=IngestionResultOut)
+def receive_competition_lines(
+    body: CompetitionLinesIn, use_case: RecordCompetitionLinesUseCaseDep
+) -> IngestionResultOut:
+    """The season in progress of Europe, cups and the big leagues, read at home."""
+    return ingestion_result_out_from_domain(use_case.execute(body.to_domain()))
 
 
 @router.post("/transfermarkt/league-seasons", response_model=IngestionResultOut)
