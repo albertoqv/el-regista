@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import unicodedata
 from dataclasses import replace
 from datetime import date
 
@@ -61,7 +62,7 @@ class InMemoryPlayerRepository:
     ) -> list[PlayerSummary]:
         summaries = []
         for player in self._players.values():
-            if query and query.lower() not in player.name.lower():
+            if query and not _search_match(query, player.name):
                 continue
             years = [
                 season.start_year
@@ -77,6 +78,17 @@ class InMemoryPlayerRepository:
             )
 
         def sort_key(summary: PlayerSummary) -> tuple:
+            if query:
+                # Like the SQL: exact matches first, then the most alike.
+                name = summary.player.name
+                return (
+                    _normalized(query) not in _normalized(name),
+                    -_word_similarity(query, name),
+                    *_base_key(summary),
+                )
+            return _base_key(summary)
+
+        def _base_key(summary: PlayerSummary) -> tuple:
             career = summary.career
             if sort == "goals":
                 return (-career.goals, summary.player.name)
@@ -594,3 +606,35 @@ class InMemoryCompetitionStatsRepository:
         return sorted_lines(
             [line for (pid, _, _), line in self._lines.items() if pid == player_id]
         )
+
+
+def _normalized(text: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", text.lower())
+    return "".join(c for c in decomposed if not unicodedata.combining(c))
+
+
+def _trigrams(text: str) -> set[str]:
+    grams: set[str] = set()
+    for word in text.split():
+        padded = f"  {word} "
+        grams.update(padded[i : i + 3] for i in range(len(padded) - 2))
+    return grams
+
+
+def _word_similarity(query: str, name: str) -> float:
+    """Close to pg_trgm's word_similarity: the query's trigrams found in the
+    best stretch of consecutive words of the name."""
+    wanted = _trigrams(_normalized(query))
+    words = _normalized(name).split()
+    best = 0.0
+    for start in range(len(words)):
+        for end in range(start + 1, len(words) + 1):
+            stretch = _trigrams(" ".join(words[start:end]))
+            best = max(best, len(wanted & stretch) / len(wanted | stretch))
+    return best
+
+
+def _search_match(query: str, name: str) -> bool:
+    return (
+        _normalized(query) in _normalized(name) or _word_similarity(query, name) >= 0.5
+    )

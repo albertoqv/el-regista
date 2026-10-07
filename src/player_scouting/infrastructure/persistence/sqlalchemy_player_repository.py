@@ -10,7 +10,9 @@ from sqlalchemy import (
     and_,
     cast,
     func,
+    literal,
     nulls_last,
+    or_,
     select,
 )
 from sqlalchemy.orm import Session
@@ -82,6 +84,11 @@ def _merged_column(field_name: str) -> ColumnElement[Any]:
 
 
 _CAREER_FIELDS = _BASIC_FIELDS + ("expected_assists", "xg_chain", "xg_buildup")
+
+
+# pg_trgm word_similarity of the query with the closest stretch of a name: a missing or
+# doubled letter keeps it well above this ("mbape" ~0.8); unrelated names stay below.
+SEARCH_LIKENESS = 0.5
 
 
 class SqlAlchemyPlayerRepository:
@@ -476,7 +483,14 @@ class SqlAlchemyPlayerRepository:
             totals, totals.c.player_id == PlayerModel.player_id
         )
         if query:
-            statement = statement.where(PlayerModel.name.ilike(f"%{query}%"))
+            # Accents and case do not matter ("dembele"), and close spellings are
+            # found too ("mbape"): exact matches first, then the most alike.
+            name = func.f_unaccent(func.lower(PlayerModel.name))
+            wanted = func.f_unaccent(func.lower(literal(query)))
+            contains = name.contains(wanted)
+            likeness = func.word_similarity(wanted, name)
+            statement = statement.where(or_(contains, likeness >= SEARCH_LIKENESS))
+            order_by = (contains.desc(), likeness.desc(), *order_by)
         return statement.order_by(*order_by)
 
     def _season_rows(
