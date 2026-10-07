@@ -127,6 +127,9 @@ _hot_cache: dict[tuple[Any, ...], tuple[float, dict[str, Any]]] = {}
 
 # Valuations below this are noise for a bargains list (youth, reserve players).
 GAP_MIN_MARKET_EUR = 1_000_000
+# The model has no keeper numbers, and the market rightly discounts age (resale,
+# contract length): neither belongs on a bargains list.
+GAP_MAX_AGE = 29
 
 
 @router.get("/value-gaps")
@@ -151,6 +154,11 @@ def value_gaps(
     for ratio, estimate, point in rows:
         player = players.get_player(estimate.player_id)
         if player is None or (position and player.position != position):
+            continue
+        born = player.date_of_birth.year if player.date_of_birth else player.birth_year
+        if player.position == "Goalkeeper" or (
+            born is not None and date.today().year - born > GAP_MAX_AGE
+        ):
             continue
         result.append(
             {

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/infravalorados" },
 };
 
-const POSITIONS = ["", "Forward", "Midfielder", "Defender", "Goalkeeper"];
+const POSITIONS = ["", "Forward", "Midfielder", "Defender"];
 
 function param(value: string | string[] | undefined): string {
   return (Array.isArray(value) ? value[0] : value) ?? "";
@@ -61,7 +61,8 @@ export default async function UndervaluedPage(props: PageProps<"/infravalorados"
       <p className="max-w-3xl text-sm text-muted">
         Un modelo aprende qué paga el mercado por cada cosa (liga, edad, posición, goles, asistencias,
         minutos, Europa y selección) y estima cuánto debería valer cada jugador por su última temporada.
-        Aquí, los que más lo superan. Es una estimación, no un precio: el modelo no ve lesiones, contratos
+        Aquí, los jugadores de campo de hasta 29 años que más lo superan (a los porteros no sabe medirlos y la
+        edad la descuenta el mercado con razón). Es una estimación, no un precio: el modelo no ve lesiones, contratos
         ni lo que no está en los números.
       </p>
 

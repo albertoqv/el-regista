@@ -107,4 +107,4 @@ def test_keepers_and_veterans_stay_off_the_bargains_list():
 
     body = client.get("/players/value-gaps?limit=5").json()
 
-    assert [row["name"] for row in body] == ["Cheap", "Fair"]
+    assert [row["name"] for row in body] == ["Cheap"]
