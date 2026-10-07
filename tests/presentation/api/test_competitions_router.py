@@ -82,3 +82,36 @@ def test_the_refresh_loads_the_dataset_competitions():
 
     assert response.json()["ingested"] == 1
     assert competitions.list_competition_lines(7) == [CHAMPIONS]
+
+
+def test_lines_read_from_transfermarkt_pages_are_stored_by_transfermarkt_id():
+    competitions = InMemoryCompetitionStatsRepository()
+    row = {
+        "transfermarkt_id": 937958,
+        "team": "FC Barcelona",
+        "appearances": 2,
+        "goals": 1,
+        "assists": 1,
+        "minutes_played": 170,
+        "yellow_cards": 0,
+        "red_cards": 0,
+    }
+    unknown = dict(row, transfermarkt_id=111)
+
+    response = _client(competitions).post(
+        "/ingestion/transfermarkt/competition-lines",
+        json={
+            "competition": "Champions League",
+            "kind": "continental",
+            "season_label": "2026",
+            "rows": [row, unknown],
+        },
+    )
+
+    assert response.json()["ingested"] == 1
+    [line] = competitions.list_competition_lines(7)
+    assert (line.competition, line.season_label, line.goals) == (
+        "Champions League",
+        "2026",
+        1,
+    )
