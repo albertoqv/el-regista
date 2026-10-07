@@ -2,3 +2,5 @@
 # Local test value of the throwaway Docker Compose stack, not a credential; the workflow
 # now generates a random key per run.
 ce50604eccccc06f232a986db3ce2812a7b9507c:.github/workflows/compose-vault.yml:curl-auth-header:30
+# Fake key of the Neon usage test, not a credential (the real one is a Vercel variable).
+5461268171314bbf114417bb249208e87b756f35:tests/infrastructure/neon/test_neon_usage.py:generic-api-key:34
