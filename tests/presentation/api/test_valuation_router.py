@@ -85,3 +85,26 @@ def test_the_most_undervalued_players_first_with_a_real_price_tag():
     # Tiny is "cheap" too, but a 300k valuation is noise, not a bargain.
     assert [row["name"] for row in body] == ["Cheap", "Fair"]
     assert body[0]["ratio"] == 3.0
+
+
+def test_keepers_and_veterans_stay_off_the_bargains_list():
+    # The model has no keeper numbers, and the market rightly discounts a 33-year-old.
+    client, estimates = _client()
+    players = client.app.dependency_overrides[get_player_repository]()
+    players.save_player(Player(5, "Keeper", "Goalkeeper", date(2000, 1, 1)))
+    players.save_player(Player(6, "Veteran", "Forward", date(1993, 1, 1)))
+    for player_id in (5, 6):
+        players.save_market_value_history(
+            player_id, [MarketValuePoint(date(2026, 6, 1), 2_000_000, "X")]
+        )
+    report = ValuationReport(
+        [ValueEstimate(p, 20_000_000, FACTORS) for p in (1, 3, 5, 6)],
+        4_000_000,
+        0.4,
+        9000,
+    )
+    estimates.save_value_estimates(report, date(2026, 10, 7))
+
+    body = client.get("/players/value-gaps?limit=5").json()
+
+    assert [row["name"] for row in body] == ["Cheap", "Fair"]
