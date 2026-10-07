@@ -24,6 +24,7 @@ const PAGES: { path: string; changeFrequency: Frequency; priority: number }[] = 
   { path: "/predicciones", changeFrequency: "daily", priority: 0.9 },
   { path: "/predicciones/historial", changeFrequency: "weekly", priority: 0.8 },
   { path: "/en-racha", changeFrequency: "daily", priority: 0.8 },
+  { path: "/infravalorados", changeFrequency: "weekly", priority: 0.7 },
   { path: "/ranking", changeFrequency: "daily", priority: 0.8 },
   { path: "/buscar", changeFrequency: "weekly", priority: 0.7 },
   { path: "/gemelos", changeFrequency: "weekly", priority: 0.9 },

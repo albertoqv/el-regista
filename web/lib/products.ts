@@ -73,6 +73,12 @@ export const PRODUCTS: Product[] = [
         description: "Quién está en forma en las últimas semanas.",
         icon: "flame",
       },
+      {
+        href: "/infravalorados",
+        label: "Infravalorados",
+        description: "Rinden como si valieran más que su precio.",
+        icon: "scale",
+      },
     ],
   },
   {

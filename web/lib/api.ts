@@ -746,3 +746,34 @@ export type CareerCurve = { position: string; points: CareerPoint[]; benchmark: 
 export function getPlayerCareer(playerId: number): Promise<CareerCurve> {
   return request<CareerCurve>(`/players/${playerId}/career`);
 }
+
+export type ValueEstimate = {
+  estimate_eur: number;
+  market_eur: number | null;
+  /** Against an average player; multiplied together they make the estimate. */
+  factors: { label: string; factor: number }[];
+  computed_on: string;
+  model: { samples: number; median_error: number };
+};
+
+export function getPlayerValueEstimate(playerId: number): Promise<ValueEstimate> {
+  return request<ValueEstimate>(`/players/${playerId}/value-estimate`);
+}
+
+export type ValueGap = {
+  player_id: number;
+  name: string;
+  position: string;
+  photo_url: string | null;
+  club: string | null;
+  estimate_eur: number;
+  market_eur: number;
+  ratio: number;
+};
+
+export function getValueGaps(options: { position?: string; limit?: number }): Promise<ValueGap[]> {
+  const params = new URLSearchParams();
+  if (options.position) params.set("position", options.position);
+  if (options.limit) params.set("limit", String(options.limit));
+  return request<ValueGap[]>(`/players/value-gaps?${params}`);
+}

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CareerChart } from "@/app/components/CareerChart";
+import { ValueEstimateCard } from "@/app/components/ValueEstimateCard";
 import { CompetitionStats } from "@/app/components/CompetitionStats";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
 import { SITE_URL } from "@/lib/site";
@@ -21,10 +22,12 @@ import { SimilarPlayers } from "@/app/components/SimilarPlayers";
 import {
   ApiError,
   type CareerCurve,
+  type ValueEstimate,
   type CompetitionLine,
   findTwins,
   getMarketValue,
   getPlayerCareer,
+  getPlayerValueEstimate,
   getPlayerCompetitions,
   getPlayer,
   getPlayerPercentiles,
@@ -105,7 +108,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     throw error;
   }
 
-  const [twins, marketValue, percentiles, shots, trend, competitions, career] = await Promise.all([
+  const [twins, marketValue, percentiles, shots, trend, competitions, career, valueEstimate] = await Promise.all([
     findTwins(playerId, { limit: 6 }).catch((): TwinReport | null => null),
     getMarketValue(playerId).catch(
       (): MarketValueHistory => ({ current: null, history: [] }),
@@ -117,6 +120,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     getPlayerTrend(playerId).catch((): PlayerTrend | null => null),
     getPlayerCompetitions(playerId).catch((): CompetitionLine[] => []),
     getPlayerCareer(playerId).catch((): CareerCurve | null => null),
+    getPlayerValueEstimate(playerId).catch((): ValueEstimate | null => null),
   ]);
 
   const age = formatAge(player);
@@ -261,6 +265,12 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       {marketValue.history.length > 0 && (
         <Reveal>
           <MarketValueChart series={[{ name: player.name, color: "#1f8a4c", history: marketValue.history }]} />
+        </Reveal>
+      )}
+
+      {valueEstimate && (
+        <Reveal>
+          <ValueEstimateCard estimate={valueEstimate} />
         </Reveal>
       )}
 
