@@ -34,3 +34,8 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Postgres 18 keeps its data in another folder and the stack's volume breaks
+      # (Oct 2026); a major version is moved by hand, with CI's Postgres alongside.
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
