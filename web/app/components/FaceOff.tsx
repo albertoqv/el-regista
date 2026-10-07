@@ -10,20 +10,25 @@ import {
   formatAge,
   formatMarketValue,
   positionLabel,
+  seasonDisplay,
 } from "@/lib/format";
 
 export type FaceOffSide = {
   player: Player;
   context: string;
   marketValue: MarketValuePoint | null;
+  /** The season compared, with the value and age the player had then. */
+  then?: { label: string; value: MarketValuePoint | null; age: number | null } | null;
 };
 
 function Fighter({ side, color, fromLeft }: { side: FaceOffSide; color: string; fromLeft: boolean }) {
   const { player } = side;
   const age = formatAge(player);
+  const then = side.then;
   const facts = [
     positionLabel(player.position),
-    age ? `${age} años` : null,
+    then?.age != null ? `${then.age} años en ${seasonDisplay(then.label)}` : null,
+    age ? `${age} años hoy` : null,
     player.preferred_foot ? footLabel(player.preferred_foot) : null,
   ].filter(Boolean);
 
@@ -55,8 +60,14 @@ function Fighter({ side, color, fromLeft }: { side: FaceOffSide; color: string; 
             {fact}
           </span>
         ))}
+        {then?.value && (
+          <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: `${color}22`, color }}>
+            {seasonDisplay(then.label)}: {formatMarketValue(then.value.amount_eur)}
+          </span>
+        )}
         {side.marketValue && (
           <span className="rounded-full px-2.5 py-1 text-xs font-semibold" style={{ background: `${color}22`, color }}>
+            {then ? "Hoy: " : ""}
             {formatMarketValue(side.marketValue.amount_eur)}
           </span>
         )}

@@ -24,7 +24,7 @@ import {
   type PlayerShot,
   type Season,
 } from "@/lib/api";
-import { currentSeasonStartYear, seasonDisplay } from "@/lib/format";
+import { ageInSeason, currentSeasonStartYear, seasonDisplay, valueAtSeason } from "@/lib/format";
 import { RADAR_METRICS } from "@/lib/metrics";
 import { CAREER, resolveSeason } from "@/lib/seasons";
 
@@ -155,11 +155,25 @@ export default async function ComparePage(props: PageProps<"/compare">) {
               player: content.playerA,
               context: contextLabel(seasonA, seasonA && seasonsA.find((s) => s.label === seasonA.label && s.competition === seasonA.competition)?.team),
               marketValue: content.valueA.current,
+              then: seasonA
+                ? {
+                    label: seasonA.label,
+                    value: valueAtSeason(content.valueA.history, seasonA.label),
+                    age: ageInSeason(content.playerA, seasonA.label),
+                  }
+                : null,
             }}
             b={{
               player: content.playerB,
               context: contextLabel(seasonB, seasonB && seasonsB.find((s) => s.label === seasonB.label && s.competition === seasonB.competition)?.team),
               marketValue: content.valueB.current,
+              then: seasonB
+                ? {
+                    label: seasonB.label,
+                    value: valueAtSeason(content.valueB.history, seasonB.label),
+                    age: ageInSeason(content.playerB, seasonB.label),
+                  }
+                : null,
             }}
             similarity={content.comparison.similarity_percentage}
           />

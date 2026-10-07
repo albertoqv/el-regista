@@ -187,3 +187,25 @@ export function sortSeasonsByRecency<T extends { label: string; competition: str
     (a, b) => year(b.label) - year(a.label) || a.competition.localeCompare(b.competition),
   );
 }
+
+/**
+ * The market value a player had in a season: the last valuation up to the end of
+ * that season (30 June of the following year). Null for a season before any valuation.
+ */
+export function valueAtSeason<T extends { as_of: string }>(history: T[], label: string): T | null {
+  if (!/^\d{4}$/.test(label)) return null;
+  const end = `${Number(label) + 1}-06-30`;
+  const before = history.filter((point) => point.as_of.slice(0, 10) <= end);
+  return before.length ? before.reduce((last, point) => (point.as_of > last.as_of ? point : last)) : null;
+}
+
+/** Age during a season ("2024" = 24/25): on 1 January of its second year. */
+export function ageInSeason(
+  player: { date_of_birth: string | null; birth_year: number | null },
+  label: string,
+): number | null {
+  if (!/^\d{4}$/.test(label)) return null;
+  const year = Number(label) + 1;
+  if (player.date_of_birth) return year - Number(player.date_of_birth.slice(0, 4)) - 1;
+  return player.birth_year ? year - player.birth_year - 1 : null;
+}
