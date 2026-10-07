@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     Date,
     DateTime,
@@ -304,3 +305,29 @@ class PlayerCompetitionStatsModel(Base):
     minutes_played: Mapped[int] = mapped_column(Integer, nullable=False)
     yellow_cards: Mapped[int] = mapped_column(Integer, nullable=False)
     red_cards: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class PlayerValueEstimateModel(Base):
+    """What the model says a player is worth (recomputed by each refresh)."""
+
+    __tablename__ = "player_value_estimates"
+
+    player_id: Mapped[int] = mapped_column(
+        ForeignKey("players.player_id", ondelete="CASCADE"), primary_key=True
+    )
+    estimate_eur: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    # [[label, factor], ...]: why, against the average player.
+    factors: Mapped[str] = mapped_column(String, nullable=False)
+    computed_on: Mapped[date] = mapped_column(Date, nullable=False)
+
+
+class ValueModelModel(Base):
+    """The run behind the estimates: one row."""
+
+    __tablename__ = "value_model"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    computed_on: Mapped[date] = mapped_column(Date, nullable=False)
+    samples: Mapped[int] = mapped_column(Integer, nullable=False)
+    median_error: Mapped[float] = mapped_column(Float, nullable=False)
+    average_eur: Mapped[int] = mapped_column(BigInteger, nullable=False)

@@ -92,23 +92,7 @@ class SqlAlchemyCompetitionStatsRepository:
                 PlayerCompetitionStatsModel.player_id == player_id
             )
         )
-        return sorted_lines(
-            [
-                CompetitionLine(
-                    competition=model.competition,
-                    kind=cast(CompetitionKind, model.kind),
-                    season_label=model.season_label,
-                    team=model.team,
-                    appearances=model.appearances,
-                    goals=model.goals,
-                    assists=model.assists,
-                    minutes_played=model.minutes_played,
-                    yellow_cards=model.yellow_cards,
-                    red_cards=model.red_cards,
-                )
-                for model in models
-            ]
-        )
+        return sorted_lines([_to_line(model) for model in models])
 
     def age_benchmark(self, position: str) -> list[AgePoint]:
         rows = self._session.execute(
@@ -118,3 +102,31 @@ class SqlAlchemyCompetitionStatsRepository:
             AgePoint(age=row.age, per90=round(float(row.per90), 3), players=row.players)
             for row in rows
         ]
+
+    def list_competition_lines_since(
+        self, season_label: str
+    ) -> dict[int, list[CompetitionLine]]:
+        lines: dict[int, list[CompetitionLine]] = {}
+        models = self._session.scalars(
+            select(PlayerCompetitionStatsModel).where(
+                PlayerCompetitionStatsModel.season_label >= season_label
+            )
+        )
+        for model in models:
+            lines.setdefault(model.player_id, []).append(_to_line(model))
+        return lines
+
+
+def _to_line(model: PlayerCompetitionStatsModel) -> CompetitionLine:
+    return CompetitionLine(
+        competition=model.competition,
+        kind=cast(CompetitionKind, model.kind),
+        season_label=model.season_label,
+        team=model.team,
+        appearances=model.appearances,
+        goals=model.goals,
+        assists=model.assists,
+        minutes_played=model.minutes_played,
+        yellow_cards=model.yellow_cards,
+        red_cards=model.red_cards,
+    )
