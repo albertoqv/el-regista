@@ -85,19 +85,16 @@ def to_profile(
 
 
 # Competitions shown on a player's page, by dataset code (competitions.csv, Oct 2026).
-# Calendar-year leagues are left out, as everywhere else in the app. The Africa Cup is
-# left to Transfermarkt's pages: the dataset files AFCON 2025 under another season.
+# Calendar-year leagues (MLS, Brasileirão...) are in: rankings and twins leave them out,
+# but a career needs them; their season is the one Transfermarkt files them under. The
+# Africa Cup is left to Transfermarkt's pages: the dataset files AFCON 2025 elsewhere.
 _LEAGUES = {
     "GB1": "Premier League",
     "ES1": "La Liga",
     "L1": "Bundesliga",
     "IT1": "Serie A",
     "FR1": "Ligue 1",
-    **{
-        code: name
-        for code, name in OTHER_LEAGUES.items()
-        if code not in {"ARG1", "BRA1", "JAP1", "MLS1", "NO1", "RSK1", "SE1"}
-    },
+    **OTHER_LEAGUES,
 }
 DATASET_COMPETITIONS: dict[str, tuple[str, CompetitionKind]] = {
     **{code: (name, "league") for code, name in _LEAGUES.items()},

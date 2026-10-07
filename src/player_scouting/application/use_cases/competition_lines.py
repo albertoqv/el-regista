@@ -10,10 +10,16 @@ from player_scouting.application.ports import (
     PlayerRepository,
     TransfermarktDatasetProvider,
 )
+from player_scouting.application.use_cases.transfermarkt_dataset import (
+    create_from_profile,
+)
 from player_scouting.domain.competitions import CompetitionLine
+from player_scouting.domain.season import BIG_FIVE
 
 # Seasons read from the dataset: enough for a player's recent career.
 DATASET_SINCE = 2019
+# Playing here (or in the big five leagues) brings a player we did not have.
+NOTABLE_COMPETITIONS = {"Champions League", "Europa League"}
 
 
 @dataclass
@@ -63,6 +69,28 @@ class IngestDatasetCompetitionsUseCase:
     competitions: CompetitionStatsRepository
 
     def execute(self, since: int = DATASET_SINCE) -> IngestionResult:
+        rows = self.provider.competition_rows(since)
+        self._create_missing_stars(rows)
         return RecordCompetitionLinesUseCase(self.players, self.competitions).execute(
-            self.provider.competition_rows(since)
+            rows
         )
+
+    def _create_missing_stars(self, rows: list[DatasetCompetitionRow]) -> None:
+        """Players we never had (left Europe before our league data, like Messi)
+        but who played in the big five leagues or Europe: created from their
+        dataset profile. Anyone else stays out, as before."""
+        known = self.players.transfermarkt_index()
+        wanted = {
+            row.transfermarkt_id
+            for row in rows
+            if row.transfermarkt_id not in known
+            and (
+                row.line.competition in NOTABLE_COMPETITIONS
+                or (row.line.kind == "league" and row.line.competition in BIG_FIVE)
+            )
+        }
+        if not wanted:
+            return
+        for profile in self.provider.profiles():
+            if profile.transfermarkt_id in wanted:
+                create_from_profile(self.players, profile)

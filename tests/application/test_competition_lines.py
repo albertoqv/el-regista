@@ -144,4 +144,4 @@ def test_a_star_we_did_not_have_is_created_from_his_dataset_profile():
     assert players.list_market_value_history(messi_id)[0].amount_eur == 15_000_000
     # Only big-five and European football brings someone new; the rest waits.
     assert 555 not in players.transfermarkt_index()
-    assert result.ingested == 3
+    assert result.ingested == 2

@@ -157,28 +157,31 @@ class IngestDatasetLeaguesUseCase:
         return IngestionResult(ingested=ingested, skipped=skipped)
 
     def _create(self, profile: DatasetProfile) -> int:
-        player_id = TRANSFERMARKT_ID_OFFSET + profile.transfermarkt_id
-        self.repository.save_player(
-            Player(
-                player_id,
-                profile.name,
-                profile.position,
-                profile.date_of_birth,
-                photo_url=profile.photo_url,
-                preferred_foot=profile.foot,
-                birth_year=profile.date_of_birth.year
-                if profile.date_of_birth
-                else None,
-                height_cm=profile.height_cm,
-                detailed_position=profile.detailed_position,
-            )
+        return create_from_profile(self.repository, profile)
+
+
+def create_from_profile(repository: PlayerRepository, profile: DatasetProfile) -> int:
+    """A player we did not have, from his dataset profile (with his values)."""
+    player_id = TRANSFERMARKT_ID_OFFSET + profile.transfermarkt_id
+    repository.save_player(
+        Player(
+            player_id,
+            profile.name,
+            profile.position,
+            profile.date_of_birth,
+            photo_url=profile.photo_url,
+            preferred_foot=profile.foot,
+            birth_year=profile.date_of_birth.year if profile.date_of_birth else None,
+            height_cm=profile.height_cm,
+            detailed_position=profile.detailed_position,
         )
-        self.repository.set_transfermarkt_id(player_id, profile.transfermarkt_id)
-        if profile.valuations:
-            self.repository.save_market_value_history(
-                player_id, sorted(profile.valuations, key=lambda p: p.as_of)
-            )
-        return player_id
+    )
+    repository.set_transfermarkt_id(player_id, profile.transfermarkt_id)
+    if profile.valuations:
+        repository.save_market_value_history(
+            player_id, sorted(profile.valuations, key=lambda p: p.as_of)
+        )
+    return player_id
 
 
 def _added(first: Statistics, second: Statistics) -> Statistics:
