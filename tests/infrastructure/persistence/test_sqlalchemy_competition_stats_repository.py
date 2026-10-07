@@ -61,3 +61,37 @@ def test_saving_the_same_competition_and_season_again_replaces_it(session):
     repository.save_competition_lines({1: [later]})
 
     assert repository.list_competition_lines(1) == [later]
+
+
+def test_the_age_benchmark_averages_one_position_at_each_age(session):
+    players = SqlAlchemyPlayerRepository(session)
+    players.save_player(Player(1, "A", "Forward", date(2005, 3, 1)))
+    players.save_player(Player(2, "B", "Forward", None, birth_year=2005))
+    players.save_player(Player(3, "C", "Defender", date(2005, 3, 1)))
+    players.save_player(Player(4, "D", "Forward", date(2000, 3, 1)))
+    repository = SqlAlchemyCompetitionStatsRepository(session)
+    season = replace(LEAGUE, season_label="2024", minutes_played=1800)
+    repository.save_competition_lines(
+        {
+            1: [replace(season, goals=10, assists=0)],
+            # Two competitions of one season count as one season.
+            2: [
+                replace(season, goals=2, assists=0, minutes_played=900),
+                replace(
+                    CHAMPIONS,
+                    season_label="2024",
+                    goals=4,
+                    assists=0,
+                    minutes_played=900,
+                ),
+            ],
+            3: [replace(season, goals=30, assists=0)],
+            # Too few minutes to tell his level.
+            4: [replace(season, goals=9, assists=0, minutes_played=300)],
+        }
+    )
+
+    [nineteen] = repository.age_benchmark("Forward")
+
+    assert (nineteen.age, nineteen.players) == (19, 2)
+    assert nineteen.per90 == round((10 + 6) * 90 / 3600, 3)
