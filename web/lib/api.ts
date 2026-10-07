@@ -706,3 +706,24 @@ export type PlayerTrend = {
 export function getPlayerTrend(playerId: number): Promise<PlayerTrend> {
   return request<PlayerTrend>(`/players/${playerId}/trend`);
 }
+
+export type CompetitionKind = "league" | "continental" | "cup" | "supercup" | "national";
+
+/** A player's numbers in one competition of one season (or one tournament). */
+export type CompetitionLine = {
+  competition: string;
+  kind: CompetitionKind;
+  /** Clubs: start year of the season ("2025" = 25/26). National teams: tournament year. */
+  season_label: string;
+  team: string | null;
+  appearances: number;
+  goals: number;
+  assists: number;
+  minutes_played: number;
+  yellow_cards: number;
+  red_cards: number;
+};
+
+export function getPlayerCompetitions(playerId: number): Promise<CompetitionLine[]> {
+  return request<CompetitionLine[]>(`/players/${playerId}/competitions`);
+}

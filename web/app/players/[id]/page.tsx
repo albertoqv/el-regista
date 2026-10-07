@@ -2,6 +2,7 @@ import { preconnect } from "react-dom";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CompetitionStats } from "@/app/components/CompetitionStats";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
 import { SITE_URL } from "@/lib/site";
 import { JsonLd } from "@/app/components/JsonLd";
@@ -18,8 +19,10 @@ import { ShotProfile } from "@/app/components/ShotProfile";
 import { SimilarPlayers } from "@/app/components/SimilarPlayers";
 import {
   ApiError,
+  type CompetitionLine,
   findTwins,
   getMarketValue,
+  getPlayerCompetitions,
   getPlayer,
   getPlayerPercentiles,
   getPlayerShots,
@@ -99,7 +102,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     throw error;
   }
 
-  const [twins, marketValue, percentiles, shots, trend] = await Promise.all([
+  const [twins, marketValue, percentiles, shots, trend, competitions] = await Promise.all([
     findTwins(playerId, { limit: 6 }).catch((): TwinReport | null => null),
     getMarketValue(playerId).catch(
       (): MarketValueHistory => ({ current: null, history: [] }),
@@ -109,6 +112,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       : Promise.resolve<PercentileReport | null>(null),
     getPlayerShots(playerId, season?.label).catch((): PlayerShot[] => []),
     getPlayerTrend(playerId).catch((): PlayerTrend | null => null),
+    getPlayerCompetitions(playerId).catch((): CompetitionLine[] => []),
   ]);
 
   const age = formatAge(player);
@@ -257,6 +261,12 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       )}
 
       <PlayerStats player={player} />
+
+      {competitions.length > 0 && (
+        <Reveal>
+          <CompetitionStats lines={competitions} />
+        </Reveal>
+      )}
 
       {trend && trend.matches.length >= 3 ? (
         <Reveal>
