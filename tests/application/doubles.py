@@ -28,6 +28,7 @@ from player_scouting.application.ports import (
     TeamMatch,
 )
 from player_scouting.application.team_names import renamed
+from player_scouting.domain.career import AgePoint
 from player_scouting.domain.competitions import CompetitionLine, sorted_lines
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
@@ -592,8 +593,10 @@ class InMemoryPredictionLog:
 
 
 class InMemoryCompetitionStatsRepository:
-    def __init__(self) -> None:
+    def __init__(self, players: InMemoryPlayerRepository | None = None) -> None:
         self._lines: dict[tuple[int, str, str], CompetitionLine] = {}
+        # Like the SQL join with players, for the age benchmark.
+        self._players = players
 
     def save_competition_lines(
         self, lines_by_player: dict[int, list[CompetitionLine]]
@@ -606,6 +609,9 @@ class InMemoryCompetitionStatsRepository:
         return sorted_lines(
             [line for (pid, _, _), line in self._lines.items() if pid == player_id]
         )
+
+    def age_benchmark(self, position: str) -> list[AgePoint]:
+        return _age_benchmark(self._lines, self._players, position)
 
 
 def _normalized(text: str) -> str:
@@ -638,3 +644,33 @@ def _search_match(query: str, name: str) -> bool:
     return (
         _normalized(query) in _normalized(name) or _word_similarity(query, name) >= 0.5
     )
+
+
+def _age_benchmark(
+    lines: dict[tuple[int, str, str], CompetitionLine],
+    players: InMemoryPlayerRepository | None,
+    position: str,
+) -> list[AgePoint]:
+    seasons: dict[tuple[int, str], list[CompetitionLine]] = {}
+    for (player_id, _, label), line in lines.items():
+        if line.kind != "national":
+            seasons.setdefault((player_id, label), []).append(line)
+    by_age: dict[int, list[tuple[int, int]]] = {}
+    for (player_id, label), group in seasons.items():
+        player = players.get_player(player_id) if players else None
+        minutes = sum(line.minutes_played for line in group)
+        if player is None or player.position != position or minutes < 900:
+            continue
+        born = player.date_of_birth.year if player.date_of_birth else player.birth_year
+        if born is None or not 15 <= int(label) - born <= 42:
+            continue
+        output = sum(line.goals + line.assists for line in group)
+        by_age.setdefault(int(label) - born, []).append((output, minutes))
+    return [
+        AgePoint(
+            age=age,
+            per90=round(sum(o for o, _ in rows) * 90 / sum(m for _, m in rows), 3),
+            players=len(rows),
+        )
+        for age, rows in sorted(by_age.items())
+    ]

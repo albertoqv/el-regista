@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import cast
 
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
+from player_scouting.domain.career import AgePoint
 from player_scouting.domain.competitions import (
     CompetitionKind,
     CompetitionLine,
@@ -13,6 +14,33 @@ from player_scouting.domain.competitions import (
 )
 from player_scouting.infrastructure.persistence.models import (
     PlayerCompetitionStatsModel,
+)
+
+# A season counts for the benchmark from this many club minutes: a regular's level.
+BENCHMARK_MINUTES = 900
+# Grouped inside Postgres: one row per age travels, not every player's seasons.
+_AGE_BENCHMARK = text(
+    """
+    WITH seasons AS (
+        SELECT player_id, season_label,
+               SUM(goals + assists) AS output, SUM(minutes_played) AS minutes
+        FROM player_competition_stats
+        WHERE kind <> 'national'
+        GROUP BY player_id, season_label
+    ), aged AS (
+        SELECT CAST(s.season_label AS INTEGER)
+                 - COALESCE(CAST(EXTRACT(YEAR FROM p.date_of_birth) AS INTEGER),
+                            p.birth_year) AS age,
+               s.output, s.minutes
+        FROM seasons s JOIN players p ON p.player_id = s.player_id
+        WHERE p.position = :position AND s.minutes >= :minutes
+    )
+    SELECT age, SUM(output) * 90.0 / SUM(minutes) AS per90, COUNT(*) AS players
+    FROM aged
+    WHERE age BETWEEN 15 AND 42
+    GROUP BY age
+    ORDER BY age
+    """
 )
 
 # Rows per INSERT: one round trip each, whatever the number of players.
@@ -81,3 +109,12 @@ class SqlAlchemyCompetitionStatsRepository:
                 for model in models
             ]
         )
+
+    def age_benchmark(self, position: str) -> list[AgePoint]:
+        rows = self._session.execute(
+            _AGE_BENCHMARK, {"position": position, "minutes": BENCHMARK_MINUTES}
+        )
+        return [
+            AgePoint(age=row.age, per90=round(float(row.per90), 3), players=row.players)
+            for row in rows
+        ]

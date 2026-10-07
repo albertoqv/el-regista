@@ -5,6 +5,7 @@ from datetime import date, datetime
 from typing import Literal, Protocol
 
 from player_scouting.application.player_matching import ExternalPlayer
+from player_scouting.domain.career import AgePoint
 from player_scouting.domain.competitions import CompetitionLine
 from player_scouting.domain.entities import Player
 from player_scouting.domain.market_value import MarketValuePoint
@@ -419,6 +420,10 @@ class CompetitionStatsRepository(Protocol):
         ...
 
     def list_competition_lines(self, player_id: int) -> list[CompetitionLine]: ...
+
+    def age_benchmark(self, position: str) -> list[AgePoint]:
+        """Goals + assists per 90 of a position's regulars, age by age."""
+        ...
 
 
 @dataclass(frozen=True)
