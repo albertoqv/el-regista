@@ -188,3 +188,14 @@ def test_the_africa_cup_is_left_to_transfermarkt_pages(tmp_path):
     )
 
     assert "AFCN" not in DATASET_COMPETITIONS
+
+
+def test_calendar_year_leagues_show_on_a_players_page_too():
+    # Out of rankings and twins (their seasons do not fit 26/27), but a player's
+    # career per competition needs them: Messi's MLS, Neymar's Brasileirão.
+    from player_scouting.infrastructure.transfermarkt_dataset.mapper import (
+        DATASET_COMPETITIONS,
+    )
+
+    assert DATASET_COMPETITIONS["MLS1"] == ("MLS", "league")
+    assert DATASET_COMPETITIONS["BRA1"] == ("Brasileirão", "league")
