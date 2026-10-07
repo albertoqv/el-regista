@@ -178,3 +178,13 @@ def test_older_seasons_and_unknown_competitions_are_left_out(tmp_path):
 
     assert len(rows) == 5
     assert all(row.line.season_label >= "2019" for row in rows)
+
+
+def test_the_africa_cup_is_left_to_transfermarkt_pages(tmp_path):
+    # The dataset files AFCON 2025 (played Dec 2025 - Jan 2026) under another season
+    # than Transfermarkt's pages: read from one source only, it is not shown twice.
+    from player_scouting.infrastructure.transfermarkt_dataset.mapper import (
+        DATASET_COMPETITIONS,
+    )
+
+    assert "AFCN" not in DATASET_COMPETITIONS
