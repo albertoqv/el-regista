@@ -153,3 +153,11 @@ fotos de cuerpo entero (tampoco). Favoritos y alertas: descartados por el usuari
   Semgrep y Bandit, SCA (pip-audit y npm audit; Dependabot con Docker y Compose), gitleaks,
   Trivy (imágenes sin root, en dos etapas, parcheadas y sin pip ni npm: 0 HIGH/CRITICAL) y
   ZAP (cabeceras nosniff y CORP en la API).
+
+- **Por competición, selecciones y consumo de Neon** (2026-10-07): tabla
+  `player_competition_stats` (migración 0018) desde el dataset (2019-25/26: liga, Europa,
+  copas, supercopas, Mundial) y desde casa (26/27: 5 grandes, Champions, Europa League,
+  Conference, copas; selecciones con Nations League, clasificatorios, torneos y amistosos).
+  Ficha: sección "Por competición" y "Con su selección". El refresco falló dos días por
+  un salto de línea en el secreto `INGESTION_API_KEY` (cabecera HTTP inválida): ahora se
+  limpia y los errores de ingesta salen como anotación.

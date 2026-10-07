@@ -64,6 +64,12 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
   igual que 403/429 (parar el lote, no marcar a nadie). Corre en el PC del usuario con la
   tarea programada "El Regista - Transfermarkt" (`scripts/home_sync.ps1`, martes/viernes
   21:00; log `.cache/home-sync.log`). Elegir candidato por edad y nombre, nunca el primero.
+- **Por competición** (tabla `player_competition_stats`, aparte de las temporadas de liga
+  que leen rankings y gemelos): dataset para lo terminado (`/ingestion/transfermarkt-dataset/
+  competitions`); en casa, `scrape_competitions_remote.py` (5 grandes, Europa y copas solo
+  de clubes de primera) y `scrape_national_teams_remote.py` (selecciones de Mundial y
+  Eurocopa; códigos del selector de su página de rendimiento, `.cache/national-teams.json`,
+  150 páginas por noche). Los torneos llevan su año (Mundial 2026), lo demás la temporada.
 - Las ligas de año natural (Brasil, MLS, Escandinavia...) quedan fuera: no encajan con
   "2026 = 26/27".
 
@@ -84,6 +90,8 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
   explorador, pronósticos) se sirven de memoria 3 h (`presentation/api/read_cache.py`), la
   web cachea 3 h y el e2e contra la API real solo corre si cambia `web/`. Cualquier
   consulta nueva que lea tablas enteras debe ir por `READ_CACHE`.
+  El panel `/admin` muestra la transferencia del mes con `NEON_API_KEY` y `NEON_PROJECT_ID`
+  (variables del proyecto `el-regista-api`; sin ellas dice "Neon sin conectar").
 - Secretos solo como variables de entorno (Vercel / GitHub secrets `DATABASE_URL`,
   `API_BASE_URL`, `INGESTION_API_KEY`); nunca en ficheros del repo ni en el chat. En local
   (`docker compose up`) salen de un Vault en modo desarrollo (`infrastructure/secrets/vault.py`,

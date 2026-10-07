@@ -105,7 +105,7 @@ desarrollo sigue TDD estricto: cada cambio entra como `test:` y luego `feat:`.
 |---|---|
 | FBref (dataset de Kaggle) | Estadísticas por temporada de las 5 grandes ligas. |
 | Understat | xG, xA, tiros con coordenadas, alineaciones partido a partido y calendario. |
-| Transfermarkt (web y dataset de Kaggle) | Fotos, fechas de nacimiento, posición detallada, valores de mercado y 9 ligas más. |
+| Transfermarkt (web y dataset de Kaggle) | Fotos, fechas de nacimiento, posición detallada, valores de mercado, 28 ligas más, y cada competición de un jugador: liga, Champions, Europa League, Conference, copas, supercopas y selección (Nations League, clasificatorios, Mundial, Eurocopa, Copa América, amistosos). |
 | football-data.co.uk | Córners, tarjetas, faltas, árbitro y cuotas. |
 
 Unir fuentes sin un identificador común es la parte difícil:
@@ -120,6 +120,10 @@ Unir fuentes sin un identificador común es la parte difícil:
   o de Transfermarkt.
 - **Identificadores estables**: FBref no trae ID, así que se usa un hash de nombre y año de
   nacimiento. Los jugadores creados desde Transfermarkt van en su propio rango.
+- **Por competición** (`player_competition_stats`): las temporadas terminadas salen del
+  dataset; la temporada en curso de Europa, copas y selecciones se lee en casa página a
+  página (Transfermarkt bloquea los servidores). Las copas solo para clubes de primera, y
+  las selecciones poco a poco, recordando lo que ya no cambia.
 - **Salud de los datos**: `GET /health/data` devuelve 503 si hay partidos jugados hace días
   sin resultado. Además lista los jugadores cuyos goles no cuadran entre FBref y Understat.
   El workflow lo comprueba al terminar cada refresco.
