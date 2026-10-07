@@ -95,3 +95,18 @@ def test_the_age_benchmark_averages_one_position_at_each_age(session):
 
     assert (nineteen.age, nineteen.players) == (19, 2)
     assert nineteen.per90 == round((10 + 6) * 90 / 3600, 3)
+
+
+def test_lines_since_a_season_come_grouped_by_player(session):
+    _players(session)
+    repository = SqlAlchemyCompetitionStatsRepository(session)
+    old = replace(LEAGUE, season_label="2023")
+    repository.save_competition_lines({1: [CHAMPIONS, WORLD_CUP, old], 2: [LEAGUE]})
+
+    lines = repository.list_competition_lines_since("2025")
+
+    assert sorted(line.competition for line in lines[1]) == [
+        "Champions League",
+        "Mundial",
+    ]
+    assert lines[2] == [LEAGUE]
