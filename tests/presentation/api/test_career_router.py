@@ -54,8 +54,8 @@ def test_a_players_career_by_age_next_to_his_positions_level():
 def test_an_unknown_player_has_no_career():
     app = create_app()
     app.dependency_overrides[get_player_repository] = InMemoryPlayerRepository
-    app.dependency_overrides[get_competition_stats_repository] = (
-        InMemoryCompetitionStatsRepository
+    app.dependency_overrides[get_competition_stats_repository] = lambda: (
+        InMemoryCompetitionStatsRepository()
     )
 
     assert TestClient(app).get("/players/404/career").status_code == 404
