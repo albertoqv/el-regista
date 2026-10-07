@@ -134,6 +134,9 @@ from player_scouting.infrastructure.persistence.sqlalchemy_shot_repository impor
 from player_scouting.infrastructure.persistence.sqlalchemy_team_repository import (
     SqlAlchemyTeamRepository,
 )
+from player_scouting.infrastructure.persistence.sqlalchemy_value_estimate_repository import (  # noqa: E501
+    SqlAlchemyValueEstimateRepository,
+)
 from player_scouting.infrastructure.persistence.sqlalchemy_visit_repository import (
     SqlAlchemyVisitRepository,
 )
@@ -552,6 +555,20 @@ def get_transfermarkt_dataset_provider() -> TransfermarktDatasetZipProvider:
 
 TransfermarktDatasetProviderDep = Annotated[
     TransfermarktDatasetZipProvider, Depends(get_transfermarkt_dataset_provider)
+]
+
+
+def get_value_estimate_repository(
+    request: Request, session: SessionDep
+) -> SqlAlchemyValueEstimateRepository:
+    # The bargains list reads every estimate: kept in memory like the other bulk reads.
+    return _cached_on_get(
+        request, SqlAlchemyValueEstimateRepository(session), {"list_value_estimates"}
+    )
+
+
+ValueEstimateRepositoryDep = Annotated[
+    SqlAlchemyValueEstimateRepository, Depends(get_value_estimate_repository)
 ]
 
 

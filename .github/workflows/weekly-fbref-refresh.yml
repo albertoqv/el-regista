@@ -112,6 +112,8 @@ jobs:
           done
           # Champions League, cups, super cups and national teams, season by season.
           post "/ingestion/transfermarkt-dataset/competitions" | jq -c '{ingested}'
+          # Market value model: refitted on the fresh data, one estimate per player.
+          post "/ingestion/valuations" | jq -c .
 
       - name: Merge players FBref spelled in two ways
         run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/maintenance/merge-duplicates"

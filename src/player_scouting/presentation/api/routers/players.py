@@ -31,6 +31,7 @@ from player_scouting.presentation.api.dependencies import (
     GetPlayerPercentilesUseCaseDep,
     PlayerRepositoryDep,
     ShotRepositoryDep,
+    ValueEstimateRepositoryDep,
 )
 from player_scouting.presentation.api.schemas import (
     ComparisonOut,
@@ -122,6 +123,50 @@ def explore_players(
 _today = date.today
 HOT_CACHE_SECONDS = 600
 _hot_cache: dict[tuple[Any, ...], tuple[float, dict[str, Any]]] = {}
+
+
+# Valuations below this are noise for a bargains list (youth, reserve players).
+GAP_MIN_MARKET_EUR = 1_000_000
+
+
+@router.get("/value-gaps")
+def value_gaps(
+    players: PlayerRepositoryDep,
+    estimates: ValueEstimateRepositoryDep,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    position: str | None = None,
+) -> list[dict[str, Any]]:
+    """Players the model values well above their market price, biggest gap first."""
+    market = players.latest_market_values()
+    rows = []
+    for estimate in estimates.list_value_estimates():
+        point = market.get(estimate.player_id)
+        if point is None or point.amount_eur < GAP_MIN_MARKET_EUR:
+            continue
+        ratio = estimate.estimate_eur / point.amount_eur
+        if ratio > 1:
+            rows.append((ratio, estimate, point))
+    rows.sort(key=lambda row: -row[0])
+    result = []
+    for ratio, estimate, point in rows:
+        player = players.get_player(estimate.player_id)
+        if player is None or (position and player.position != position):
+            continue
+        result.append(
+            {
+                "player_id": player.player_id,
+                "name": player.name,
+                "position": player.position,
+                "photo_url": player.photo_url,
+                "club": point.club,
+                "estimate_eur": estimate.estimate_eur,
+                "market_eur": point.amount_eur,
+                "ratio": round(ratio, 2),
+            }
+        )
+        if len(result) == limit:
+            break
+    return result
 
 
 @router.get("/hot")
@@ -322,6 +367,30 @@ def player_career(
     except PlayerNotFoundError as error:
         raise HTTPException(status_code=404, detail=str(error)) from error
     return asdict(curve)
+
+
+@router.get("/{player_id}/value-estimate")
+def player_value_estimate(
+    player_id: int,
+    players: PlayerRepositoryDep,
+    estimates: ValueEstimateRepositoryDep,
+) -> dict[str, Any]:
+    """What the model says he is worth, why, and his Transfermarkt value."""
+    estimate = estimates.get_value_estimate(player_id)
+    if estimate is None:
+        raise HTTPException(status_code=404, detail="No estimate for this player")
+    history = players.list_market_value_history(player_id)
+    market = max(history, key=lambda point: point.as_of) if history else None
+    return {
+        "estimate_eur": estimate.estimate_eur,
+        "market_eur": market.amount_eur if market else None,
+        "factors": [asdict(factor) for factor in estimate.factors],
+        "computed_on": estimate.computed_on.isoformat(),
+        "model": {
+            "samples": estimate.samples,
+            "median_error": estimate.median_error,
+        },
+    }
 
 
 @router.get("/{player_id}/competitions", response_model=list[CompetitionLineOut])

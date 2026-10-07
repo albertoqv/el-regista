@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import zlib
 from collections.abc import Iterator
+from dataclasses import asdict
 from datetime import date, datetime
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import StreamingResponse
 
 from player_scouting.application.exceptions import PlayerNotFoundError
 from player_scouting.application.ports import MarketValueHistoryResult
+from player_scouting.application.use_cases.market_valuation import (
+    EstimateMarketValuesUseCase,
+)
 from player_scouting.application.use_cases.track_record import (
     SnapshotPredictionsUseCase,
 )
@@ -17,6 +21,7 @@ from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.infrastructure.transfermarkt.league_pages import SEASON_LEAGUES
 from player_scouting.presentation.api.dependencies import (
     BackupStream,
+    CompetitionStatsRepositoryDep,
     EnqueueLeagueIngestionUseCaseDep,
     EnrichFromDatasetUseCaseDep,
     EnrichPendingPlayersUseCaseDep,
@@ -42,6 +47,7 @@ from player_scouting.presentation.api.dependencies import (
     RecordCompetitionLinesUseCaseDep,
     RecordEnrichmentUseCaseDep,
     TeamRepositoryDep,
+    ValueEstimateRepositoryDep,
     get_backup_stream,
 )
 from player_scouting.presentation.api.schemas import (
@@ -180,6 +186,18 @@ def receive_competition_lines(
 ) -> IngestionResultOut:
     """The season in progress of Europe, cups and the big leagues, read at home."""
     return ingestion_result_out_from_domain(use_case.execute(body.to_domain()))
+
+
+@router.post("/valuations")
+def estimate_market_values(
+    players: PlayerRepositoryDep,
+    competitions: CompetitionStatsRepositoryDep,
+    estimates: ValueEstimateRepositoryDep,
+) -> dict[str, Any]:
+    """Refits the market value model and stores every player's estimate."""
+    return asdict(
+        EstimateMarketValuesUseCase(players, competitions, estimates).execute()
+    )
 
 
 @router.post("/transfermarkt/league-seasons", response_model=IngestionResultOut)
