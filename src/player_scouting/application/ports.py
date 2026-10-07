@@ -12,6 +12,7 @@ from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.shots import Shot, ShotTotals
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
+from player_scouting.domain.valuation import ValuationReport, ValueFactor
 
 PlayerSort = Literal["recent", "goals", "assists"]
 LeaderMetric = Literal[
@@ -424,6 +425,33 @@ class CompetitionStatsRepository(Protocol):
     def age_benchmark(self, position: str) -> list[AgePoint]:
         """Goals + assists per 90 of a position's regulars, age by age."""
         ...
+
+    def list_competition_lines_since(
+        self, season_label: str
+    ) -> dict[int, list[CompetitionLine]]:
+        """Every player's lines from that season on (club seasons and tournaments)."""
+        ...
+
+
+@dataclass(frozen=True)
+class StoredValueEstimate:
+    player_id: int
+    estimate_eur: int
+    factors: tuple[ValueFactor, ...]
+    computed_on: date
+    # The model behind it: how many valued players it learnt from, and its error.
+    samples: int
+    median_error: float
+
+
+class ValueEstimateRepository(Protocol):
+    def save_value_estimates(self, report: ValuationReport, computed_on: date) -> None:
+        """Replaces every estimate with this run's."""
+        ...
+
+    def get_value_estimate(self, player_id: int) -> StoredValueEstimate | None: ...
+
+    def list_value_estimates(self) -> list[StoredValueEstimate]: ...
 
 
 @dataclass(frozen=True)

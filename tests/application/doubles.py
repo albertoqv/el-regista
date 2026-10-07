@@ -25,6 +25,7 @@ from player_scouting.application.ports import (
     RankedCount,
     SeasonEntry,
     SeasonRecord,
+    StoredValueEstimate,
     TeamMatch,
 )
 from player_scouting.application.team_names import renamed
@@ -35,6 +36,7 @@ from player_scouting.domain.market_value import MarketValuePoint
 from player_scouting.domain.season import Season
 from player_scouting.domain.shots import Shot, ShotTotals
 from player_scouting.domain.statistics import AdvancedStatistics, Statistics
+from player_scouting.domain.valuation import ValuationReport
 
 
 class InMemoryPlayerRepository:
@@ -612,6 +614,39 @@ class InMemoryCompetitionStatsRepository:
 
     def age_benchmark(self, position: str) -> list[AgePoint]:
         return _age_benchmark(self._lines, self._players, position)
+
+    def list_competition_lines_since(
+        self, season_label: str
+    ) -> dict[int, list[CompetitionLine]]:
+        lines: dict[int, list[CompetitionLine]] = {}
+        for (player_id, _, label), line in self._lines.items():
+            if label >= season_label:
+                lines.setdefault(player_id, []).append(line)
+        return lines
+
+
+class InMemoryValueEstimateRepository:
+    def __init__(self) -> None:
+        self._estimates: dict[int, StoredValueEstimate] = {}
+
+    def save_value_estimates(self, report: ValuationReport, computed_on: date) -> None:
+        self._estimates = {
+            e.player_id: StoredValueEstimate(
+                e.player_id,
+                e.estimate_eur,
+                e.factors,
+                computed_on,
+                report.samples,
+                report.median_error,
+            )
+            for e in report.estimates
+        }
+
+    def get_value_estimate(self, player_id: int) -> StoredValueEstimate | None:
+        return self._estimates.get(player_id)
+
+    def list_value_estimates(self) -> list[StoredValueEstimate]:
+        return list(self._estimates.values())
 
 
 def _normalized(text: str) -> str:
