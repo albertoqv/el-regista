@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import time
+import unicodedata
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -59,9 +60,8 @@ def build_history(
     out_dir: Path,
     pause_seconds: float = 3.0,
 ) -> None:
-    """One file per league season and an index: player name -> his seasons."""
+    """One file per league season, then the index of each player's seasons."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    index: dict[str, list[dict[str, Any]]] = {}
     first = True
     for year in years:
         for league in leagues:
@@ -83,15 +83,42 @@ def build_history(
                 ),
                 encoding="utf-8",
             )
-            for player in players:
-                index.setdefault(player["name"], []).append(
-                    {
-                        "id": player["id"],
-                        "competition": competition,
-                        "year": year,
-                        "team": player["team"],
-                    }
-                )
-    (out_dir / "index.json").write_text(
-        json.dumps(index, ensure_ascii=False, separators=(",", ":")), encoding="utf-8"
-    )
+    write_index(out_dir)
+
+
+def index_key(name: str) -> str:
+    """The shard a name lives in: its first letter, without accents."""
+    normalized = normalized_name(name)
+    first = normalized[:1]
+    return first if "a" <= first <= "z" else "_"
+
+
+def normalized_name(name: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", name.lower())
+    return "".join(c for c in decomposed if not unicodedata.combining(c)).strip()
+
+
+def write_index(out_dir: Path) -> None:
+    """index/<letter>.json: normalized name -> his seasons, from the season files.
+    A lookup reads one small file instead of every player of ten years."""
+    shards: dict[str, dict[str, list[dict[str, Any]]]] = {}
+    for path in sorted(out_dir.glob("*-*.json")):
+        season = json.loads(path.read_text(encoding="utf-8"))
+        for player in season["players"]:
+            shard = shards.setdefault(index_key(player["name"]), {})
+            shard.setdefault(normalized_name(player["name"]), []).append(
+                {
+                    "id": player["id"],
+                    "name": player["name"],
+                    "competition": season["competition"],
+                    "year": season["year"],
+                    "team": player["team"],
+                }
+            )
+    folder = out_dir / "index"
+    folder.mkdir(exist_ok=True)
+    for key, shard in shards.items():
+        (folder / f"{key}.json").write_text(
+            json.dumps(shard, ensure_ascii=False, separators=(",", ":")),
+            encoding="utf-8",
+        )
