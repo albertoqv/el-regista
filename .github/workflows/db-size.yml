@@ -1,0 +1,33 @@
+name: Database size
+
+# Read-only: how big the production database is, table by table (Neon Free allows
+# 0.5 GB). Results as annotations, readable without repository rights.
+on:
+  workflow_dispatch:
+  push:
+    paths: [".github/db-size-now"]
+
+jobs:
+  size:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+      - name: Sizes
+        run: |
+          uv run python - <<'PY'
+          from sqlalchemy import create_engine, text
+          from player_scouting.infrastructure.persistence.settings import get_settings
+          with create_engine(get_settings().database_url).connect() as c:
+              total = c.execute(text("select pg_database_size(current_database())")).scalar()
+              print(f"::notice title=Database::{total / 1e6:.0f} MB in total")
+              rows = c.execute(text(
+                  "select relname, pg_total_relation_size(relid), n_live_tup"
+                  " from pg_stat_user_tables order by 2 desc limit 15"
+              ))
+              print("::notice title=Tables::" + "; ".join(
+                  f"{name} {size / 1e6:.0f} MB ({live} rows)" for name, size, live in rows
+              ))
+          PY
