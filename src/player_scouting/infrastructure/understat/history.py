@@ -37,6 +37,7 @@ def history_row(raw: dict) -> dict[str, Any]:
         # A mid-season move lists both clubs: the first is the one shown.
         "team": raw["team_title"].split(",")[0].strip(),
         "position": _POSITIONS.get(raw.get("position", "M")[:1], "Midfielder"),
+        "games": int(raw["games"]),
         "minutes": int(raw["time"]),
         "goals": int(raw["goals"]),
         "expected_goals": number("xG"),
