@@ -67,8 +67,13 @@ function slug(competition: string): string {
   return competition.toLowerCase().replaceAll(" ", "-");
 }
 
+// Vercel's data cache outlives deploys: keyed by deploy, new files are read at once.
+export const HISTORY_VERSION = process.env.VERCEL_DEPLOYMENT_ID ?? "local";
+
 async function getJson<T>(path: string): Promise<T | null> {
-  const response = await fetch(`${SITE_URL}${path}`, { next: { revalidate: WEEK } }).catch(() => null);
+  const response = await fetch(`${SITE_URL}${path}?v=${HISTORY_VERSION}`, { next: { revalidate: WEEK } }).catch(
+    () => null,
+  );
   return response?.ok ? ((await response.json()) as T) : null;
 }
 

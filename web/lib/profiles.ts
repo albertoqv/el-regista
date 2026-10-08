@@ -1,4 +1,4 @@
-import { HISTORY_METRICS, normalizedName } from "@/lib/history";
+import { HISTORY_METRICS, HISTORY_VERSION, normalizedName } from "@/lib/history";
 import type { MetricKey } from "@/lib/metrics";
 import { SITE_URL } from "@/lib/site";
 
@@ -35,7 +35,7 @@ type ProfileFile = { fields: string[]; competitions: string[]; rows: (string | n
 const WEEK = 7 * 24 * 3600;
 
 async function loadLine(line: Line): Promise<Profile[]> {
-  const response = await fetch(`${SITE_URL}/history/profiles/${line.toLowerCase()}.json`, {
+  const response = await fetch(`${SITE_URL}/history/profiles/${line.toLowerCase()}.json?v=${HISTORY_VERSION}`, {
     next: { revalidate: WEEK },
   }).catch(() => null);
   if (!response?.ok) return [];
