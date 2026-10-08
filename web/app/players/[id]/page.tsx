@@ -4,6 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CareerChart } from "@/app/components/CareerChart";
 import { ValueEstimateCard } from "@/app/components/ValueEstimateCard";
+import { PeakCard } from "@/app/components/PeakCard";
+import { loadProfiles, seasonsOf } from "@/lib/profiles";
 import { CompetitionStats } from "@/app/components/CompetitionStats";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
 import { SITE_URL } from "@/lib/site";
@@ -106,8 +108,14 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
   }
-  // Big five seasons from 2014 to 2023 (static Understat history): radar included.
-  const historyEntries = historySeasonEntries(await historySeasons(base.name));
+  // Big five seasons since 2014 (static Understat history): radar included. The ones
+  // the database has with detailed metrics (24/25 on) are not listed twice.
+  const historyRefs = await historySeasons(base.name);
+  const historyEntries = historySeasonEntries(
+    historyRefs.filter(
+      (ref) => !seasons.some((entry) => entry.competition === ref.competition && entry.label === String(ref.year)),
+    ),
+  );
   const allSeasons = [...seasons, ...historyEntries];
   const asked = param(searchParams.sc);
   const season =
@@ -133,7 +141,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     throw error;
   }
 
-  const [twins, marketValue, percentiles, shots, trend, competitions, career, valueEstimate] = await Promise.all([
+  const [twins, marketValue, percentiles, shots, trend, competitions, career, valueEstimate, peak] = await Promise.all([
     findTwins(playerId, { limit: 6 }).catch((): TwinReport | null => null),
     getMarketValue(playerId).catch(
       (): MarketValueHistory => ({ current: null, history: [] }),
@@ -148,6 +156,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     getPlayerCompetitions(playerId).catch((): CompetitionLine[] => []),
     getPlayerCareer(playerId).catch((): CareerCurve | null => null),
     getPlayerValueEstimate(playerId).catch((): ValueEstimate | null => null),
+    historyRefs.length > 0 ? loadProfiles().then((profiles) => seasonsOf(historyRefs[0].id, profiles)) : [],
   ]);
 
   const age = formatAge(player);
@@ -280,6 +289,12 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
             </div>
             <PercentileBars report={percentiles} />
           </section>
+        </Reveal>
+      )}
+
+      {peak.length >= 2 && (
+        <Reveal>
+          <PeakCard seasons={peak} color={accent} />
         </Reveal>
       )}
 

@@ -33,7 +33,7 @@ export function MiniRadar({
 
   return (
     <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="h-28 w-28 shrink-0" role="img" aria-label="Perfil superpuesto">
-      <title>{`Blanco: el jugador buscado · Dorado: el gemelo (${axes.map((key) => PROFILE_LABELS[key] ?? key).join(", ")})`}</title>
+      <title>{`Gris: el jugador buscado · Azul: el gemelo (${axes.map((key) => PROFILE_LABELS[key] ?? key).join(", ")})`}</title>
       {[50, 100].map((ring) => (
         <polygon
           key={ring}

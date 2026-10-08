@@ -18,6 +18,8 @@ const PAGES: { path: string; changeFrequency: Frequency; priority: number }[] = 
   { path: "/gemelos", changeFrequency: "weekly", priority: 0.9 },
   { path: "/explorar", changeFrequency: "weekly", priority: 0.7 },
   { path: "/compare", changeFrequency: "weekly", priority: 0.7 },
+  { path: "/epocas", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/mejores-temporadas", changeFrequency: "monthly", priority: 0.7 },
   { path: "/como-funciona", changeFrequency: "monthly", priority: 0.5 },
   { path: "/aviso-legal", changeFrequency: "monthly", priority: 0.2 },
   { path: "/privacidad", changeFrequency: "monthly", priority: 0.2 },

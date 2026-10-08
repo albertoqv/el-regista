@@ -64,6 +64,18 @@ export const PRODUCTS: Product[] = [
         icon: "scale",
       },
       {
+        href: "/epocas",
+        label: "Gemelos de época",
+        description: "Quién juega hoy como el Messi de 2015, y al revés.",
+        icon: "twins",
+      },
+      {
+        href: "/mejores-temporadas",
+        label: "Mejores temporadas",
+        description: "Lo mejor de las 5 grandes desde 2014, en total o por 90.",
+        icon: "trophy",
+      },
+      {
         href: "/ranking",
         label: "Rankings",
         description: "Goleadores, asistentes y xG de cada liga.",

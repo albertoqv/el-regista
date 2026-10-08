@@ -97,8 +97,11 @@ function SeasonSelect({
         </optgroup>
       )}
       {history.length > 0 && (
-        <optgroup label="Histórico 2014-2023 (Understat, con radar)">
-          {history.map((season) => (
+        <optgroup label="Histórico desde 2014 (Understat, con radar)">
+          {history
+            // Seasons the database has in detail are listed above.
+            .filter((entry) => !seasons.some((s) => s.competition === entry.competition && s.label === String(entry.year)))
+            .map((season) => (
             <option
               key={`${season.competition}|${season.year}`}
               value={`${HISTORY_PREFIX}${season.competition}|${season.year}`}
