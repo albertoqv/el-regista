@@ -127,7 +127,7 @@ def test_profiles_hold_each_regulars_percentiles_within_his_league_season_and_li
     assert set(profiles) == {"Forward", "Midfielder"}
     forwards = profiles["Forward"]
     assert forwards["competitions"] == ["La Liga"]
-    rows = [dict(zip(forwards["fields"], row)) for row in forwards["rows"]]
+    rows = [dict(zip(forwards["fields"], row, strict=True)) for row in forwards["rows"]]
     # Below 900 minutes he is not a regular: neither listed nor a peer.
     assert [row["name"] for row in rows] == ["Messi", "Neymar", "Suárez"]
     messi = rows[0]
@@ -140,7 +140,11 @@ def test_profiles_hold_each_regulars_percentiles_within_his_league_season_and_li
     assert rows[1]["p_goals"] == 67
     assert rows[2]["p_goals"] == 33
     midfielder = dict(
-        zip(profiles["Midfielder"]["fields"], profiles["Midfielder"]["rows"][0])
+        zip(
+            profiles["Midfielder"]["fields"],
+            profiles["Midfielder"]["rows"][0],
+            strict=True,
+        )
     )
     assert midfielder["p_goals"] == 100
 

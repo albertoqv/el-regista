@@ -1,7 +1,7 @@
 name: Build the history files
 
-# One-off (or to add a season): reads past seasons of the big five from Understat, one
-# request per league and season with pauses, and commits them as static files the web
+# To add a finished season: reads the big five seasons that have no file yet from
+# Understat, one request per league and season with pauses, and commits them as static files the web
 # serves from the CDN. Touches no database. Started by pushing .github/history-now.
 on:
   workflow_dispatch:
@@ -24,6 +24,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add web/public/history
-          git commit -m "chore: histórico de Understat 2014-2023 en ficheros estáticos" || exit 0
+          git commit -m "chore: histórico de Understat en ficheros estáticos" || exit 0
           git push
           echo "::notice title=History::$(ls web/public/history | wc -l) files, $(du -sh web/public/history | cut -f1)"
