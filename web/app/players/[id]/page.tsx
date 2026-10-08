@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { CareerChart } from "@/app/components/CareerChart";
 import { ValueEstimateCard } from "@/app/components/ValueEstimateCard";
 import { PeakCard } from "@/app/components/PeakCard";
-import { loadProfiles, seasonsOf } from "@/lib/profiles";
+import { closestAcrossEras, loadProfiles, seasonKey, seasonsOf } from "@/lib/profiles";
 import { CompetitionStats } from "@/app/components/CompetitionStats";
 import { MarketValueChart } from "@/app/components/MarketValueChart";
 import { SITE_URL } from "@/lib/site";
@@ -156,7 +156,12 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     getPlayerCompetitions(playerId).catch((): CompetitionLine[] => []),
     getPlayerCareer(playerId).catch((): CareerCurve | null => null),
     getPlayerValueEstimate(playerId).catch((): ValueEstimate | null => null),
-    historyRefs.length > 0 ? loadProfiles().then((profiles) => seasonsOf(historyRefs[0].id, profiles)) : [],
+    historyRefs.length > 0
+      ? loadProfiles().then((profiles) => {
+          const mine = seasonsOf(historyRefs[0].id, profiles);
+          return { seasons: mine, closest: closestAcrossEras(mine, profiles) };
+        })
+      : { seasons: [], closest: null },
   ]);
 
   const age = formatAge(player);
@@ -292,9 +297,27 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
         </Reveal>
       )}
 
-      {peak.length >= 2 && (
+      {peak.closest && (
         <Reveal>
-          <PeakCard seasons={peak} color={accent} />
+          <Link
+            href={`/epocas?j=${peak.closest.season.id}&s=${seasonKey(peak.closest.season)}&en=${peak.closest.era}`}
+            className="glass glass-hover flex flex-wrap items-baseline justify-between gap-3 rounded-lg p-5"
+          >
+            <span className="text-lg">
+              Su {seasonDisplay(String(peak.closest.season.year))} se parece al{" "}
+              <strong>
+                {peak.closest.profile.name} de la {seasonDisplay(String(peak.closest.profile.year))}
+              </strong>
+              <span className="text-muted"> · gemelos de época →</span>
+            </span>
+            <span className="font-display text-3xl tabular-nums">{peak.closest.similarity}%</span>
+          </Link>
+        </Reveal>
+      )}
+
+      {peak.seasons.length >= 2 && (
+        <Reveal>
+          <PeakCard seasons={peak.seasons} color={accent} />
         </Reveal>
       )}
 

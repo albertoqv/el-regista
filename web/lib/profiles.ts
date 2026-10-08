@@ -132,3 +132,32 @@ export function searchProfiles(query: string, profiles: Profile[], limit = 8) {
     .sort((a, b) => b.seasons - a.seasons)
     .slice(0, limit);
 }
+
+/**
+ * A season picked in a URL: `2097` (his best season) or `2097:la-liga-2015`.
+ * Returns his seasons and the one picked, or null when the id is unknown.
+ */
+export function pickSeason(value: string | undefined, profiles: Profile[]) {
+  const [rawId, key] = (value ?? "").split(":");
+  const seasons = seasonsOf(Number(rawId), profiles);
+  const profile = seasons.find((season) => seasonKey(season) === key) ?? bestSeason(seasons);
+  return profile ? { seasons, profile } : null;
+}
+
+export function pickValue(profile: Profile): string {
+  return `${profile.id}:${seasonKey(profile)}`;
+}
+
+/** Whom he resembles most in the other era: his latest season against the
+ * latest finished one, or, if that is his, against every earlier season. */
+export function closestAcrossEras(seasons: Profile[], profiles: Profile[]) {
+  const last = seasons[seasons.length - 1];
+  if (!last) return null;
+  const era: Era = last.year === latestYear(profiles) ? "antes" : "hoy";
+  const [twin] = eraTwins(last, profiles, era, 1);
+  return twin ? { season: last, era, ...twin } : null;
+}
+
+export function seasonName(profile: Pick<Profile, "competition" | "year">): string {
+  return `${profile.competition} ${String(profile.year).slice(2)}/${String(profile.year + 1).slice(2)}`;
+}

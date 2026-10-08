@@ -13,6 +13,8 @@ import {
   latestYear,
   LINE_LABELS,
   loadProfiles,
+  pickSeason,
+  pickValue,
   seasonKey,
   seasonScore,
   seasonsOf,
@@ -20,11 +22,36 @@ import {
   type Profile,
 } from "@/lib/profiles";
 
-export const metadata: Metadata = {
+const DEFAULT_METADATA: Metadata = {
   title: "Gemelos de época · El Regista",
   description:
     "¿Quién juega hoy como el Messi de 2015? Las temporadas más parecidas desde 2014 en las 5 grandes ligas, por percentiles de Understat.",
 };
+
+/** A shared link shows the season and its closest twin as an image. */
+export async function generateMetadata(props: PageProps<"/epocas">): Promise<Metadata> {
+  const searchParams = await props.searchParams;
+  const id = Number(param(searchParams.j));
+  if (!id) return DEFAULT_METADATA;
+  const profiles = await loadProfiles();
+  const target = pickSeason(`${id}:${param(searchParams.s) ?? ""}`, profiles)?.profile;
+  if (!target) return DEFAULT_METADATA;
+  const era = eraFor(target, latestYear(profiles), param(searchParams.en));
+  const [twin] = eraTwins(target, profiles, era, 1);
+  const card = `/epocas/carta?a=${pickValue(target)}${twin ? `&b=${pickValue(twin.profile)}` : ""}`;
+  return {
+    title: twin
+      ? `${target.name} ${seasonDisplay(String(target.year))} ≈ ${twin.profile.name} ${seasonDisplay(String(twin.profile.year))} · El Regista`
+      : DEFAULT_METADATA.title,
+    description: DEFAULT_METADATA.description,
+    openGraph: { images: [card] },
+    twitter: { card: "summary_large_image", images: [card] },
+  };
+}
+
+function eraFor(target: Profile, latest: number, asked: string | undefined): Era {
+  return asked === "hoy" || asked === "antes" ? asked : target.year === latest ? "antes" : "hoy";
+}
 
 // Starting points, looked up by name in the data (never by a hard-coded id).
 const EXAMPLES: [string, number][] = [
@@ -64,7 +91,11 @@ export default async function ErasPage(props: PageProps<"/epocas">) {
         <p className="max-w-2xl text-sm text-muted sm:text-base">
           Elige una temporada de cualquier jugador de las 5 grandes desde 2014 y mira quién juega igual en la{" "}
           {seasonDisplay(String(latest))} o en otra época. Mismo puesto, percentiles de Understat frente a los de su liga y
-          temporada.
+          temporada. También puedes enfrentar dos temporadas en el{" "}
+          <Link href="/epocas/duelo" className="font-semibold text-ink underline decoration-line underline-offset-4 hover:text-brand">
+            cara a cara histórico
+          </Link>
+          .
         </p>
         <div className="mt-2 max-w-2xl">
           <HistorySearch placeholder="Busca un jugador: Messi, Kanté, Iniesta..." />
@@ -118,7 +149,7 @@ function Twins({
   latest: number;
   era: string | undefined;
 }) {
-  const era: Era = asked === "hoy" || asked === "antes" ? asked : target.year === latest ? "antes" : "hoy";
+  const era = eraFor(target, latest, asked);
   const twins = eraTwins(target, profiles, era);
   const best = bestSeason(seasons);
   const accent = competitionColor(target.competition);
@@ -162,9 +193,19 @@ function Twins({
                 ))}
               </nav>
             )}
-            <Link href={ficha} className="w-fit font-semibold text-brand hover:underline">
-              Ver su ficha →
-            </Link>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              <Link href={ficha} className="font-semibold text-brand hover:underline">
+                Ver su ficha →
+              </Link>
+              {twins[0] && (
+                <Link
+                  href={`/epocas/duelo?a=${pickValue(target)}&b=${pickValue(twins[0].profile)}`}
+                  className="font-semibold text-brand hover:underline"
+                >
+                  Cara a cara con {twins[0].profile.name} →
+                </Link>
+              )}
+            </div>
           </div>
           <div>
             <RadarChart axes={HISTORY_METRICS} series={[{ name: target.name, color: accent, values: target.percentiles }]} />

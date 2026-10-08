@@ -7,14 +7,14 @@ const FIRST_DATABASE_YEAR = 2024;
 
 /**
  * A history season opens the player's page when we have him (one player with
- * exactly that name); otherwise it stays on his twins across eras.
+ * exactly that name); otherwise his page from the static history.
  */
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const name = params.get("nombre") ?? "";
   const competition = params.get("liga") ?? "";
   const year = Number(params.get("anio"));
-  const fallback = `/epocas?j=${encodeURIComponent(params.get("j") ?? "")}&s=${encodeURIComponent(params.get("s") ?? "")}`;
+  const fallback = `/historico/jugador/${encodeURIComponent(params.get("j") ?? "")}`;
   const found = name ? await listPlayers({ q: name, limit: 10 }).catch(() => []) : [];
   const same = found.filter((player) => normalizedName(player.name) === normalizedName(name));
   if (same.length !== 1) redirect(fallback);

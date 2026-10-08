@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CompareVerdict } from "@/app/components/CompareVerdict";
 import { ComparePicker } from "@/app/components/ComparePicker";
 import { DuelCard } from "@/app/components/DuelCard";
@@ -295,7 +296,13 @@ export default async function ComparePage(props: PageProps<"/compare">) {
           <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
             Enfrenta a <span className="text-side-a">dos</span> jugadores
           </h1>
-          <p className="mt-1 text-sm text-muted">Dos jugadores, cara a cara.</p>
+          <p className="mt-1 text-sm text-muted">
+            Dos jugadores, cara a cara. ¿Uno ya retirado?{" "}
+            <Link href="/epocas/duelo" className="font-semibold text-ink underline decoration-line underline-offset-4 hover:text-brand">
+              Cara a cara histórico desde 2014
+            </Link>
+            .
+          </p>
         </Reveal>
         <ComparePicker
           defaultA={summaryA}
