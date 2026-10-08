@@ -184,3 +184,8 @@ Hecho (2026-10-08):
   Lamine Yamal (97%) y antes a Neymar 17/18 y Salah 21/22 (98%). `/mejores-temporadas`:
   Cristiano 14/15 (48 goles) arriba. La ficha enseña su mejor temporada frente a la última.
   Todo desde la CDN, cero transferencia de Neon.
+
+- **Cara a cara histórico y ficha histórica** (2026-10-08): `/epocas/duelo` (Messi 15/16
+  contra Cristiano 14/15: 96% de parecido, Messi gana 5 de 8 por 90),
+  `/historico/jugador/<id>` para quien no está en la base (Iniesta), "Su 25/26 se parece
+  al…" en la ficha y carta 1200×630 de gemelos de época y duelos para compartir.

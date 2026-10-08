@@ -94,7 +94,11 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
   añadir una temporada terminada, subir `YEARS` y tocar `.github/history-now`) y los sirve
   la CDN de Vercel, **sin tocar Neon**. Los usan el cara a cara y la ficha (`hist:<liga>` +
   año; desde 24/25 manda la base y no se repiten), `/epocas` (gemelos de época),
-  `/mejores-temporadas` y "Su mejor temporada" de la ficha (`web/lib/profiles.ts`). Datos
+  `/mejores-temporadas`, `/epocas/duelo` (cara a cara de dos temporadas cualesquiera,
+  `?a=<id understat>:<liga>-<año>`), `/historico/jugador/<id understat>` (ficha de quien no
+  está en la base; "Ver su ficha" cae ahí), la carta `/epocas/carta` y "Su mejor
+  temporada" / "Se parece a" de la ficha (`web/lib/profiles.ts`). Las lecturas llevan
+  `?v=<VERCEL_DEPLOYMENT_ID>` porque la caché de datos de Vercel sobrevive a los despliegues. Datos
   que no cambian van en ficheros, no en la base.
 - **Transferencia de Neon**: el refresco solo procesa el dataset de Transfermarkt si cambia
   su ETag (caché de Actions), mide los MB de cada paso (`scripts/egress_proxy.py`) y, con

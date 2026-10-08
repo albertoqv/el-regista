@@ -166,8 +166,9 @@ Unir fuentes sin un identificador común es la parte difícil:
 - Unos ficheros de perfiles guardan cada temporada de 900 minutos o más con sus percentiles
   frente a su línea, liga y temporada. De ahí salen los **gemelos de época** (quién juega hoy
   como el Messi de 2015, con la misma fórmula de parecido que los gemelos), las **mejores
-  temporadas** desde 2014 (total o por 90) y **su mejor temporada** en la ficha (media de
-  percentiles año a año).
+  temporadas** desde 2014 (total o por 90), **su mejor temporada** y a quién se parece en
+  la ficha, un **cara a cara histórico** de dos temporadas cualesquiera (aunque el jugador ya
+  no esté en la base) y una ficha histórica para quien no tenemos, con carta para compartir.
 
 #### Pronósticos (en segundo plano)
 
