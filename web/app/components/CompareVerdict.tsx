@@ -6,9 +6,17 @@ import type { Player } from "@/lib/api";
 import { METRICS, metricValue, type MetricKey } from "@/lib/metrics";
 
 /** Tug-of-war summary: how many metrics each player wins (per 90 when possible). */
-export function CompareVerdict({ playerA, playerB }: { playerA: Player; playerB: Player }) {
+export function CompareVerdict({
+  playerA,
+  playerB,
+  only,
+}: {
+  playerA: Player;
+  playerB: Player;
+  only?: MetricKey[];
+}) {
   const perNinety = playerA.minutes_played > 0 && playerB.minutes_played > 0;
-  const metrics = comparableMetrics(playerA, playerB).filter((key) => key !== "minutes_played");
+  const metrics = comparableMetrics(playerA, playerB, only).filter((key) => key !== "minutes_played");
   const winsA: MetricKey[] = [];
   const winsB: MetricKey[] = [];
   for (const key of metrics) {

@@ -29,7 +29,7 @@ import {
 } from "@/lib/api";
 import { ageInSeason, currentSeasonStartYear, seasonDisplay, valueAtSeason } from "@/lib/format";
 import { HISTORY_METRICS, HISTORY_PREFIX, historyPercentiles, historyPlayer, historySeason, type HistoryRow } from "@/lib/history";
-import { RADAR_METRICS } from "@/lib/metrics";
+import { RADAR_METRICS, type MetricKey } from "@/lib/metrics";
 import { ALL_COMPETITIONS, CAREER, clubSeasons, playerInClubSeason, resolveSeason } from "@/lib/seasons";
 
 function param(value: string | string[] | undefined): string | undefined {
@@ -184,6 +184,10 @@ export default async function ComparePage(props: PageProps<"/compare">) {
   const histA = Boolean(seasonA?.competition.startsWith(HISTORY_PREFIX));
   const histB = Boolean(seasonB?.competition.startsWith(HISTORY_PREFIX));
   const basic = wholeA || wholeB || histA || histB;
+  // A history season (2014-2023) has Understat's metrics only: compare those, plus
+  // minutes and cards, which every season has.
+  const metricsShown: MetricKey[] | undefined =
+    histA || histB ? [...HISTORY_METRICS, "minutes_played", "yellow_cards", "red_cards"] : undefined;
   const [historyA, historyB] = await Promise.all([
     histA && seasonA && summaryA
       ? historySeason(seasonA.competition.slice(HISTORY_PREFIX.length), Number(seasonA.label), summaryA.name)
@@ -314,9 +318,9 @@ export default async function ComparePage(props: PageProps<"/compare">) {
             similarity={content.comparison?.similarity_percentage ?? null}
           />
 
-          {!basic && (
+          {!wholeA && !wholeB && (
             <Reveal>
-              <CompareVerdict playerA={content.playerA} playerB={content.playerB} />
+              <CompareVerdict playerA={content.playerA} playerB={content.playerB} only={metricsShown} />
             </Reveal>
           )}
 
@@ -349,7 +353,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
           )}
 
           <Reveal>
-            {basic ? (
+            {wholeA || wholeB ? (
               <BasicDuel
                 a={{ player: content.playerA, games: gamesIn(seasonA, linesA, historyA?.row ?? null) }}
                 b={{ player: content.playerB, games: gamesIn(seasonB, linesB, historyB?.row ?? null) }}
@@ -361,7 +365,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
                 }
               />
             ) : (
-              <HeadToHead playerA={content.playerA} playerB={content.playerB} />
+              <HeadToHead playerA={content.playerA} playerB={content.playerB} only={metricsShown} />
             )}
           </Reveal>
 

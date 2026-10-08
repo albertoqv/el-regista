@@ -24,9 +24,14 @@ const OPTIONAL: MetricKey[] = [
   "dribbles_completed",
 ];
 
-export function comparableMetrics(a: Player, b: Player): MetricKey[] {
+/**
+ * The metrics worth comparing; `only` limits them to what a source tracks (the
+ * 2014-2023 history has no passes or defending, so those would read 0 vs 0).
+ */
+export function comparableMetrics(a: Player, b: Player, only?: MetricKey[]): MetricKey[] {
   return GROUPS.flatMap((group) => group.metrics).filter(
-    (key) => !(OPTIONAL.includes(key) && a[key] === 0 && b[key] === 0),
+    (key) =>
+      (!only || only.includes(key)) && !(OPTIONAL.includes(key) && a[key] === 0 && b[key] === 0),
   );
 }
 
@@ -103,10 +108,18 @@ function Row({
   );
 }
 
-export function HeadToHead({ playerA, playerB }: { playerA: Player; playerB: Player }) {
+export function HeadToHead({
+  playerA,
+  playerB,
+  only,
+}: {
+  playerA: Player;
+  playerB: Player;
+  only?: MetricKey[];
+}) {
   const bothHaveMinutes = playerA.minutes_played > 0 && playerB.minutes_played > 0;
   const [perNinety, setPerNinety] = useState(bothHaveMinutes);
-  const shown = comparableMetrics(playerA, playerB);
+  const shown = comparableMetrics(playerA, playerB, only);
   let rowIndex = 0;
 
   return (
