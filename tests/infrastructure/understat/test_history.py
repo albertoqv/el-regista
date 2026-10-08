@@ -2,6 +2,8 @@ import json
 
 from player_scouting.infrastructure.understat.history import (
     build_history,
+    index_key,
+    write_index,
     history_row,
 )
 from tests.infrastructure.understat.test_understat import YAMAL_RAW
@@ -58,3 +60,16 @@ def test_one_file_per_league_season_and_an_index_of_each_players_seasons(tmp_pat
     ]
     # A league season without players writes no file.
     assert not (tmp_path / "premier-league-2017.json").exists()
+
+
+def test_the_index_is_split_by_initial_so_a_lookup_reads_a_small_file(tmp_path):
+    understat = FakeUnderstat()
+    build_history(understat, ["La_liga"], [2017], tmp_path, pause_seconds=0)
+    (tmp_path / "index.json").unlink()
+
+    write_index(tmp_path)
+
+    shard = json.loads((tmp_path / "index" / "l.json").read_text(encoding="utf-8"))
+    assert shard["lionel messi"][0]["year"] == 2017
+    assert index_key("Ángel Di María") == "a"
+    assert index_key("Özil") == "o"
