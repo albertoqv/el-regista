@@ -25,9 +25,11 @@ export type Product = {
   pitch: string;
   color: string;
   tools: ProductTool[];
+  /** Still reachable by link, but out of the menu, home page, footer and sitemap. */
+  hidden?: boolean;
 };
 
-/** The two products of El Regista: one about players, one about matches. */
+/** The two products of El Regista: one about players, one about matches (hidden). */
 export const PRODUCTS: Product[] = [
   {
     key: "scout",
@@ -87,6 +89,7 @@ export const PRODUCTS: Product[] = [
     subject: "Partidos",
     pitch: "Probabilidades de cada partido y un historial de aciertos que no se puede maquillar.",
     color: "#2350d8",
+    hidden: true,
     tools: [
       {
         href: "/predicciones",
@@ -109,6 +112,9 @@ export const PRODUCTS: Product[] = [
     ],
   },
 ];
+
+/** What the menu, home page and footer show. */
+export const VISIBLE_PRODUCTS = PRODUCTS.filter((product) => !product.hidden);
 
 function matches(pathname: string, path: string): boolean {
   return pathname === path || pathname.startsWith(`${path}/`);

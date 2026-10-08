@@ -6,20 +6,15 @@ import { PlayerPortrait } from "@/app/components/PlayerPortrait";
 import { Reveal } from "@/app/components/Reveal";
 import { PlayerSearchForm } from "@/app/components/PlayerSearchForm";
 import { ProductBand, ProductsGrid } from "@/app/components/Products";
-import { RoundHighlights } from "@/app/components/RoundHighlights";
 import { SeasonLeaders } from "@/app/components/SeasonLeaders";
 import { Sticker } from "@/app/components/ScoutNote";
 import {
   findTwins,
-  getHighlights,
   getHotPlayers,
   getOverview,
-  getTrackRecord,
   listSeasonLeaders,
-  type Highlights,
   type HotBoard,
   type Overview,
-  type TrackRecord,
   type TwinReport,
 } from "@/lib/api";
 import { currentSeasonStartYear, formatMarketValue, seasonDisplay } from "@/lib/format";
@@ -28,28 +23,24 @@ import { SITE_URL } from "@/lib/site";
 
 async function loadHome(startYear: number) {
   try {
-    const [scorers, xg, highlights, overview, hot, record] = await Promise.all([
+    const [scorers, xg, overview, hot] = await Promise.all([
       listSeasonLeaders(startYear, { metric: "goals", limit: 10 }),
       listSeasonLeaders(startYear, { metric: "xg_chain", limit: 2 }),
-      getHighlights(3).catch((): Highlights | null => null),
       getOverview().catch((): Overview | null => null),
       getHotPlayers({ limit: 5 }).catch((): HotBoard | null => null),
-      getTrackRecord(startYear).catch((): TrackRecord | null => null),
     ]);
     // Live twin teaser: a standout attacker of the season and cheaper look-alikes.
     const star = [...xg, ...scorers].find((leader) => leader.photo_url) ?? scorers[0];
     const teaser = star
       ? await findTwins(star.player_id, { limit: 8 }).catch((): TwinReport | null => null)
       : null;
-    return { scorers, teaser, highlights, overview, hot, record, error: false };
+    return { scorers, teaser, overview, hot, error: false };
   } catch {
     return {
       scorers: [],
       teaser: null,
-      highlights: null as Highlights | null,
       overview: null as Overview | null,
       hot: null as HotBoard | null,
-      record: null as TrackRecord | null,
       error: true,
     };
   }
@@ -57,7 +48,7 @@ async function loadHome(startYear: number) {
 
 export default async function HomePage() {
   const startYear = currentSeasonStartYear();
-  const { scorers, teaser, highlights, overview, hot, record, error } = await loadHome(startYear);
+  const { scorers, teaser, overview, hot, error } = await loadHome(startYear);
 
   return (
     <div className="flex flex-col gap-16">
@@ -67,7 +58,7 @@ export default async function HomePage() {
           name: "El Regista",
           url: SITE_URL,
           inLanguage: "es",
-          description: "Scout y pronósticos de fútbol con datos reales.",
+          description: "Scout de futbolistas con datos reales de 33 ligas.",
         }}
       />
       <section className="photo-header -mx-4 -mt-6 flex min-h-[460px] flex-col justify-end gap-6 px-4 pb-10 pt-24 sm:mx-0 sm:mt-0 sm:rounded-xl sm:px-10">
@@ -83,11 +74,11 @@ export default async function HomePage() {
         <div className="flex flex-col gap-3">
           <Sticker className="w-fit">Temporada {seasonDisplay(String(startYear))}</Sticker>
           <h1 className="font-display text-5xl leading-[0.92] sm:text-7xl">
-            Fútbol con
+            Ficha jugadores
             <br />
-            datos de verdad
+            con datos de verdad
           </h1>
-          <p className="max-w-xl text-base text-ink/85">Jugadores y partidos de 33 ligas, contados con números reales.</p>
+          <p className="max-w-xl text-base text-ink/85">Busca, compara y encuentra gemelos más baratos entre los jugadores de 33 ligas.</p>
         </div>
         <div className="w-full max-w-2xl">
           <PlayerSearchForm />
@@ -97,7 +88,6 @@ export default async function HomePage() {
             {[
               { value: overview.players, label: "jugadores" },
               { value: overview.shots, label: "tiros" },
-              { value: overview.match_stats, label: "partidos" },
             ].map((item) => (
               <li key={item.label} className="flex items-baseline gap-2">
                 <span className="font-display text-3xl tabular-nums">{item.value.toLocaleString("es-ES")}</span>
@@ -118,7 +108,7 @@ export default async function HomePage() {
         </p>
       )}
 
-      <ProductBand product="scout" title="Scout">
+      <ProductBand product="scout" title="Esta temporada">
         {!error && (
           <Reveal>
             <SeasonLeaders startYear={startYear} initialLeaders={scorers} />
@@ -128,15 +118,6 @@ export default async function HomePage() {
         {teaser && teaser.twins.some((twin) => twin.market_value_eur !== null) && (
           <TwinTeaser report={teaser} />
         )}
-      </ProductBand>
-
-      <ProductBand product="pronosticos" title="Pronósticos">
-        {highlights && highlights.picks.length > 0 && (
-          <Reveal>
-            <RoundHighlights highlights={highlights} compact />
-          </Reveal>
-        )}
-        {record && <RecordTeaser record={record} />}
       </ProductBand>
     </div>
   );
@@ -190,48 +171,6 @@ function HotTeaser({ board }: { board: HotBoard }) {
           })}
         </ol>
       </div>
-    </Reveal>
-  );
-}
-
-function RecordTeaser({ record }: { record: TrackRecord }) {
-  const live = record.live_total.matches > 0;
-  const totals = live ? record.live_total : record.rebuilt_total;
-  if (totals.matches === 0) return null;
-  const rate = Math.round((totals.hits / totals.matches) * 100);
-  const confident = totals.confident
-    ? Math.round((totals.confident_hits / totals.confident) * 100)
-    : null;
-  return (
-    <Reveal>
-      <Link
-        href="/predicciones/historial"
-        className="glass glass-hover grid grid-cols-1 items-center gap-5 rounded-xl p-5 sm:grid-cols-[1fr_auto_auto] sm:p-7"
-      >
-        <div>
-          <p className="text-xs font-semibold text-brand-2">
-            Historial de aciertos
-          </p>
-          <h3 className="font-heading text-2xl tracking-tight">
-            {live
-              ? "Predicciones guardadas antes del partido"
-              : `La ${seasonDisplay(record.season_label)} reconstruida sin mirar el futuro`}
-          </h3>
-          <p className="mt-1 text-sm text-muted">
-            {totals.matches} partidos puntuados. Míralos uno a uno →
-          </p>
-        </div>
-        <div className="text-center">
-          <span className="block font-display text-5xl font-bold text-brand-2">{rate}%</span>
-          <span className="text-xs text-muted">aciertos 1X2 (azar 33%)</span>
-        </div>
-        {confident !== null ? (
-          <div className="text-center">
-            <span className="block font-display text-5xl font-bold text-[#c93c17]">{confident}%</span>
-            <span className="text-xs text-muted">cuando damos 60% o más</span>
-          </div>
-        ) : null}
-      </Link>
     </Reveal>
   );
 }

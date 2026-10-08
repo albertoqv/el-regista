@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { IconChevron, IconClose, IconMenu } from "@/app/components/icons";
 import { PlayerSearchForm } from "@/app/components/PlayerSearchForm";
 import { Logo } from "@/app/components/Logo";
-import { locate, PRODUCTS, type Product } from "@/lib/products";
+import { locate, VISIBLE_PRODUCTS, type Product } from "@/lib/products";
 
 /** One tool in a menu: its name in our own lettering and one plain line below. */
 function ToolLink({
@@ -67,7 +67,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
           <IconClose size={18} color="currentColor" />
         </button>
       </div>
-      {PRODUCTS.map((product) => (
+      {VISIBLE_PRODUCTS.map((product) => (
         <section key={product.key} className="mt-6">
           <h2 className="px-4 pb-1 font-display text-4xl" style={{ color: product.color }}>
             {product.name}
@@ -129,7 +129,7 @@ export function NavBar() {
             <Logo size={22} />
           </Link>
           <div className="ml-4 hidden items-center gap-1 md:flex">
-            {PRODUCTS.map((product) => (
+            {VISIBLE_PRODUCTS.map((product) => (
               <ProductMenu key={product.key} product={product} active={here?.product.key === product.key} />
             ))}
             <Link href="/como-funciona" className="px-3 py-1.5 font-heading text-xl text-muted transition hover:text-ink">

@@ -7,7 +7,7 @@ import { ErrorReporter } from "@/app/components/ErrorReporter";
 import { NavBar } from "@/app/components/NavBar";
 import { VisitTracker } from "@/app/components/VisitTracker";
 import { PHOTOS } from "@/lib/photos";
-import { PRODUCTS } from "@/lib/products";
+import { VISIBLE_PRODUCTS } from "@/lib/products";
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -44,7 +44,6 @@ export const metadata: Metadata = {
     type: "website",
   },
   twitter: { card: "summary_large_image" },
-  alternates: { types: { "application/rss+xml": [{ url: "/feed.xml", title: "El Regista · Próximos partidos" }] } },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -56,7 +55,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <footer className="border-t border-line bg-bg-deep py-10 text-sm text-muted">
           <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 sm:px-6">
             <nav className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-              {PRODUCTS.flatMap((product) =>
+              {VISIBLE_PRODUCTS.flatMap((product) =>
                 product.tools.map((tool) => (
                   <Link key={tool.href} href={tool.href} className="hover:text-ink">
                     {tool.label}
@@ -67,7 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 Cómo funciona
               </Link>
             </nav>
-            <p>Datos: FBref, Understat, Transfermarkt y football-data. Se actualiza martes y viernes.</p>
+            <p>Datos: FBref, Understat y Transfermarkt. Se actualiza martes y viernes.</p>
             <p>
               Fotos:{" "}
               {Object.values(PHOTOS).map((photo, index) => (
@@ -90,9 +89,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </Link>
               <Link href="/privacidad" className="hover:text-ink">
                 Privacidad
-              </Link>
-              <Link href="/juego-responsable" className="hover:text-ink">
-                Juego responsable · +18
               </Link>
             </nav>
           </div>

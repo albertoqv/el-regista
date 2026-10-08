@@ -195,9 +195,6 @@ jobs:
       - name: Calendar, results and team metrics (Understat)
         run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/understat/teams/$START_YEAR"
 
-      - name: Corners, cards, fouls, shots and odds (football-data.co.uk)
-        run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/football-data/seasons/$START_YEAR"
-
       - name: Shots of the new matches (Understat)
         if: steps.budget.outputs.low != 'true'
         run: source "$RUNNER_TEMP/post.sh" && until_done "/ingestion/understat/shots/$START_YEAR?limit=60"
@@ -206,9 +203,8 @@ jobs:
         if: steps.budget.outputs.low != 'true'
         run: source "$RUNNER_TEMP/post.sh" && until_done "/ingestion/understat/rosters/$START_YEAR?limit=40"
 
-      # Track record: log this week's forecasts before kickoff, with fresh odds.
-      - name: Log the forecasts of the coming days
-        run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/predictions/snapshot?days=7"
+      # Pronósticos is hidden from the web: football-data.co.uk (corners, cards, odds)
+      # and the forecast log no longer run, to spare Neon's monthly transfer.
 
       # Right after a refresh every match played days ago must have its result:
       # if not, a source changed or broke and GitHub emails the failure.
