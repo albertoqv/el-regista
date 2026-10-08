@@ -28,7 +28,16 @@ import {
   type Season,
 } from "@/lib/api";
 import { ageInSeason, currentSeasonStartYear, seasonDisplay, valueAtSeason } from "@/lib/format";
-import { HISTORY_METRICS, HISTORY_PREFIX, historyPercentiles, historyPlayer, historySeason, type HistoryRow } from "@/lib/history";
+import {
+  HISTORY_METRICS,
+  HISTORY_PREFIX,
+  historyPercentiles,
+  historyPlayer,
+  historySeason,
+  historySeasonEntries,
+  historySeasons,
+  type HistoryRow,
+} from "@/lib/history";
 import { RADAR_METRICS, type MetricKey } from "@/lib/metrics";
 import { ALL_COMPETITIONS, CAREER, clubSeasons, playerInClubSeason, resolveSeason } from "@/lib/seasons";
 
@@ -174,8 +183,20 @@ export default async function ComparePage(props: PageProps<"/compare">) {
     idA ? getPlayerCompetitions(idA).catch((): CompetitionLine[] => []) : [],
     idB ? getPlayerCompetitions(idB).catch((): CompetitionLine[] => []) : [],
   ]);
-  const seasonA = pickSeason(seasonsA, linesA, param(searchParams.sac), param(searchParams.sal));
-  const seasonB = pickSeason(seasonsB, linesB, param(searchParams.sbc), param(searchParams.sbl));
+  // Without league seasons here (Messi, Cristiano), the default is his latest history
+  // season (with radar); failing that, his latest whole club season.
+  const [historyDefaultA, historyDefaultB] = await Promise.all([
+    !param(searchParams.sac) && param(searchParams.sal) !== CAREER && seasonsA.length === 0 && summaryA
+      ? historySeasons(summaryA.name).then((refs) => historySeasonEntries(refs)[0] ?? null)
+      : null,
+    !param(searchParams.sbc) && param(searchParams.sbl) !== CAREER && seasonsB.length === 0 && summaryB
+      ? historySeasons(summaryB.name).then((refs) => historySeasonEntries(refs)[0] ?? null)
+      : null,
+  ]);
+  const seasonA =
+    historyDefaultA ?? pickSeason(seasonsA, linesA, param(searchParams.sac), param(searchParams.sal));
+  const seasonB =
+    historyDefaultB ?? pickSeason(seasonsB, linesB, param(searchParams.sbc), param(searchParams.sbl));
   // A whole club season (every competition) has only the basic numbers: no radar,
   // no shots, no style similarity.
   const wholeA = seasonA?.competition === ALL_COMPETITIONS;
@@ -228,13 +249,13 @@ export default async function ComparePage(props: PageProps<"/compare">) {
               : getPlayer(idB),
           getMarketValue(idA).catch(() => EMPTY_VALUE),
           getMarketValue(idB).catch(() => EMPTY_VALUE),
-          historyA
-            ? historyPercentiles(historyA.row, historyA.peers)
+          historyA && seasonA
+            ? historyPercentiles(historyA.row, historyA.peers, seasonA.competition.slice(HISTORY_PREFIX.length), Number(seasonA.label))
             : seasonA && !wholeA && !histA
               ? getPlayerPercentiles(idA, seasonA).catch(() => null)
               : null,
-          historyB
-            ? historyPercentiles(historyB.row, historyB.peers)
+          historyB && seasonB
+            ? historyPercentiles(historyB.row, historyB.peers, seasonB.competition.slice(HISTORY_PREFIX.length), Number(seasonB.label))
             : seasonB && !wholeB && !histB
               ? getPlayerPercentiles(idB, seasonB).catch(() => null)
               : null,

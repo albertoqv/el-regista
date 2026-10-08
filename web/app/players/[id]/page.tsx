@@ -53,7 +53,8 @@ import {
   sortSeasonsByRecency,
 } from "@/lib/format";
 import { RADAR_METRICS } from "@/lib/metrics";
-import { resolveSeason } from "@/lib/seasons";
+import { HISTORY_PREFIX, historyPercentiles, historyPlayer, historySeason, historySeasonEntries, historySeasons } from "@/lib/history";
+import { CAREER, resolveSeason } from "@/lib/seasons";
 
 function param(value: string | string[] | undefined): string | undefined {
   return typeof value === "string" ? value : undefined;
@@ -98,11 +99,35 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
       return [] as Season[];
     }),
   );
-  const season = resolveSeason(seasons, param(searchParams.sc), param(searchParams.sl));
+  let base;
+  try {
+    base = await getPlayer(playerId);
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) notFound();
+    throw error;
+  }
+  // Big five seasons from 2014 to 2023 (static Understat history): radar included.
+  const historyEntries = historySeasonEntries(await historySeasons(base.name));
+  const allSeasons = [...seasons, ...historyEntries];
+  const asked = param(searchParams.sc);
+  const season =
+    asked?.startsWith(HISTORY_PREFIX) && param(searchParams.sl)
+      ? (historyEntries.find((entry) => entry.competition === asked && entry.label === param(searchParams.sl)) ?? null)
+      : !asked && param(searchParams.sl) !== CAREER && seasons.length === 0
+        ? (historyEntries[0] ?? null)
+        : resolveSeason(seasons, asked, param(searchParams.sl));
+  const historical = season?.competition.startsWith(HISTORY_PREFIX) ?? false;
+  const historyCompetition = historical && season ? season.competition.slice(HISTORY_PREFIX.length) : "";
+  const history =
+    historical && season ? await historySeason(historyCompetition, Number(season.label), base.name) : null;
 
   let player;
   try {
-    player = season ? await getPlayerSeason(playerId, season) : await getPlayer(playerId);
+    player = history
+      ? historyPlayer(base, history.row)
+      : season && !historical
+        ? await getPlayerSeason(playerId, season)
+        : base;
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) notFound();
     throw error;
@@ -113,10 +138,12 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
     getMarketValue(playerId).catch(
       (): MarketValueHistory => ({ current: null, history: [] }),
     ),
-    season
-      ? getPlayerPercentiles(playerId, season).catch(() => null)
-      : Promise.resolve<PercentileReport | null>(null),
-    getPlayerShots(playerId, season?.label).catch((): PlayerShot[] => []),
+    history && season
+      ? historyPercentiles(history.row, history.peers, historyCompetition, Number(season.label))
+      : season && !historical
+        ? getPlayerPercentiles(playerId, season).catch(() => null)
+        : Promise.resolve<PercentileReport | null>(null),
+    historical ? ([] as PlayerShot[]) : getPlayerShots(playerId, season?.label).catch((): PlayerShot[] => []),
     getPlayerTrend(playerId).catch((): PlayerTrend | null => null),
     getPlayerCompetitions(playerId).catch((): CompetitionLine[] => []),
     getPlayerCareer(playerId).catch((): CareerCurve | null => null),
@@ -124,8 +151,8 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
   ]);
 
   const age = formatAge(player);
-  const team = season ? seasons.find((s) => s.label === season.label && s.competition === season.competition)?.team : null;
-  const accent = season ? competitionColor(season.competition) : "#c93c17";
+  const team = season ? allSeasons.find((s) => s.label === season.label && s.competition === season.competition)?.team : null;
+  const accent = season ? competitionColor(historical ? historyCompetition : season.competition) : "#c93c17";
   const contributions = player.goals + player.assists;
 
   return (
@@ -180,7 +207,7 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
                 <Badge label="Valor" value={formatMarketValue(marketValue.current.amount_eur)} />
               )}
               <Badge
-                label={season ? `${season.competition} ${seasonDisplay(season.label)}` : "Carrera"}
+                label={season ? `${historical ? historyCompetition : season.competition} ${seasonDisplay(season.label)}` : "Carrera"}
                 value={`${player.minutes_played.toLocaleString("es-ES")} min`}
               />
             </Reveal>
@@ -219,8 +246,8 @@ export default async function PlayerDetailPage(props: PageProps<"/players/[id]">
         </div>
       </section>
 
-      {seasons.length > 0 && (
-        <SeasonSelector playerId={playerId} seasons={seasons} selected={season} />
+      {allSeasons.length > 0 && (
+        <SeasonSelector playerId={playerId} seasons={allSeasons} selected={season} />
       )}
 
       {percentiles && (

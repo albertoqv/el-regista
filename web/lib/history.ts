@@ -1,4 +1,4 @@
-import type { Player } from "@/lib/api";
+import type { PercentileReport, Player, Season } from "@/lib/api";
 import type { MetricKey } from "@/lib/metrics";
 import { SITE_URL } from "@/lib/site";
 
@@ -105,19 +105,40 @@ function per90(row: HistoryRow, key: MetricKey): number {
 
 /**
  * Percentiles against the regulars of his position in that league season, in the
- * shape the radar reads (`metrics[key].percentile`).
+ * same shape as the API's report (radar and percentile bars read it as is).
  */
-export function historyPercentiles(row: HistoryRow, peers: HistoryRow[]) {
+export function historyPercentiles(
+  row: HistoryRow,
+  peers: HistoryRow[],
+  competition: string,
+  year: number,
+): PercentileReport {
   const group = peers.filter((peer) => peer.position === row.position && peer.minutes >= PEER_MINUTES);
   const pool = group.length ? group : [row];
   const metrics = Object.fromEntries(
     HISTORY_METRICS.map((key) => {
       const mine = per90(row, key);
       const below = pool.filter((peer) => per90(peer, key) <= mine).length;
-      return [key, { value: mine, percentile: Math.round((below / pool.length) * 100) }];
+      return [key, { per_90: mine, percentile: Math.round((below / pool.length) * 100) }];
     }),
   );
-  return { metrics, peer_count: pool.length, position: row.position };
+  return {
+    competition,
+    season_label: String(year),
+    position: row.position,
+    peer_count: pool.length,
+    minimum_minutes: PEER_MINUTES,
+    metrics,
+  };
+}
+
+/** The history seasons as season picker entries (`hist:La Liga` + year). */
+export function historySeasonEntries(refs: HistorySeasonRef[]): Season[] {
+  return refs.map((ref) => ({
+    competition: `${HISTORY_PREFIX}${ref.competition}`,
+    label: String(ref.year),
+    team: ref.team,
+  }));
 }
 
 /** The player with that season's numbers (Understat has no passes or defending). */
