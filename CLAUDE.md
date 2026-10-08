@@ -1,7 +1,10 @@
 # El Regista (player-scouting)
 
-Web de scout (comparar futbolistas, gemelos, rankings) y pronósticos de fútbol con datos
-reales de 33 ligas. Proyecto personal: **todo debe ser 100% gratis** (no proponer planes
+Web de scout de futbolistas (fichas, comparar, gemelos, rankings, valor) con datos reales
+de 33 ligas. **Pronósticos está en segundo plano** (desde oct 2026): fuera de menú, portada,
+pie y sitemap, con `noindex` (`hidden` en `web/lib/products.ts`); sus URLs siguen vivas y
+el refresco ya no baja football-data ni guarda pronósticos. No volver a destacarlo ni
+gastar transferencia de Neon en él. Proyecto personal: **todo debe ser 100% gratis** (no proponer planes
 de pago como solución). Nada de contenido editorial automático (crónicas, previas,
 portada del día). Las reglas de la web están en `.claude/rules/web.md` (se cargan al
 tocar `web/`); el historial de cambios, en `docs/historial.md`.
@@ -54,8 +57,9 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
   plantillas por partido (horas en UTC). Su robots.txt prohíbe bots; el usuario aceptó
   el riesgo con volumen mínimo. Las avanzadas van aparte (`player_season_advanced_stats`)
   para que el refresco de FBref no las pise.
-- **football-data.co.uk**: córners, tarjetas, faltas, tiros y cuotas por partido;
-  nombres de equipo distintos a Understat (`learn_team_names`).
+- **football-data.co.uk** (solo pronósticos; ya no se refresca): córners, tarjetas,
+  faltas, tiros y cuotas por partido; nombres de equipo distintos a Understat
+  (`learn_team_names`).
 - **Transfermarkt**: foto, fecha de nacimiento, pie, valor, y la temporada en curso de
   las 28 ligas extra (`SEASON_LEAGUES`, páginas de club). Dataset de Kaggle
   `davidcariboo/player-scores` para la última terminada (ids = 500_000_000 + id TM).

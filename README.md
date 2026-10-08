@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  Scouting de jugadores y pronósticos de partidos con datos reales de 14 ligas.<br>
+  Scouting de futbolistas con datos reales de 33 ligas.<br>
   <a href="https://elregista.vercel.app"><b>elregista.vercel.app</b></a>
 </p>
 
@@ -28,13 +28,15 @@
 
 ![Portada de El Regista](docs/img/portada.jpg)
 
-El Regista tiene dos productos sobre la misma base de datos:
+El Regista es una herramienta de **scout**: ficha de cada jugador con percentiles, radar,
+mapa de tiros, estadísticas por competición y valor de mercado; explorador con filtros;
+*gemelos* (el mismo estilo de juego, más barato); cara a cara entre temporadas (también de
+2014 a 2023); rankings; quién está en racha, y jugadores infravalorados según un modelo de
+valor propio.
 
-- **Scout** (jugadores): ficha con percentiles y mapa de tiros, explorador con filtros,
-  *gemelos* (el mismo estilo de juego, más barato), cara a cara, rankings, tendencias y
-  quién está en racha.
-- **Pronósticos** (partidos): probabilidades de resultado, goles, córners, tarjetas, faltas,
-  tiros y goleadores, con un historial de aciertos que se guarda antes de cada partido.
+Hay también un módulo de pronósticos de partidos, en segundo plano: fuera del menú y de los
+buscadores, se llega a él solo con el enlace (`/predicciones`). Se describe al final de
+[Modelos](#modelos).
 
 Todo funciona sobre servicios gratuitos y se actualiza solo dos veces por semana.
 
@@ -48,7 +50,7 @@ flowchart LR
         FB[FBref vía Kaggle]
         US[Understat]
         TM[Transfermarkt]
-        FD[football-data.co.uk]
+        FD[football-data.co.uk<br/>histórico, pronósticos]
     end
     GA[GitHub Actions<br/>martes y viernes] -->|POST /ingestion/*| API
     FB & US & FD --> API
@@ -106,7 +108,7 @@ desarrollo sigue TDD estricto: cada cambio entra como `test:` y luego `feat:`.
 | FBref (dataset de Kaggle) | Estadísticas por temporada de las 5 grandes ligas. |
 | Understat | xG, xA, tiros con coordenadas, alineaciones partido a partido y calendario. |
 | Transfermarkt (web y dataset de Kaggle) | Fotos, fechas de nacimiento, posición detallada, valores de mercado, 28 ligas más, y cada competición de un jugador: liga, Champions, Europa League, Conference, copas, supercopas y selección (Nations League, clasificatorios, Mundial, Eurocopa, Copa América, amistosos). |
-| football-data.co.uk | Córners, tarjetas, faltas, árbitro y cuotas. |
+| football-data.co.uk | Córners, tarjetas, faltas, árbitro y cuotas (solo pronósticos; ya no se refresca). |
 
 Unir fuentes sin un identificador común es la parte difícil:
 
@@ -129,6 +131,43 @@ Unir fuentes sin un identificador común es la parte difícil:
   El workflow lo comprueba al terminar cada refresco.
 
 ### Modelos
+
+**Gemelos** (`application/use_cases/find_twins.py`)
+1. Cada jugador se describe con percentiles por 90 minutos dentro de su liga, temporada y
+   posición, más su perfil de tiro (cabeza, de lejos, tramo final, balón parado, definición).
+2. El parecido es 100 menos la diferencia media de percentiles.
+3. El rol detallado también pesa:
+   - mismo rol: sin penalización;
+   - rol vecino (extremo derecho e izquierdo, interior y mediapunta…): −4;
+   - rol a dos pasos: −10;
+   - roles lejanos: −20.
+   Los roles híbridos (extremo y medio de banda) cruzan la frontera entre posiciones.
+4. En las ligas con solo goles y asistencias, la comparación es básica, entre jugadores del
+   mismo rol, y la web lo avisa.
+
+**Tendencias** (`domain/trends.py`)
+- xG+xA de cada partido y su media móvil de 5 partidos por 90 minutos, a partir de las
+  alineaciones de Understat.
+- Marca "al alza" o "a la baja" si el nivel reciente se mueve al menos un 20% (y 0,1)
+  respecto a lo anterior.
+- También compara los goles con el xG acumulado.
+
+**Valor estimado** (`domain/valuation.py`)
+- Regresión ridge en Python puro sobre el logaritmo del valor de Transfermarkt: edad,
+  posición, liga, minutos, goles y asistencias por 90, Europa y selección.
+- El error mediano se mide apartando 1 de cada 5 jugadores. `/infravalorados` lista a quien
+  rinde como si valiera bastante más que su precio.
+
+**Histórico 2014-2023** (`scripts/build_history.py`)
+- Las temporadas de Understat de las 5 grandes, en ficheros estáticos servidos por la CDN de
+  Vercel: radar y percentiles de temporadas antiguas (Messi, Cristiano) sin leer la base.
+
+#### Pronósticos (en segundo plano)
+
+Fuera del menú, de la portada y del sitemap (`noindex`); siguen funcionando con el enlace.
+El refresco ya no baja cuotas ni guarda pronósticos nuevos para ahorrar transferencia de Neon.
+Buscar "errores de cuota" se probó con 15.145 partidos y no da dinero
+(`scripts/research_odds_value.py`).
 
 **Resultado de los partidos** (`domain/prediction.py`)
 - Poisson con corrección de Dixon-Coles.
@@ -155,28 +194,8 @@ Unir fuentes sin un identificador común es la parte difícil:
 - Brier 0,067 frente a 0,074 en 10.840 pronósticos.
 
 **Historial**
-- Las predicciones de los próximos 7 días se guardan antes del saque inicial y se puntúan
-  después. No se pueden retocar.
-
-**Gemelos** (`application/use_cases/find_twins.py`)
-1. Cada jugador se describe con percentiles por 90 minutos dentro de su liga, temporada y
-   posición, más su perfil de tiro (cabeza, de lejos, tramo final, balón parado, definición).
-2. El parecido es 100 menos la diferencia media de percentiles.
-3. El rol detallado también pesa:
-   - mismo rol: sin penalización;
-   - rol vecino (extremo derecho e izquierdo, interior y mediapunta…): −4;
-   - rol a dos pasos: −10;
-   - roles lejanos: −20.
-   Los roles híbridos (extremo y medio de banda) cruzan la frontera entre posiciones.
-4. En las ligas con solo goles y asistencias, la comparación es básica, entre jugadores del
-   mismo rol, y la web lo avisa.
-
-**Tendencias** (`domain/trends.py`)
-- xG+xA de cada partido y su media móvil de 5 partidos por 90 minutos, a partir de las
-  alineaciones de Understat.
-- Marca "al alza" o "a la baja" si el nivel reciente se mueve al menos un 20% (y 0,1)
-  respecto a lo anterior.
-- También compara los goles con el xG acumulado.
+- Las predicciones de los próximos 7 días se guardaban antes del saque inicial y se puntuaban
+  después, sin poder retocarlas. Desde que el módulo está oculto ya no se guardan nuevas.
 
 ### API
 

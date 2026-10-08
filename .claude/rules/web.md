@@ -8,7 +8,7 @@ paths:
 - Next.js 16 (App Router), Tailwind. Lee `web/AGENTS.md`: hay APIs cambiadas respecto
   a lo conocido.
 - **Marca El Regista** (tema claro, `color-scheme: only light`): papel #F7F6F2, tinta
-  #16171B, naranja balón #C93C17 (acento y Scout) y azul #2350D8 (Pronósticos,
+  #16171B, naranja balón #C93C17 (acento y Scout) y azul #2350D8 (Pronósticos, oculto;
   jugador/local A). Los tokens están en `globals.css`.
 - Prohibido: verde+amarillo (casa de apuestas), granate, iconos en menús, puntitos de
   color, rótulos pequeños en mayúsculas espaciadas y efectos "de IA" (notas manuscritas,
@@ -22,7 +22,8 @@ paths:
 - Fotos libres en `web/public/photos` con créditos en `lib/photos.ts` (pie de página);
   fotos grandes de jugador vía `bigPhoto()` (Transfermarkt `/portrait/big/`).
 - Métricas y textos explicativos en `web/lib/metrics.ts`. `web/lib/products.ts` es la
-  fuente única de menú, pestañas, portada y pie (Scout y Pronósticos).
+  fuente única de menú, pestañas, portada y pie: solo se ven los `VISIBLE_PRODUCTS`
+  (Pronósticos lleva `hidden`; sus páginas tienen `noindex` en su `layout.tsx`).
 - Animaciones con `motion` (`motion/react`), pero **no en componentes de la portada**:
   allí son CSS (`rise-in`, `grow-x`, `dropdown-in`) y `Reveal` es de servidor y nunca
   oculta contenido sin JS.

@@ -171,3 +171,9 @@ fotos de cuerpo entero (tampoco). Favoritos y alertas: descartados por el usuari
   en tres días por refrescos repetidos. El refresco ya no repite el dataset sin cambios, mide
   cada paso y frena si queda poco. Understat 2014-2023 como ficheros estáticos (8,5 MB): el
   cara a cara Messi-Cristiano de cualquier temporada lleva radar.
+
+Hecho (2026-10-08):
+- **Pronósticos en segundo plano**: fuera del menú, la portada, el pie, el sitemap, el RSS
+  y "Cómo funciona"; `/predicciones` y `/equipos` con `noindex`, accesibles por enlace. La
+  portada es solo Scout. El refresco deja de llamar a football-data.co.uk y al registro de
+  pronósticos (ahorro de transferencia de Neon). README reescrito con Scout delante.
