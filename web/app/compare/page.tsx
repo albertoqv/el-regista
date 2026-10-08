@@ -28,6 +28,7 @@ import {
   type Season,
 } from "@/lib/api";
 import { ageInSeason, currentSeasonStartYear, seasonDisplay, valueAtSeason } from "@/lib/format";
+import { HISTORY_METRICS, HISTORY_PREFIX, historyPercentiles, historyPlayer, historySeason, type HistoryRow } from "@/lib/history";
 import { RADAR_METRICS } from "@/lib/metrics";
 import { ALL_COMPETITIONS, CAREER, clubSeasons, playerInClubSeason, resolveSeason } from "@/lib/seasons";
 
@@ -39,6 +40,9 @@ function contextLabel(season: Season | null, team: string | null | undefined): s
   if (!season) return "Carrera completa";
   if (season.competition === ALL_COMPETITIONS) {
     return `${season.team ?? "Club"} · ${seasonDisplay(season.label)}, todas las competiciones`;
+  }
+  if (season.competition.startsWith(HISTORY_PREFIX)) {
+    return `${team ?? season.competition.slice(HISTORY_PREFIX.length)} · ${seasonDisplay(season.label)}`;
   }
   return `${team ?? season.competition} · ${seasonDisplay(season.label)}`;
 }
@@ -53,6 +57,7 @@ function pickSeason(
   competition: string | undefined,
   label: string | undefined,
 ): Season | null {
+  if (competition?.startsWith(HISTORY_PREFIX) && label) return { competition, label };
   if (competition === ALL_COMPETITIONS && label) {
     return clubSeasons(lines).find((season) => season.label === label) ?? { competition, label };
   }
@@ -60,44 +65,61 @@ function pickSeason(
   return resolveSeason(seasons, competition, label);
 }
 
-type DuelSide = { player: Player; lines: CompetitionLine[]; label: string | undefined };
+type DuelSide = { player: Player; games: number | null };
 
-/** Whole-season duel: what every competition has, side by side. */
-function BasicDuel({ a, b }: { a: DuelSide; b: DuelSide }) {
-  const games = (side: DuelSide) =>
-    side.lines
-      .filter((line) => line.kind !== "national" && line.season_label === side.label)
-      .reduce((total, line) => total + line.appearances, 0);
+/** Games in a season: from the history row, or the club's competition lines. */
+function gamesIn(season: Season | null, lines: CompetitionLine[], row: HistoryRow | null): number | null {
+  if (row) return row.games ?? null;
+  if (!season) return null;
+  const club = lines.filter((line) => line.kind !== "national" && line.season_label === season.label);
+  const own = season.competition === ALL_COMPETITIONS ? club : club.filter((line) => line.competition === season.competition);
+  return own.length ? own.reduce((total, line) => total + line.appearances, 0) : null;
+}
+
+/** Side by side, what both seasons have: the basics, and xG/xA when both carry them. */
+function BasicDuel({ a, b, detailed, note }: { a: DuelSide; b: DuelSide; detailed: boolean; note: string }) {
   const per90 = (player: Player) =>
     player.minutes_played ? ((player.goals + player.assists) * 90) / player.minutes_played : 0;
-  const rows: [string, (side: DuelSide) => number, number][] = [
-    ["Partidos", games, 0],
+  const rows: [string, (side: DuelSide) => number | null, number][] = [
+    ["Partidos", (side) => side.games, 0],
     ["Goles", (side) => side.player.goals, 0],
     ["Asistencias", (side) => side.player.assists, 0],
     ["Goles + asist. por 90", (side) => per90(side.player), 2],
+    ...(detailed
+      ? ([
+          ["xG", (side) => side.player.expected_goals, 1],
+          ["xA", (side) => side.player.expected_assists, 1],
+          ["Tiros", (side) => side.player.shots, 0],
+          ["Pases clave", (side) => side.player.key_passes, 0],
+        ] as [string, (side: DuelSide) => number, number][])
+      : []),
     ["Minutos", (side) => side.player.minutes_played, 0],
     ["Amarillas", (side) => side.player.yellow_cards, 0],
   ];
-  const show = (value: number, decimals: number) =>
-    value.toLocaleString("es-ES", { maximumFractionDigits: decimals, minimumFractionDigits: decimals });
+  const show = (value: number | null, decimals: number) =>
+    value === null
+      ? "—"
+      : value.toLocaleString("es-ES", { maximumFractionDigits: decimals, minimumFractionDigits: decimals });
   return (
     <section className="glass flex flex-col gap-3 rounded-lg p-6">
       <div className="text-center">
-        <h2 className="font-heading text-2xl tracking-tight">Temporada completa</h2>
-        <p className="text-sm text-muted">Liga, Europa y copas sumadas: lo que todas las competiciones tienen.</p>
+        <h2 className="font-heading text-2xl tracking-tight">Números de la temporada</h2>
+        <p className="text-sm text-muted">{note}</p>
       </div>
       <table className="w-full table-fixed text-sm">
         <tbody>
           {rows.map(([label, value, decimals]) => {
             const left = value(a);
             const right = value(b);
+            const leftWins = left !== null && right !== null && left > right;
+            const rightWins = left !== null && right !== null && right > left;
             return (
               <tr key={label} className="border-t border-line/60">
-                <td className={`py-2 text-left tabular-nums ${left > right ? "font-bold text-side-a" : ""}`}>
+                <td className={`py-2 text-left tabular-nums ${leftWins ? "font-bold text-side-a" : ""}`}>
                   {show(left, decimals)}
                 </td>
                 <td className="text-center text-muted">{label}</td>
-                <td className={`text-right tabular-nums ${right > left ? "font-bold text-side-b" : ""}`}>
+                <td className={`text-right tabular-nums ${rightWins ? "font-bold text-side-b" : ""}`}>
                   {show(right, decimals)}
                 </td>
               </tr>
@@ -158,12 +180,25 @@ export default async function ComparePage(props: PageProps<"/compare">) {
   // no shots, no style similarity.
   const wholeA = seasonA?.competition === ALL_COMPETITIONS;
   const wholeB = seasonB?.competition === ALL_COMPETITIONS;
-  const basic = wholeA || wholeB;
+  // A big five season from 2014-2023: Understat's numbers from the static history.
+  const histA = Boolean(seasonA?.competition.startsWith(HISTORY_PREFIX));
+  const histB = Boolean(seasonB?.competition.startsWith(HISTORY_PREFIX));
+  const basic = wholeA || wholeB || histA || histB;
+  const [historyA, historyB] = await Promise.all([
+    histA && seasonA && summaryA
+      ? historySeason(seasonA.competition.slice(HISTORY_PREFIX.length), Number(seasonA.label), summaryA.name)
+      : null,
+    histB && seasonB && summaryB
+      ? historySeason(seasonB.competition.slice(HISTORY_PREFIX.length), Number(seasonB.label), summaryB.name)
+      : null,
+  ]);
 
   let content = null;
   let error: string | null = null;
 
-  if (idA && idB && summaryA && summaryB) {
+  if ((histA && !historyA) || (histB && !historyB)) {
+    error = "No encontramos esa temporada en el histórico para uno de los dos jugadores.";
+  } else if (idA && idB && summaryA && summaryB) {
     try {
       const [comparison, playerA, playerB, valueA, valueB, percentilesA, percentilesB, shotsA, shotsB] =
         await Promise.all([
@@ -173,22 +208,34 @@ export default async function ComparePage(props: PageProps<"/compare">) {
                 seasonA: seasonA ?? undefined,
                 seasonB: seasonB ?? undefined,
               }),
-          wholeA && seasonA
+          historyA
+            ? historyPlayer(summaryA, historyA.row)
+            : wholeA && seasonA
             ? playerInClubSeason(summaryA, linesA, seasonA.label)
             : seasonA
               ? getPlayerSeason(idA, seasonA)
               : getPlayer(idA),
-          wholeB && seasonB
+          historyB
+            ? historyPlayer(summaryB, historyB.row)
+            : wholeB && seasonB
             ? playerInClubSeason(summaryB, linesB, seasonB.label)
             : seasonB
               ? getPlayerSeason(idB, seasonB)
               : getPlayer(idB),
           getMarketValue(idA).catch(() => EMPTY_VALUE),
           getMarketValue(idB).catch(() => EMPTY_VALUE),
-          seasonA && !wholeA ? getPlayerPercentiles(idA, seasonA).catch(() => null) : null,
-          seasonB && !wholeB ? getPlayerPercentiles(idB, seasonB).catch(() => null) : null,
-          wholeA ? [] : getPlayerShots(idA, seasonA?.label).catch((): PlayerShot[] => []),
-          wholeB ? [] : getPlayerShots(idB, seasonB?.label).catch((): PlayerShot[] => []),
+          historyA
+            ? historyPercentiles(historyA.row, historyA.peers)
+            : seasonA && !wholeA && !histA
+              ? getPlayerPercentiles(idA, seasonA).catch(() => null)
+              : null,
+          historyB
+            ? historyPercentiles(historyB.row, historyB.peers)
+            : seasonB && !wholeB && !histB
+              ? getPlayerPercentiles(idB, seasonB).catch(() => null)
+              : null,
+          wholeA || histA ? [] : getPlayerShots(idA, seasonA?.label).catch((): PlayerShot[] => []),
+          wholeB || histB ? [] : getPlayerShots(idB, seasonB?.label).catch((): PlayerShot[] => []),
         ]);
       content = {
         comparison,
@@ -242,7 +289,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
           <FaceOff
             a={{
               player: content.playerA,
-              context: contextLabel(seasonA, seasonA && seasonsA.find((s) => s.label === seasonA.label && s.competition === seasonA.competition)?.team),
+              context: contextLabel(seasonA, historyA?.row.team ?? (seasonA && seasonsA.find((s) => s.label === seasonA.label && s.competition === seasonA.competition)?.team)),
               marketValue: content.valueA.current,
               then: seasonA
                 ? {
@@ -254,7 +301,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
             }}
             b={{
               player: content.playerB,
-              context: contextLabel(seasonB, seasonB && seasonsB.find((s) => s.label === seasonB.label && s.competition === seasonB.competition)?.team),
+              context: contextLabel(seasonB, historyB?.row.team ?? (seasonB && seasonsB.find((s) => s.label === seasonB.label && s.competition === seasonB.competition)?.team)),
               marketValue: content.valueB.current,
               then: seasonB
                 ? {
@@ -284,7 +331,7 @@ export default async function ComparePage(props: PageProps<"/compare">) {
                   </p>
                 </div>
                 <RadarChart
-                  axes={RADAR_METRICS}
+                  axes={histA || histB ? HISTORY_METRICS : RADAR_METRICS}
                   series={[
                     { name: content.playerA.name, color: "#2350d8", values: toValues(content.percentilesA) },
                     { name: content.playerB.name, color: "#c93c17", values: toValues(content.percentilesB) },
@@ -304,8 +351,14 @@ export default async function ComparePage(props: PageProps<"/compare">) {
           <Reveal>
             {basic ? (
               <BasicDuel
-                a={{ player: content.playerA, lines: linesA, label: seasonA?.label }}
-                b={{ player: content.playerB, lines: linesB, label: seasonB?.label }}
+                a={{ player: content.playerA, games: gamesIn(seasonA, linesA, historyA?.row ?? null) }}
+                b={{ player: content.playerB, games: gamesIn(seasonB, linesB, historyB?.row ?? null) }}
+                detailed={!wholeA && !wholeB}
+                note={
+                  wholeA || wholeB
+                    ? "Lo que tienen todas las competiciones: liga, Europa y copas sumadas."
+                    : "Liga. Las temporadas de 2014 a 2023 vienen de Understat: sin pases, regates ni defensa."
+                }
               />
             ) : (
               <HeadToHead playerA={content.playerA} playerB={content.playerB} />

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { PlayerAutocomplete } from "@/app/components/PlayerAutocomplete";
 import { getPlayerCompetitions, listPlayerSeasons, type PlayerSummary, type Season } from "@/lib/api";
 import { seasonDisplay, sortSeasonsByRecency } from "@/lib/format";
+import { HISTORY_PREFIX, type HistorySeasonRef } from "@/lib/history";
 import { CAREER, clubSeasons } from "@/lib/seasons";
 
 const LATEST = "";
@@ -15,11 +16,13 @@ function seasonKey(season: Season): string {
 
 function SeasonSelect({
   playerId,
+  name,
   value,
   onChange,
   color,
 }: {
   playerId: number | null;
+  name: string | null;
   value: string;
   onChange: (value: string) => void;
   color: string;
@@ -28,6 +31,8 @@ function SeasonSelect({
   // Whole club seasons (every competition), back to 2019: older than the league
   // seasons with detailed metrics.
   const [whole, setWhole] = useState<Season[]>([]);
+  // Big five seasons from 2014 to 2023 (Understat, static files): radar included.
+  const [history, setHistory] = useState<HistorySeasonRef[]>([]);
 
   useEffect(() => {
     if (playerId === null) return;
@@ -46,10 +51,20 @@ function SeasonSelect({
       .catch(() => {
         if (!cancelled) setWhole([]);
       });
+    if (name) {
+      fetch(`/historico/temporadas?nombre=${encodeURIComponent(name)}`)
+        .then((response) => (response.ok ? response.json() : []))
+        .then((result: HistorySeasonRef[]) => {
+          if (!cancelled) setHistory(result);
+        })
+        .catch(() => {
+          if (!cancelled) setHistory([]);
+        });
+    }
     return () => {
       cancelled = true;
     };
-  }, [playerId]);
+  }, [playerId, name]);
 
   if (playerId === null) return null;
 
@@ -77,6 +92,18 @@ function SeasonSelect({
             <option key={seasonKey(season)} value={seasonKey(season)}>
               {seasonDisplay(season.label)}
               {season.team ? ` · ${season.team}` : ""}
+            </option>
+          ))}
+        </optgroup>
+      )}
+      {history.length > 0 && (
+        <optgroup label="Histórico 2014-2023 (Understat, con radar)">
+          {history.map((season) => (
+            <option
+              key={`${season.competition}|${season.year}`}
+              value={`${HISTORY_PREFIX}${season.competition}|${season.year}`}
+            >
+              {season.competition} {seasonDisplay(String(season.year))} · {season.team}
             </option>
           ))}
         </optgroup>
@@ -119,6 +146,8 @@ export function ComparePicker({
   const router = useRouter();
   const [playerA, setPlayerA] = useState<number | null>(defaultA?.player_id ?? null);
   const [playerB, setPlayerB] = useState<number | null>(defaultB?.player_id ?? null);
+  const [nameA, setNameA] = useState<string | null>(defaultA?.name ?? null);
+  const [nameB, setNameB] = useState<string | null>(defaultB?.name ?? null);
   const [valueA, setValueA] = useState(initialValue(seasonA, careerA));
   const [valueB, setValueB] = useState(initialValue(seasonB, careerB));
 
@@ -139,6 +168,7 @@ export function ComparePicker({
           onSelect={(player) => {
             const id = player?.player_id ?? null;
             setPlayerA(id);
+            setNameA(player?.name ?? null);
             setValueA(LATEST);
             go(id, playerB, LATEST, valueB);
           }}
@@ -146,6 +176,7 @@ export function ComparePicker({
         />
         <SeasonSelect
           playerId={playerA}
+          name={nameA}
           value={valueA}
           color="#2350d8"
           onChange={(value) => {
@@ -164,6 +195,7 @@ export function ComparePicker({
           onSelect={(player) => {
             const id = player?.player_id ?? null;
             setPlayerB(id);
+            setNameB(player?.name ?? null);
             setValueB(LATEST);
             go(playerA, id, valueA, LATEST);
           }}
@@ -171,6 +203,7 @@ export function ComparePicker({
         />
         <SeasonSelect
           playerId={playerB}
+          name={nameB}
           value={valueB}
           color="#c93c17"
           onChange={(value) => {
