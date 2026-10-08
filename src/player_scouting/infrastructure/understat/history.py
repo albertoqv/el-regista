@@ -8,6 +8,7 @@ by Vercel's CDN. The web reads them for radars and duels of older seasons.
 
 from __future__ import annotations
 
+import html
 import json
 import time
 import unicodedata
@@ -34,9 +35,10 @@ def history_row(raw: dict) -> dict[str, Any]:
 
     return {
         "id": int(raw["id"]),
-        "name": raw["player_name"],
+        # Understat escapes names as HTML ("N&#039;Golo Kanté").
+        "name": html.unescape(raw["player_name"]),
         # A mid-season move lists both clubs: the first is the one shown.
-        "team": raw["team_title"].split(",")[0].strip(),
+        "team": html.unescape(raw["team_title"]).split(",")[0].strip(),
         "position": _POSITIONS.get(raw.get("position", "M")[:1], "Midfielder"),
         "games": int(raw["games"]),
         "minutes": int(raw["time"]),
