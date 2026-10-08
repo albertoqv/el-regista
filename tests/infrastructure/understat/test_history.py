@@ -187,3 +187,14 @@ def test_only_the_missing_seasons_are_read_again(tmp_path):
 
     assert understat.asked == [("EPL", 2017)]
     assert (tmp_path / "profiles" / "forward.json").exists()
+
+
+def test_names_and_teams_come_without_html_entities():
+    row = history_row(
+        dict(
+            YAMAL_RAW, player_name="N&#039;Golo Kanté", team_title="Brighton &amp; Hove"
+        )
+    )
+
+    assert row["name"] == "N'Golo Kanté"
+    assert row["team"] == "Brighton & Hove"
