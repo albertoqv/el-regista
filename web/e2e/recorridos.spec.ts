@@ -8,11 +8,11 @@ async function noHorizontalScroll(page: Page) {
   expect(overflow, "la página no debe desplazarse en horizontal").toBe(0);
 }
 
-test("la portada enseña los dos productos", async ({ page }) => {
+test("la portada enseña Scout y esconde los pronósticos", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("h1").first()).toBeVisible();
   await expect(page.getByRole("link", { name: /Scout/ }).first()).toBeVisible();
-  await expect(page.getByRole("link", { name: /Pronósticos/ }).first()).toBeVisible();
+  await expect(page.getByRole("link", { name: /Pronósticos/ })).toHaveCount(0);
   await noHorizontalScroll(page);
 });
 
@@ -34,10 +34,11 @@ test("los rankings tienen datos de la temporada", async ({ page }) => {
   await noHorizontalScroll(page);
 });
 
-test("los pronósticos cargan", async ({ page }) => {
+test("los pronósticos siguen cargando por enlace, sin indexar", async ({ page }) => {
   await page.goto("/predicciones");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Próximos partidos");
   await expect(page.getByRole("link", { name: /juego responsable/i }).first()).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
   await noHorizontalScroll(page);
 });
 

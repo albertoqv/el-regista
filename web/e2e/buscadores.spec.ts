@@ -3,12 +3,13 @@ import { expect, test } from "@playwright/test";
 // What search engines and feed readers see: one run is enough.
 test.skip(({ isMobile }) => isMobile, "no depende del dispositivo");
 
-test("el sitemap lista jugadores, equipos y partidos", async ({ request }) => {
+test("el sitemap lista jugadores y rankings, sin los pronósticos ocultos", async ({ request }) => {
   const body = await (await request.get("/sitemap.xml")).text();
   const urls = body.match(/<loc>/g) ?? [];
   expect(urls.length).toBeGreaterThan(300);
   expect(body).toContain("/players/");
-  expect(body).toContain("/equipos/");
+  expect(body).not.toContain("/predicciones");
+  expect(body).not.toContain("/equipos");
   expect(body).toContain("/ranking/laliga/goleadores");
 });
 
