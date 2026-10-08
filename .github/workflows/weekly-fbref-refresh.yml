@@ -44,8 +44,37 @@ jobs:
         if: env.DATABASE_URL != ''
         run: |
           uv run alembic upgrade head
-          INGESTION_API_KEY= RATE_LIMIT_PER_MINUTE=100000 nohup uv run uvicorn             player_scouting.presentation.api.main:app --port 8000 > "$RUNNER_TEMP/api.log" 2>&1 &
+          # Through a counting proxy: every step reports how much Neon sent (5 GB/month).
+          proxied=$(uv run python - <<'PY'
+          import os
+          from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+          url = urlsplit(os.environ["DATABASE_URL"])
+          endpoint = url.hostname.split(".")[0].removesuffix("-pooler")
+          query = dict(parse_qsl(url.query))
+          query["options"] = f"endpoint={endpoint}"
+          netloc = f"{url.username}:{url.password}@127.0.0.1:6543"
+          print(urlunsplit((url.scheme, netloc, url.path, urlencode(query), "")))
+          host = url.hostname
+          open(os.environ["RUNNER_TEMP"] + "/neon_host", "w").write(host)
+          PY
+          )
+          echo "::add-mask::$proxied"
+          nohup python3 scripts/egress_proxy.py "$(cat "$RUNNER_TEMP/neon_host")" 5432 \
+            "$RUNNER_TEMP/egress-bytes" > "$RUNNER_TEMP/proxy.log" 2>&1 &
+          sleep 1
+          DATABASE_URL="$proxied" INGESTION_API_KEY= RATE_LIMIT_PER_MINUTE=100000 nohup uv run uvicorn \
+            player_scouting.presentation.api.main:app --port 8000 > "$RUNNER_TEMP/api.log" 2>&1 &
           for i in $(seq 1 60); do curl -sf http://127.0.0.1:8000/health && break; sleep 2; done
+          # The measurement must never stop the refresh: without the database through
+          # the proxy, start the API straight on Neon (unmeasured).
+          if ! curl -sf http://127.0.0.1:8000/health/db; then
+            echo "::warning title=Neon transfer::proxy not usable, this run is not measured"
+            pkill -f uvicorn || true
+            sleep 2
+            INGESTION_API_KEY= RATE_LIMIT_PER_MINUTE=100000 nohup uv run uvicorn \
+              player_scouting.presentation.api.main:app --port 8000 > "$RUNNER_TEMP/api.log" 2>&1 &
+            for i in $(seq 1 60); do curl -sf http://127.0.0.1:8000/health/db && break; sleep 2; done
+          fi
           echo "API_BASE_URL=http://127.0.0.1:8000" >> "$GITHUB_ENV"
 
       - name: Resolve the season
@@ -65,7 +94,9 @@ jobs:
           cat > "$RUNNER_TEMP/post.sh" <<'EOF'
           # On an error it leaves an annotation with the status and the start of the body.
           post() {
-            local out status body
+            local out status body before
+            before=$(cat "$RUNNER_TEMP/egress-bytes" 2>/dev/null || echo 0)
+            trap 'echo "::notice title=Neon $1::$(( ($(cat "$RUNNER_TEMP/egress-bytes" 2>/dev/null || echo 0) - before) / 1000000 )) MB" >&2; trap - RETURN' RETURN
             if ! out=$(curl -sS --max-time "${POST_MAX_TIME:-900}" -X POST -w '\n%{http_code}' \
                 "$API_BASE_URL$1" -H "X-Ingestion-Key: $INGESTION_API_KEY" 2>&1); then
               echo "::error title=POST $1::${out:0:300}" >&2
@@ -99,7 +130,25 @@ jobs:
           source "$RUNNER_TEMP/post.sh"
           post "/ingestion/understat/seasons/$START_YEAR" | jq -c '{ingested, skipped: (.skipped | length)}'
 
+      # The Transfermarkt dataset changes rarely (it stood still from July to October
+      # 2026), and processing it reads players and values from Neon, whose free plan
+      # allows 5 GB of transfer a month: only when its ETag is new.
+      - name: Has the Transfermarkt dataset changed?
+        id: dataset
+        run: |
+          etag=$(curl -s -L -r 0-0 -D - -o /dev/null \
+            https://www.kaggle.com/api/v1/datasets/download/davidcariboo/player-scores \
+            | tr -d '\r' | awk -F': ' 'tolower($1) == "etag" {print $2}' | tr -d '"' | tail -1)
+          echo "etag=${etag:-unknown-$GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
+          mkdir -p .dataset-seen && echo "$etag" > .dataset-seen/etag
+      - uses: actions/cache/restore@v5
+        id: seen
+        with:
+          path: .dataset-seen
+          key: transfermarkt-dataset-${{ steps.dataset.outputs.etag }}
+
       - name: Photos, height, roles and other leagues (Transfermarkt dataset)
+        if: steps.seen.outputs.cache-hit != 'true'
         # One request walks ~19k profiles against the database: its time depends on
         # how far from Neon the runner lands, so it gets an hour.
         env:
@@ -114,6 +163,11 @@ jobs:
           post "/ingestion/transfermarkt-dataset/competitions" | jq -c '{ingested}'
           # Market value model: refitted on the fresh data, one estimate per player.
           post "/ingestion/valuations" | jq -c .
+      - uses: actions/cache/save@v5
+        if: steps.seen.outputs.cache-hit != 'true'
+        with:
+          path: .dataset-seen
+          key: transfermarkt-dataset-${{ steps.dataset.outputs.etag }}
 
       - name: Merge players FBref spelled in two ways
         run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/maintenance/merge-duplicates"
@@ -147,6 +201,11 @@ jobs:
         run: uv run python scripts/scrape_leagues_remote.py --season "$START_YEAR" --backfill
       - name: Photos, birth dates and market values (Transfermarkt)
         run: uv run python scripts/enrich_remote.py --limit 400
+
+      - name: Neon transfer of this run
+        if: always() && env.DATABASE_URL != ''
+        run: |
+          echo "::notice title=Neon total::$(( $(cat "$RUNNER_TEMP/egress-bytes" 2>/dev/null || echo 0) / 1000000 )) MB sent by the database in this run"
 
       # Job logs need repository rights to read; annotations do not. The last error
       # lines of the local API, so a failed run says why.
