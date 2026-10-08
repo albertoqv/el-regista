@@ -2,9 +2,11 @@ import json
 
 from player_scouting.infrastructure.understat.history import (
     build_history,
+    build_profiles,
     history_row,
     index_key,
     write_index,
+    write_profiles,
 )
 from tests.infrastructure.understat.test_understat import YAMAL_RAW
 
@@ -80,3 +82,104 @@ def test_the_index_is_split_by_initial_so_a_lookup_reads_a_small_file(tmp_path):
     assert shard["lionel messi"][0]["year"] == 2017
     assert index_key("Ángel Di María") == "a"
     assert index_key("Özil") == "o"
+
+
+def _row(id_, name, position="Forward", minutes=1800, **numbers):
+    base = {
+        "id": id_,
+        "name": name,
+        "team": "Barcelona",
+        "position": position,
+        "games": 20,
+        "minutes": minutes,
+        "goals": 0,
+        "expected_goals": 0.0,
+        "shots": 0,
+        "assists": 0,
+        "expected_assists": 0.0,
+        "key_passes": 0,
+        "xg_chain": 0.0,
+        "xg_buildup": 0.0,
+        "yellow_cards": 0,
+        "red_cards": 0,
+    }
+    return base | numbers
+
+
+def test_profiles_hold_each_regulars_percentiles_within_his_league_season_and_line():
+    season = {
+        "competition": "La Liga",
+        "year": 2015,
+        "players": [
+            _row(1, "Messi", goals=26, expected_goals=20.0),
+            _row(2, "Neymar", goals=24, expected_goals=18.0),
+            # Twice the minutes for the same goals: half the rate.
+            _row(3, "Suárez", minutes=3600, goals=26),
+            _row(4, "Sub", minutes=400, goals=9),
+            _row(5, "Busquets", position="Midfielder", goals=1),
+            _row(6, "Bravo", position="Goalkeeper"),
+        ],
+    }
+
+    profiles = build_profiles([season])
+
+    # Goalkeepers are left out: Understat's metrics say nothing about them.
+    assert set(profiles) == {"Forward", "Midfielder"}
+    forwards = profiles["Forward"]
+    assert forwards["competitions"] == ["La Liga"]
+    rows = [dict(zip(forwards["fields"], row)) for row in forwards["rows"]]
+    # Below 900 minutes he is not a regular: neither listed nor a peer.
+    assert [row["name"] for row in rows] == ["Messi", "Neymar", "Suárez"]
+    messi = rows[0]
+    assert messi["competition"] == 0
+    assert messi["year"] == 2015
+    assert messi["minutes"] == 1800
+    assert messi["goals"] == 26
+    assert messi["p_goals"] == 100
+    # Neymar's 24 in 1800' beats only Suárez's 26 in 3600': 2 of 3 at or below.
+    assert rows[1]["p_goals"] == 67
+    assert rows[2]["p_goals"] == 33
+    midfielder = dict(
+        zip(profiles["Midfielder"]["fields"], profiles["Midfielder"]["rows"][0])
+    )
+    assert midfielder["p_goals"] == 100
+
+
+def test_profiles_are_written_from_the_season_files(tmp_path):
+    understat = FakeUnderstat()
+    build_history(understat, ["La_liga"], [2017], tmp_path, pause_seconds=0)
+    (tmp_path / "la-liga-2017.json").write_text(
+        json.dumps(
+            {"competition": "La Liga", "year": 2017, "players": [_row(2097, "Messi")]}
+        ),
+        encoding="utf-8",
+    )
+
+    write_profiles(tmp_path)
+
+    forwards = json.loads(
+        (tmp_path / "profiles" / "forward.json").read_text(encoding="utf-8")
+    )
+    assert forwards["rows"][0][forwards["fields"].index("id")] == 2097
+
+
+def test_only_the_missing_seasons_are_read_again(tmp_path):
+    (tmp_path / "la-liga-2017.json").write_text(
+        json.dumps(
+            {"competition": "La Liga", "year": 2017, "players": [_row(2097, "Messi")]}
+        ),
+        encoding="utf-8",
+    )
+    understat = FakeUnderstat()
+
+    build_history(
+        understat,
+        ["La_liga", "EPL"],
+        [2017],
+        tmp_path,
+        pause_seconds=0,
+        missing_only=True,
+    )
+
+    assert understat.asked == [("EPL", 2017)]
+    assert (tmp_path / "profiles" / "forward.json").exists()
