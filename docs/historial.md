@@ -166,3 +166,8 @@ fotos de cuerpo entero (tampoco). Favoritos y alertas: descartados por el usuari
   cuota máxima cuando supera la justa del consenso (media o Pinnacle sin margen) pierde en
   1X2 en las tres temporadas (−8% a −54%) y en más/menos de 2,5 es ruido. No se ofrece como
   producto: las "gangas" de las cuotas máximas casi nunca se pueden apostar.
+
+- **Histórico estático y ahorro de Neon** (2026-10-08): 4,1 de 5 GB de transferencia gastados
+  en tres días por refrescos repetidos. El refresco ya no repite el dataset sin cambios, mide
+  cada paso y frena si queda poco. Understat 2014-2023 como ficheros estáticos (8,5 MB): el
+  cara a cara Messi-Cristiano de cualquier temporada lleva radar.

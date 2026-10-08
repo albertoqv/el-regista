@@ -82,6 +82,14 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
 - **Carrera por edad** (`domain/career.py`, `/players/{id}/career`): G+A por 90 de club por
   temporada frente a la media de su posición (agregado en SQL, `READ_CACHE`).
 - **Buscador**: `f_unaccent` + `pg_trgm` (`word_similarity` ≥ 0,5; migración 0020).
+- **Histórico estático** (`web/public/history`, 2014-2023 de las 5 grandes de Understat):
+  ficheros por liga y temporada + índice partido por inicial, generados una vez por
+  `build-history.yml` (`scripts/build_history.py`) y servidos por la CDN de Vercel, **sin
+  tocar Neon**. El cara a cara los usa (`hist:<liga>` + año) con radar de 8 ejes de
+  Understat. Datos que no cambian van en ficheros, no en la base.
+- **Transferencia de Neon**: el refresco solo procesa el dataset de Transfermarkt si cambia
+  su ETag (caché de Actions), mide los MB de cada paso (`scripts/egress_proxy.py`) y, con
+  menos de 600 MB en el mes, se salta los pasos de jugadores.
 - **"Errores de cuota"**: estudiados con datos reales y descartados (no dan dinero;
   `scripts/research_odds_value.py`). No vender apuestas de valor.
 
