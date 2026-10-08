@@ -40,6 +40,23 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
+      # Neon's free plan allows 5 GB of transfer a month and past it may suspend the
+      # database until the next one. With little left, only what the forecasts need
+      # runs (results, fixtures, odds, the forecast log); player data waits a few days.
+      - name: How much Neon transfer is left?
+        id: budget
+        run: |
+          token=$(curl -sf -X POST "$API_BASE_URL/admin/session" \
+            -H "X-Ingestion-Key: $(printf '%s' "$INGESTION_API_KEY" | tr -d '[:space:]')" | jq -r .token || true)
+          left=$(curl -sf "$API_BASE_URL/admin/dashboard" -H "Authorization: Bearer $token" \
+            | jq -r '.database_usage | if . then (.transfer_limit_bytes - .transfer_bytes) else "unknown" end' || echo unknown)
+          if [ "$left" != "unknown" ] && [ "$left" -lt 600000000 ]; then
+            echo "low=true" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Neon transfer::$((left / 1000000)) MB left this month: player steps skipped"
+          else
+            echo "::notice title=Neon transfer::left this month: ${left}"
+          fi
+
       - name: Start a local API on the database
         if: env.DATABASE_URL != ''
         run: |
@@ -121,11 +138,13 @@ jobs:
           EOF
 
       - name: Basic statistics (FBref)
+        if: steps.budget.outputs.low != 'true'
         run: |
           source "$RUNNER_TEMP/post.sh"
           post "/ingestion/fbref/seasons/$START_YEAR" | jq -c '{ingested, skipped: (.skipped | length)}'
 
       - name: Advanced metrics (Understat)
+        if: steps.budget.outputs.low != 'true'
         run: |
           source "$RUNNER_TEMP/post.sh"
           post "/ingestion/understat/seasons/$START_YEAR" | jq -c '{ingested, skipped: (.skipped | length)}'
@@ -148,7 +167,7 @@ jobs:
           key: transfermarkt-dataset-${{ steps.dataset.outputs.etag }}
 
       - name: Photos, height, roles and other leagues (Transfermarkt dataset)
-        if: steps.seen.outputs.cache-hit != 'true'
+        if: steps.seen.outputs.cache-hit != 'true' && steps.budget.outputs.low != 'true'
         # One request walks ~19k profiles against the database: its time depends on
         # how far from Neon the runner lands, so it gets an hour.
         env:
@@ -164,12 +183,13 @@ jobs:
           # Market value model: refitted on the fresh data, one estimate per player.
           post "/ingestion/valuations" | jq -c .
       - uses: actions/cache/save@v5
-        if: steps.seen.outputs.cache-hit != 'true'
+        if: steps.seen.outputs.cache-hit != 'true' && steps.budget.outputs.low != 'true'
         with:
           path: .dataset-seen
           key: transfermarkt-dataset-${{ steps.dataset.outputs.etag }}
 
       - name: Merge players FBref spelled in two ways
+        if: steps.budget.outputs.low != 'true'
         run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/maintenance/merge-duplicates"
 
       - name: Calendar, results and team metrics (Understat)
@@ -179,9 +199,11 @@ jobs:
         run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/football-data/seasons/$START_YEAR"
 
       - name: Shots of the new matches (Understat)
+        if: steps.budget.outputs.low != 'true'
         run: source "$RUNNER_TEMP/post.sh" && until_done "/ingestion/understat/shots/$START_YEAR?limit=60"
 
       - name: Player lines of the new matches (Understat rosters)
+        if: steps.budget.outputs.low != 'true'
         run: source "$RUNNER_TEMP/post.sh" && until_done "/ingestion/understat/rosters/$START_YEAR?limit=40"
 
       # Track record: log this week's forecasts before kickoff, with fresh odds.
@@ -198,8 +220,10 @@ jobs:
       # Transfermarkt throttles servers' IPs, so the lookups run on this runner
       # (a different IP each run) and only the results go to the API.
       - name: Season in progress of 28 more leagues and second divisions (Transfermarkt)
+        if: steps.budget.outputs.low != 'true'
         run: uv run python scripts/scrape_leagues_remote.py --season "$START_YEAR" --backfill
       - name: Photos, birth dates and market values (Transfermarkt)
+        if: steps.budget.outputs.low != 'true'
         run: uv run python scripts/enrich_remote.py --limit 400
 
       - name: Neon transfer of this run
