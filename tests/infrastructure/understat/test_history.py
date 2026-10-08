@@ -15,6 +15,7 @@ def test_a_player_becomes_a_compact_row_with_his_position_group():
         "name": "Lamine Yamal",
         "team": "Barcelona",
         "position": "Forward",
+        "games": 7,
         "minutes": 598,
         "goals": 7,
         "expected_goals": 6.08,
