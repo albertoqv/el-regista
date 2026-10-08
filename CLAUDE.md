@@ -86,11 +86,16 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
 - **Carrera por edad** (`domain/career.py`, `/players/{id}/career`): G+A por 90 de club por
   temporada frente a la media de su posición (agregado en SQL, `READ_CACHE`).
 - **Buscador**: `f_unaccent` + `pg_trgm` (`word_similarity` ≥ 0,5; migración 0020).
-- **Histórico estático** (`web/public/history`, 2014-2023 de las 5 grandes de Understat):
-  ficheros por liga y temporada + índice partido por inicial, generados una vez por
-  `build-history.yml` (`scripts/build_history.py`) y servidos por la CDN de Vercel, **sin
-  tocar Neon**. El cara a cara los usa (`hist:<liga>` + año) con radar de 8 ejes de
-  Understat. Datos que no cambian van en ficheros, no en la base.
+- **Histórico estático** (`web/public/history`, temporadas terminadas de las 5 grandes de
+  Understat desde 2014, hoy hasta 25/26): ficheros por liga y temporada, índice partido por
+  inicial y `profiles/<línea>.json` (habituales ≥900' con totales y percentiles frente a su
+  línea, liga y temporada; cada uno < 2 MB para la caché de `fetch`). Los genera
+  `build-history.yml` (`scripts/build_history.py`, solo pide a Understat lo que falta; para
+  añadir una temporada terminada, subir `YEARS` y tocar `.github/history-now`) y los sirve
+  la CDN de Vercel, **sin tocar Neon**. Los usan el cara a cara y la ficha (`hist:<liga>` +
+  año; desde 24/25 manda la base y no se repiten), `/epocas` (gemelos de época),
+  `/mejores-temporadas` y "Su mejor temporada" de la ficha (`web/lib/profiles.ts`). Datos
+  que no cambian van en ficheros, no en la base.
 - **Transferencia de Neon**: el refresco solo procesa el dataset de Transfermarkt si cambia
   su ETag (caché de Actions), mide los MB de cada paso (`scripts/egress_proxy.py`) y, con
   menos de 600 MB en el mes, se salta los pasos de jugadores.

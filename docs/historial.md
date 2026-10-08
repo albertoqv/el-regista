@@ -177,3 +177,10 @@ Hecho (2026-10-08):
   y "Cómo funciona"; `/predicciones` y `/equipos` con `noindex`, accesibles por enlace. La
   portada es solo Scout. El refresco deja de llamar a football-data.co.uk y al registro de
   pronósticos (ahorro de transferencia de Neon). README reescrito con Scout delante.
+
+- **Gemelos de época, mejores temporadas y pico** (2026-10-08): el histórico suma 24/25 y
+  25/26 (10 peticiones a Understat; el script ya solo pide lo que falta) y unos perfiles por
+  línea (12 temporadas, 1,8 MB en total). `/epocas`: Messi 15/16 se parece en la 25/26 a
+  Lamine Yamal (97%) y antes a Neymar 17/18 y Salah 21/22 (98%). `/mejores-temporadas`:
+  Cristiano 14/15 (48 goles) arriba. La ficha enseña su mejor temporada frente a la última.
+  Todo desde la CDN, cero transferencia de Neon.

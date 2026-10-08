@@ -29,10 +29,11 @@
 ![Portada de El Regista](docs/img/portada.jpg)
 
 El Regista es una herramienta de **scout**: ficha de cada jugador con percentiles, radar,
-mapa de tiros, estadísticas por competición y valor de mercado; explorador con filtros;
-*gemelos* (el mismo estilo de juego, más barato); cara a cara entre temporadas (también de
-2014 a 2023); rankings; quién está en racha, y jugadores infravalorados según un modelo de
-valor propio.
+mapa de tiros, estadísticas por competición, valor de mercado y su mejor temporada;
+explorador con filtros; *gemelos* (el mismo estilo de juego, más barato) y *gemelos de época*
+(quién juega hoy como el Messi de 2015); cara a cara entre temporadas desde 2014; las mejores
+temporadas desde 2014; rankings; quién está en racha, y jugadores infravalorados según un
+modelo de valor propio.
 
 Hay también un módulo de pronósticos de partidos, en segundo plano: fuera del menú y de los
 buscadores, se llega a él solo con el enlace (`/predicciones`). Se describe al final de
@@ -158,9 +159,15 @@ Unir fuentes sin un identificador común es la parte difícil:
 - El error mediano se mide apartando 1 de cada 5 jugadores. `/infravalorados` lista a quien
   rinde como si valiera bastante más que su precio.
 
-**Histórico 2014-2023** (`scripts/build_history.py`)
-- Las temporadas de Understat de las 5 grandes, en ficheros estáticos servidos por la CDN de
-  Vercel: radar y percentiles de temporadas antiguas (Messi, Cristiano) sin leer la base.
+**Histórico desde 2014** (`scripts/build_history.py`, `web/lib/profiles.ts`)
+- Las temporadas terminadas de Understat de las 5 grandes, en ficheros estáticos servidos por
+  la CDN de Vercel: radar y percentiles de temporadas antiguas (Messi, Cristiano) sin leer la
+  base.
+- Unos ficheros de perfiles guardan cada temporada de 900 minutos o más con sus percentiles
+  frente a su línea, liga y temporada. De ahí salen los **gemelos de época** (quién juega hoy
+  como el Messi de 2015, con la misma fórmula de parecido que los gemelos), las **mejores
+  temporadas** desde 2014 (total o por 90) y **su mejor temporada** en la ficha (media de
+  percentiles año a año).
 
 #### Pronósticos (en segundo plano)
 
