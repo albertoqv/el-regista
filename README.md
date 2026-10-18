@@ -26,7 +26,7 @@
   <a href="https://github.com/albertoqv/el-regista/actions/workflows/compose-vault.yml"><img alt="Stack con Vault" src="https://github.com/albertoqv/el-regista/actions/workflows/compose-vault.yml/badge.svg"></a>
 </p>
 
-![Portada de El Regista](docs/img/portada.jpg)
+![Portada de El Regista](docs/img/portada.png)
 
 El Regista es una herramienta de **scout**: ficha de cada jugador con percentiles, radar,
 mapa de tiros, estadísticas por competición, valor de mercado y su mejor temporada;
