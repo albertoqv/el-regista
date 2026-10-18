@@ -35,10 +35,6 @@ explorador con filtros; *gemelos* (el mismo estilo de juego, más barato) y *gem
 temporadas desde 2014; rankings; quién está en racha, y jugadores infravalorados según un
 modelo de valor propio.
 
-Hay también un módulo de pronósticos de partidos, en segundo plano: fuera del menú y de los
-buscadores, se llega a él solo con el enlace (`/predicciones`). Se describe al final de
-[Modelos](#modelos).
-
 Todo funciona sobre servicios gratuitos y se actualiza solo dos veces por semana.
 
 ---
@@ -51,10 +47,9 @@ flowchart LR
         FB[FBref vía Kaggle]
         US[Understat]
         TM[Transfermarkt]
-        FD[football-data.co.uk<br/>histórico, pronósticos]
     end
     GA[GitHub Actions<br/>martes y viernes] -->|POST /ingestion/*| API
-    FB & US & FD --> API
+    FB & US --> API
     TM -->|scraping desde el runner| GA
     API[FastAPI · Vercel] <--> DB[(PostgreSQL · Neon)]
     WEB[Next.js 16 · Vercel] -->|servidor: HTTP + caché 30 min| API
@@ -78,7 +73,7 @@ flowchart LR
 |---|---|---|
 | Lenguaje y entorno | **Python 3.14**, uv | Tipado estricto (mypy) y entornos reproducibles con lockfile. |
 | API | **FastAPI** | Validación con Pydantic, inyección de dependencias que hace triviales los dobles de test. |
-| Persistencia | **SQLAlchemy 2** + **Alembic** + **PostgreSQL** | Repositorios detrás de puertos; 16 migraciones que el refresco aplica antes de cargar datos. |
+| Persistencia | **SQLAlchemy 2** + **Alembic** + **PostgreSQL** | Repositorios detrás de puertos; 21 migraciones que el refresco aplica antes de cargar datos. |
 | HTTP y scraping | **httpx**, BeautifulSoup | Tests con `httpx.MockTransport` y respuestas reales recortadas. |
 | Web | **Next.js 16** (App Router, Server Components), **TypeScript**, **Tailwind CSS 4** | Casi todo se renderiza en servidor: poco JavaScript y SEO completo. |
 | Gráficos e imágenes | SVG hecho a mano, `next/og` | Radar, mapas de tiro, tendencias y cartas para compartir, sin librerías de gráficos. |
@@ -102,14 +97,13 @@ El dominio no importa nada de fuera. Los casos de uso se prueban con repositorio
 memoria que imitan al de SQL, y los de SQL se prueban contra un Postgres real. El
 desarrollo sigue TDD estricto: cada cambio entra como `test:` y luego `feat:`.
 
-### Datos: de cuatro fuentes a un jugador
+### Datos: de tres fuentes a un jugador
 
 | Fuente | Qué aporta |
 |---|---|
 | FBref (dataset de Kaggle) | Estadísticas por temporada de las 5 grandes ligas. |
 | Understat | xG, xA, tiros con coordenadas, alineaciones partido a partido y calendario. |
 | Transfermarkt (web y dataset de Kaggle) | Fotos, fechas de nacimiento, posición detallada, valores de mercado, 28 ligas más, y cada competición de un jugador: liga, Champions, Europa League, Conference, copas, supercopas y selección (Nations League, clasificatorios, Mundial, Eurocopa, Copa América, amistosos). |
-| football-data.co.uk | Córners, tarjetas, faltas, árbitro y cuotas (solo pronósticos; ya no se refresca). |
 
 Unir fuentes sin un identificador común es la parte difícil:
 
@@ -169,41 +163,6 @@ Unir fuentes sin un identificador común es la parte difícil:
   temporadas** desde 2014 (total o por 90), **su mejor temporada** y a quién se parece en
   la ficha, un **cara a cara histórico** de dos temporadas cualesquiera (aunque el jugador ya
   no esté en la base) y una ficha histórica para quien no tenemos, con carta para compartir.
-
-#### Pronósticos (en segundo plano)
-
-Fuera del menú, de la portada y del sitemap (`noindex`); siguen funcionando con el enlace.
-El refresco ya no baja cuotas ni guarda pronósticos nuevos para ahorrar transferencia de Neon.
-Buscar "errores de cuota" se probó con 15.145 partidos y no da dinero
-(`scripts/research_odds_value.py`).
-
-**Resultado de los partidos** (`domain/prediction.py`)
-- Poisson con corrección de Dixon-Coles.
-- La fuerza de ataque y defensa de cada equipo sale de:
-  - una mezcla de xG (85%) y goles reales;
-  - decaimiento exponencial (vida media de 180 días, elegida en el laboratorio de modelos);
-  - ajuste por rival;
-  - encogimiento hacia la media.
-- Validación walk-forward (cada partido se predice solo con datos anteriores): Brier 0,594
-  en 25/26 frente a 0,649 de la referencia.
-- Las cuotas de cierre llegan a 0,582. Cuando hay cuotas, el 1X2 que se muestra es el del
-  mercado, y la web lo dice.
-- **Probado y descartado** en `scripts/model_lab.py`: el descanso entre partidos, el empate por
-  liga, la calibración, un punto de partida más bajo para los ascendidos y la mezcla con un Elo.
-  Ninguno mejora la temporada de validación con un 95% de confianza.
-
-**Estadísticas del partido** (`domain/counts.py`)
-- Binomial negativa por equipo para córners, faltas, tiros y tarjetas, con encogimiento de
-  10 partidos.
-
-**Jugadores en un partido** (`domain/player_props.py`)
-- Probabilidad de marcar, asistir o ver tarjeta *si juega*, multiplicada por la probabilidad
-  de jugar.
-- Brier 0,067 frente a 0,074 en 10.840 pronósticos.
-
-**Historial**
-- Las predicciones de los próximos 7 días se guardaban antes del saque inicial y se puntuaban
-  después, sin poder retocarlas. Desde que el módulo está oculto ya no se guardan nuevas.
 
 ### API
 
