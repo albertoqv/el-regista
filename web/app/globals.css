@@ -177,6 +177,32 @@ input:-webkit-autofill {
   z-index: -2;
 }
 
+/* Home hero: the search dropdown may hang below the photo, so the photo is clipped by its own
+   wrapper instead of the section. */
+.photo-header-open {
+  overflow: visible;
+}
+
+.photo-header-open::after {
+  border-radius: inherit;
+}
+
+.photo-clip {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* A field with its suggestions open (focus inside) must paint above what comes after it:
+   .reveal and .photo-header are stacking contexts, so the dropdown's z-index stays trapped. */
+.reveal:focus-within,
+.photo-header:focus-within {
+  position: relative;
+  z-index: 30;
+}
+
 .photo-header::after {
   content: "";
   position: absolute;

@@ -61,16 +61,18 @@ export default async function HomePage() {
           description: "Scout de futbolistas con datos reales de 33 ligas.",
         }}
       />
-      <section className="photo-header -mx-4 -mt-6 flex min-h-[460px] flex-col justify-end gap-6 px-4 pb-10 pt-24 sm:mx-0 sm:mt-0 sm:rounded-xl sm:px-10">
-        <Image
-          src={PHOTOS.portada.src}
-          alt=""
-          fill
-          sizes="(min-width: 1152px) 1104px, 100vw"
-          className="slow-zoom object-cover"
-          loading="eager"
-          fetchPriority="high"
-        />
+      <section className="photo-header photo-header-open -mx-4 -mt-6 flex min-h-[460px] flex-col justify-end gap-6 px-4 pb-10 pt-24 sm:mx-0 sm:mt-0 sm:rounded-xl sm:px-10">
+        <div className="photo-clip">
+          <Image
+            src={PHOTOS.portada.src}
+            alt=""
+            fill
+            sizes="(min-width: 1152px) 1104px, 100vw"
+            className="slow-zoom object-cover"
+            loading="eager"
+            fetchPriority="high"
+          />
+        </div>
         <div className="flex flex-col gap-3">
           <Sticker className="w-fit">Temporada {seasonDisplay(String(startYear))}</Sticker>
           <h1 className="font-display text-5xl leading-[0.92] sm:text-7xl">
