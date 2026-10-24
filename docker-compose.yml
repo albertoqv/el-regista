@@ -25,7 +25,7 @@ services:
 
   # Dev mode: in memory, unsealed, KV v2 mounted at secret/. Never for production.
   vault:
-    image: hashicorp/vault:2.1.1
+    image: hashicorp/vault:2.2.0
     cap_add:
       - IPC_LOCK
     environment:
@@ -41,7 +41,7 @@ services:
 
   # Writes the app's secrets into Vault once it is up (dev mode forgets them on restart).
   vault-init:
-    image: hashicorp/vault:2.1.1
+    image: hashicorp/vault:2.2.0
     environment: *vault-env
     entrypoint: ["vault"]
     command:
