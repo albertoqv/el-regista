@@ -4,7 +4,8 @@ COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ARG NEXT_PUBLIC_SITE_URL=https://elregista.vercel.app
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 RUN npm run build
 
 # Runtime: patched base and the image's own unprivileged "node" user (Trivy DS-0002).
