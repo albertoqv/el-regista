@@ -1,7 +1,7 @@
 // Cookie holding the signed admin session (httpOnly, only sent to /admin).
 export const ADMIN_COOKIE = "ts_admin";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_URL = process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export type DailyVisits = { day: string; views: number; visitors: number };
 export type RankedCount = { name: string; views: number; visitors: number };

@@ -1,7 +1,10 @@
 // On the server the API is called directly; in the browser through the site's own
 // /api proxy (see next.config.ts), so it works on any domain without CORS.
+// API_INTERNAL_URL: where the server reaches the API when both run on one machine.
 const API_URL =
-  typeof window === "undefined" ? (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000") : "/api";
+  typeof window === "undefined"
+    ? (process.env.API_INTERNAL_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000")
+    : "/api";
 // Data only changes when the refresh runs (Tuesdays and Fridays): three hours keeps
 // pages fresh enough and spares the database's monthly network allowance (Neon free).
 const REVALIDATE_SECONDS = 3 * 3600;

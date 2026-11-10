@@ -36,7 +36,8 @@ const nextConfig: NextConfig = {
   // so no CORS setup is needed whatever domain the web is served from.
   async rewrites() {
     // Ingestion and admin never go through the browser: not proxied at all.
-    return [{ source: "/api/:path((?!ingestion|admin|docs|redoc|openapi).*)", destination: `${API_URL}/:path` }];
+    const target = process.env.API_INTERNAL_URL ?? API_URL;
+    return [{ source: "/api/:path((?!ingestion|admin|docs|redoc|openapi).*)", destination: `${target}/:path` }];
   },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
