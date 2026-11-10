@@ -79,7 +79,8 @@ jobs:
                 --ssh-authorized-keys-file deploy/oracle/elregista_vm.pub 2>&1); then
               echo "Conseguida: $1 OCPU / $2 GB"
               echo "### VM de Oracle creada: $1 OCPU / $2 GB" >> "$GITHUB_STEP_SUMMARY"
-              gh issue create -R "$GITHUB_REPOSITORY" --title "VM de Oracle creada ($1 OCPU / $2 GB)" \n                --body "Ya hay máquina en Madrid. Pídele a Claude que instale El Regista en ella." || true
+              gh issue create -R "$GITHUB_REPOSITORY" --title "VM de Oracle creada ($1 OCPU / $2 GB)" \
+                --body "Ya hay máquina en Madrid. Pídele a Claude que instale El Regista en ella." || true
               gh workflow disable oracle-capacity.yml -R "$GITHUB_REPOSITORY"
               exit 0
             fi
