@@ -33,3 +33,11 @@ test("robots.txt apunta al sitemap", async ({ request }) => {
   const body = await (await request.get("/robots.txt")).text();
   expect(body).toContain("Sitemap:");
 });
+
+// Every page is rendered on the server: endless ?a=&b= combinations and training
+// crawlers burned Vercel Hobby's CPU allowance in Nov 2026.
+test("robots.txt cierra las combinaciones con parámetros y los rastreadores de IA", async ({ request }) => {
+  const body = await (await request.get("/robots.txt")).text();
+  expect(body).toContain("Disallow: /*?");
+  expect(body).toMatch(/User-Agent: GPTBot[\s\S]*?Disallow: \/\n/);
+});
