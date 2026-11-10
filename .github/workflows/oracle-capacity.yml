@@ -1,0 +1,86 @@
+# Madrid (the account's home region, the only one with Always Free) is often "Out of
+# host capacity" for A1. Try every 10 minutes until the VM exists, then disable itself.
+# Only Always Free shapes: A1.Flex up to 4 OCPU / 24 GB, 50 GB boot volume.
+name: Oracle VM (esperar capacidad)
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: oracle-capacity
+  cancel-in-progress: false
+
+jobs:
+  launch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING: "True"
+      SUPPRESS_LABEL_WARNING: "True"
+      PYTHONWARNINGS: ignore
+      AD: "CQkH:EU-MADRID-1-AD-1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: deploy/oracle/elregista_vm.pub
+          sparse-checkout-cone-mode: false
+
+      - name: Configurar OCI
+        env:
+          OCI_USER: ${{ secrets.OCI_USER }}
+          OCI_TENANCY: ${{ secrets.OCI_TENANCY }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_FINGERPRINT }}
+          OCI_PRIVATE_KEY: ${{ secrets.OCI_PRIVATE_KEY }}
+        run: |
+          pipx install oci-cli >/dev/null
+          mkdir -p ~/.oci
+          printf '%s\n' "$OCI_PRIVATE_KEY" > ~/.oci/key.pem
+          chmod 600 ~/.oci/key.pem
+          cat > ~/.oci/config <<EOF
+          [DEFAULT]
+          user=$OCI_USER
+          fingerprint=$OCI_FINGERPRINT
+          tenancy=$OCI_TENANCY
+          region=eu-madrid-1
+          key_file=$HOME/.oci/key.pem
+          EOF
+          chmod 600 ~/.oci/config
+
+      - name: Lanzar la VM si aún no existe
+        env:
+          T: ${{ secrets.OCI_TENANCY }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(oci compute instance list -c "$T" --display-name elregista \
+            --query "data[?\"lifecycle-state\"!='TERMINATED'] | [0].id" --raw-output 2>/dev/null || true)
+          if [ -n "$existing" ] && [ "$existing" != "null" ]; then
+            echo "Ya existe: $existing"
+            gh workflow disable oracle-capacity.yml -R "$GITHUB_REPOSITORY"
+            exit 0
+          fi
+          vcn=$(oci network vcn list -c "$T" --display-name elregista-vcn --query 'data[0].id' --raw-output)
+          sub=$(oci network subnet list -c "$T" --vcn-id "$vcn" --query 'data[0].id' --raw-output)
+          img=$(oci compute image list -c "$T" --operating-system "Canonical Ubuntu" \
+            --operating-system-version "24.04" --shape VM.Standard.A1.Flex \
+            --sort-by TIMECREATED --limit 1 --query 'data[0].id' --raw-output)
+          for cfg in "4 24" "2 12" "1 6"; do
+            set -- $cfg
+            if out=$(oci compute instance launch -c "$T" --availability-domain "$AD" \
+                --display-name elregista --shape VM.Standard.A1.Flex \
+                --shape-config "{\"ocpus\":$1,\"memoryInGBs\":$2}" --image-id "$img" \
+                --boot-volume-size-in-gbs 50 --subnet-id "$sub" --assign-public-ip true \
+                --ssh-authorized-keys-file deploy/oracle/elregista_vm.pub 2>&1); then
+              echo "Conseguida: $1 OCPU / $2 GB"
+              echo "### VM de Oracle creada: $1 OCPU / $2 GB" >> "$GITHUB_STEP_SUMMARY"
+              gh workflow disable oracle-capacity.yml -R "$GITHUB_REPOSITORY"
+              exit 0
+            fi
+            echo "$1/$2: $(echo "$out" | grep -oE '"message": "[^"]+"' | head -1)"
+          done
+          echo "Sin capacidad todavía"
