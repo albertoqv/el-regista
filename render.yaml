@@ -1,0 +1,19 @@
+# Render Blueprint (free plan): API + web in one Docker service. See deploy/render/.
+# Deploys only by hand or with its deploy hook (autoDeploy off), not on every push.
+services:
+  - type: web
+    name: elregista
+    runtime: docker
+    plan: free
+    # Next to Neon (Washington) so every query stays short.
+    region: virginia
+    dockerfilePath: ./deploy/render/Dockerfile
+    dockerContext: .
+    healthCheckPath: /robots.txt
+    autoDeploy: false
+    envVars:
+      # Pasted in Render's dashboard when the Blueprint is created, never in git.
+      - key: DATABASE_URL
+        sync: false
+      - key: VISIT_SALT
+        generateValue: true

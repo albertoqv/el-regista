@@ -5,6 +5,12 @@ __pycache__
 .ruff_cache
 .git
 tests
-web
+web/node_modules
+web/.next
+web/test-results
+web/playwright-report
+web/.vercel
+web/tsconfig.tsbuildinfo
 deploy
-.env*
+!deploy/render
+**/.env*
