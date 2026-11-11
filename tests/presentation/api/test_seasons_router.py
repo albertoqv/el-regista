@@ -47,6 +47,27 @@ def test_season_leaders_by_goals():
     assert body[0]["goals"] == 12
 
 
+def test_season_leaders_by_goals_plus_assists():
+    repository = _repository()
+    repository.save_player(Player(3, "Michael Olise", "Forward", None, birth_year=2001))
+    repository.save_season_statistics(
+        3,
+        Season("Bundesliga", "2026"),
+        Statistics(5, 10, minutes_played=640),
+        team="Bayern Munich",
+    )
+    client = _client(repository)
+
+    response = client.get("/seasons/2026/leaders?metric=goals_and_assists")
+
+    assert response.status_code == 200
+    assert [leader["name"] for leader in response.json()] == [
+        "Michael Olise",
+        "Harry Kane",
+        "Lamine Yamal",
+    ]
+
+
 def test_season_leaders_filtered_by_competition():
     client = _client(_repository())
 

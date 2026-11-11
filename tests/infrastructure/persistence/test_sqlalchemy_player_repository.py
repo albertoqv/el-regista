@@ -411,6 +411,25 @@ def test_season_leaders_are_ranked_by_a_metric_across_competitions(session):
     assert [leader.player.name for leader in in_la_liga] == ["Lamine Yamal"]
 
 
+def test_season_leaders_by_goals_plus_assists(session):
+    repository = SqlAlchemyPlayerRepository(session)
+    repository.save_player(Player(2, "Harry Kane", "Forward", None, birth_year=1993))
+    repository.save_season_statistics(
+        2, Season("Bundesliga", "2026"), Statistics(12, 2), team="Bayern Munich"
+    )
+    repository.save_player(Player(3, "Michael Olise", "Forward", None, birth_year=2001))
+    repository.save_season_statistics(
+        3, Season("Bundesliga", "2026"), Statistics(5, 10), team="Bayern Munich"
+    )
+
+    leaders = repository.list_season_leaders("2026", "goals_and_assists", 5)
+
+    assert [leader.player.name for leader in leaders] == [
+        "Michael Olise",
+        "Harry Kane",
+    ]
+
+
 def test_season_records_for_some_labels_include_the_team(session):
     repository = SqlAlchemyPlayerRepository(session)
     _seed_yamal(repository)
