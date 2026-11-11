@@ -189,3 +189,12 @@ Hecho (2026-10-08):
   contra Cristiano 14/15: 96% de parecido, Messi gana 5 de 8 por 90),
   `/historico/jugador/<id>` para quien no está en la base (Iniesta), "Su 25/26 se parece
   al…" en la ficha y carta 1200×630 de gemelos de época y duelos para compartir.
+
+- **Render, base restaurada y refresco a prueba de caídas** (2026-11-11): Vercel Hobby pausó
+  la cuenta por CPU (402). La web y la API van juntas en un servicio gratuito de Render
+  (https://elregista.onrender.com, `render.yaml`, `deploy/render/`); robots.txt cierra las
+  URLs con parámetros y los rastreadores de IA y SEO. La base nueva del 5 de noviembre solo
+  tenía 2.260 jugadores: restaurada la copia del 1 de noviembre (`restore-backup.yml`,
+  19.101 jugadores). Understat está en mantenimiento ("We will come back soon", HTML con
+  200): su cliente lo trata como fuente caída (503) y el refresco avisa y sigue con
+  Transfermarkt; la comprobación de resultados pasa al final.
