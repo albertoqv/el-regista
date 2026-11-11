@@ -2,7 +2,7 @@
 # without visits). Bridge while Vercel Hobby keeps the account paused and the Oracle VM
 # has no capacity. Built from the repository root (render.yaml).
 # Render hands every environment variable to the build as an argument: with
-# DATABASE_URL the API runs during `next build`, so the home page and rankings are
+# DATABASE_URL the API runs during `next build` (build.sh), so the home page and rankings are
 # prerendered with data. It only exists in this stage, never in the final image.
 FROM python:3.14-slim AS build
 RUN apt-get update && apt-get install -y --no-install-recommends libstdc++6 \
@@ -29,20 +29,9 @@ ARG DATABASE_URL=""
 ENV NEXT_PUBLIC_API_URL=${RENDER_EXTERNAL_URL}/api \
     NEXT_PUBLIC_SITE_URL=${RENDER_EXTERNAL_URL} \
     API_INTERNAL_URL=http://127.0.0.1:8000 NEXT_TELEMETRY_DISABLED=1
-RUN if [ -n "$DATABASE_URL" ]; then \
-      (cd /app && RATE_LIMIT_PER_MINUTE=100000 /app/.venv/bin/uvicorn \
-        player_scouting.presentation.api.main:app --host 127.0.0.1 --port 8000 \
-        >/tmp/api.log 2>&1 &) ; \
-      for _ in $(seq 60); do \
-        node -e "fetch('http://127.0.0.1:8000/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))" && break; \
-        sleep 2; \
-      done; \
-      echo "API during the build:"; tail -n 5 /tmp/api.log; \
-    else \
-      echo "No DATABASE_URL in the build: pages are prerendered without data"; \
-    fi; \
-    npm run build; \
-    if [ -n "$DATABASE_URL" ]; then echo "API errors:"; grep -E " [45][0-9][0-9] |Error" /tmp/api.log | tail -n 10 || true; fi
+# Never $DATABASE_URL on a RUN line: Render logs RUN lines with the value filled in.
+COPY deploy/render/build.sh /tmp/build.sh
+RUN sh /tmp/build.sh
 
 FROM python:3.14-slim
 RUN apt-get update \
