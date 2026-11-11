@@ -160,7 +160,7 @@ jobs:
             | tr -d '\r' | awk -F': ' 'tolower($1) == "etag" {print $2}' | tr -d '"' | tail -1)
           echo "etag=${etag:-unknown-$GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
           mkdir -p .dataset-seen && echo "$etag" > .dataset-seen/etag
-      - uses: actions/cache/restore@v5
+      - uses: actions/cache/restore@v6
         id: seen
         with:
           path: .dataset-seen
@@ -182,7 +182,7 @@ jobs:
           post "/ingestion/transfermarkt-dataset/competitions" | jq -c '{ingested}'
           # Market value model: refitted on the fresh data, one estimate per player.
           post "/ingestion/valuations" | jq -c .
-      - uses: actions/cache/save@v5
+      - uses: actions/cache/save@v6
         if: steps.seen.outputs.cache-hit != 'true' && steps.budget.outputs.low != 'true'
         with:
           path: .dataset-seen
