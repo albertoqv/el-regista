@@ -201,6 +201,7 @@ export const RADAR_METRICS: MetricKey[] = [
 export const LEADER_TABS: { metric: LeaderMetric; label: string }[] = [
   { metric: "goals", label: "Goles" },
   { metric: "assists", label: "Asistencias" },
+  { metric: "goals_and_assists", label: "Goles + asist." },
   { metric: "expected_goals", label: "xG" },
   { metric: "expected_assists", label: "xA" },
   { metric: "key_passes", label: "Pases clave" },
@@ -209,6 +210,20 @@ export const LEADER_TABS: { metric: LeaderMetric; label: string }[] = [
   { metric: "tackles_won", label: "Entradas" },
   { metric: "interceptions", label: "Intercepciones" },
 ];
+
+/** A leaderboard's value: goals + assists is not a stored field, the rest are. */
+export function leaderValue(player: Player, metric: LeaderMetric): number {
+  return metric === "goals_and_assists" ? player.goals + player.assists : player[metric];
+}
+
+/** Label, help and decimals of a leaderboard metric. */
+export function leaderInfo(metric: LeaderMetric): { short: string; help: string; decimals: number } {
+  if (metric === "goals_and_assists") {
+    return { short: "goles + asistencias", help: "Goles más asistencias.", decimals: 0 };
+  }
+  const info = METRICS[metric];
+  return { short: info.short, help: info.help, decimals: info.decimals ?? 0 };
+}
 
 export function metricValue(player: Player, key: MetricKey, perNinety: boolean): number {
   const raw = player[key];

@@ -5,7 +5,7 @@ import { Avatar } from "@/app/components/Avatar";
 import { JsonLd } from "@/app/components/JsonLd";
 import { listSeasonLeaders, type SeasonLeader } from "@/lib/api";
 import { currentSeasonStartYear, positionShort, seasonDisplay } from "@/lib/format";
-import { METRICS } from "@/lib/metrics";
+import { leaderInfo, leaderValue } from "@/lib/metrics";
 import { findRanking, LEAGUE_GROUPS, metricsFor, rankingHref, rankingPages } from "@/lib/rankings";
 import { SITE_URL } from "@/lib/site";
 
@@ -60,7 +60,7 @@ export default async function RankingPage(props: PageProps<"/ranking/[liga]/[met
       leaders = previous;
     }
   }
-  const decimals = METRICS[metric.metric].decimals ?? 0;
+  const { decimals, help } = leaderInfo(metric.metric);
   const title = headline(liga, metrica, season);
 
   return (
@@ -82,7 +82,7 @@ export default async function RankingPage(props: PageProps<"/ranking/[liga]/[met
       <header className="flex flex-col gap-2">
         <h1 className="font-display text-5xl leading-[0.92] sm:text-6xl">{title}</h1>
         <p className="text-sm text-muted">
-          {METRICS[metric.metric].help} Datos de {league.basic ? "Transfermarkt" : "FBref y Understat"}, se actualizan martes y viernes.
+          {help} Datos de {league.basic ? "Transfermarkt" : "FBref y Understat"}, se actualizan martes y viernes.
         </p>
       </header>
 
@@ -127,7 +127,7 @@ export default async function RankingPage(props: PageProps<"/ranking/[liga]/[met
       ) : (
         <ol className="flex flex-col divide-y divide-line border-y border-line">
           {leaders.map((leader, index) => {
-            const value = leader[metric.metric];
+            const value = leaderValue(leader, metric.metric);
             return (
               <li key={leader.player_id}>
                 <Link

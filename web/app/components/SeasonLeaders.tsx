@@ -7,18 +7,18 @@ import { CountUp } from "@/app/components/motion";
 import { PlayerPortrait } from "@/app/components/PlayerPortrait";
 import { listSeasonLeaders, type LeaderMetric, type SeasonLeader } from "@/lib/api";
 import { COMPETITIONS, positionShort, seasonDisplay } from "@/lib/format";
-import { LEADER_TABS, METRICS } from "@/lib/metrics";
+import { LEADER_TABS, leaderInfo, leaderValue } from "@/lib/metrics";
 
 const LIMIT = 10;
 const PODIUM_ORDER = [1, 0, 2];
 const MEDALS = ["#f5c451", "#16171b", "#e0935a"];
 
 function valueOf(leader: SeasonLeader, metric: LeaderMetric): number {
-  return leader[metric];
+  return leaderValue(leader, metric);
 }
 
 function decimalsOf(metric: LeaderMetric): number {
-  return METRICS[metric].decimals ?? 0;
+  return leaderInfo(metric).decimals;
 }
 
 function PodiumCard({
@@ -105,7 +105,7 @@ export function SeasonLeaders({
   const podium = leaders.slice(0, 3);
   const rest = leaders.slice(3);
   const maxValue = Math.max(...leaders.map((leader) => valueOf(leader, metric)), 1);
-  const info = METRICS[metric];
+  const info = leaderInfo(metric);
 
   return (
     <section className="flex flex-col gap-6">

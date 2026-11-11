@@ -194,6 +194,7 @@ export type SeasonLeader = Player & {
 export type LeaderMetric =
   | "goals"
   | "assists"
+  | "goals_and_assists"
   | "expected_goals"
   | "expected_assists"
   | "shots"

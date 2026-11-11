@@ -4,7 +4,7 @@ export type RankingLeague = {
   slug: string;
   competition: string;
   name: string;
-  /** Only goals and assists (Transfermarkt): no xG, shots or key passes. */
+  /** Only goals and assists (Transfermarkt) and their sum: no xG, shots or key passes. */
   basic?: boolean;
   /** Second tiers get their own group in the filter. */
   second?: boolean;
@@ -58,13 +58,14 @@ export const LEAGUE_GROUPS = [
 export const RANKING_METRICS: { slug: string; metric: LeaderMetric; title: string; label: string; unit: string }[] = [
   { slug: "goleadores", metric: "goals", title: "Goleadores", label: "Goles", unit: "goles" },
   { slug: "asistentes", metric: "assists", title: "Asistentes", label: "Asistencias", unit: "asistencias" },
+  { slug: "goles-y-asistencias", metric: "goals_and_assists", title: "Goles + asistencias", label: "Goles + asist.", unit: "goles + asistencias" },
   { slug: "xg", metric: "expected_goals", title: "Más xG", label: "xG", unit: "xG" },
   { slug: "xa", metric: "expected_assists", title: "Más xA", label: "xA", unit: "xA" },
   { slug: "tiros", metric: "shots", title: "Más tiros", label: "Tiros", unit: "tiros" },
   { slug: "pases-clave", metric: "key_passes", title: "Más pases clave", label: "Pases clave", unit: "pases clave" },
 ];
 
-const BASIC_METRICS = new Set(["goleadores", "asistentes"]);
+const BASIC_METRICS = new Set(["goleadores", "asistentes", "goles-y-asistencias"]);
 
 export function metricsFor(league: RankingLeague) {
   return league.basic ? RANKING_METRICS.filter((metric) => BASIC_METRICS.has(metric.slug)) : RANKING_METRICS;
