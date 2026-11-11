@@ -121,6 +121,13 @@ jobs:
             fi
             status=${out##*$'\n'}
             body=${out%$'\n'*}
+            # 503 = the source is down (Understat's maintenance page, Nov 2026). Steps
+            # with SOURCE_DOWN_OK end with a warning and the rest of the refresh runs.
+            if [ "$status" = "503" ] && [ -n "${SOURCE_DOWN_OK:-}" ]; then
+              echo "::warning title=Source down ($1)::${body:0:300}" >&2
+              touch "$RUNNER_TEMP/source-down"
+              exit 0
+            fi
             if [ "$status" -ge 400 ]; then
               echo "::error title=POST $1 ($status)::${body:0:300}" >&2
               return 1
@@ -131,6 +138,8 @@ jobs:
           until_done() {
             for batch in $(seq 1 15); do
               result=$(post "$1")
+              # Empty: the source is down (see post), nothing to repeat.
+              [ -z "$result" ] && return 0
               echo "$result"
               [ "$(echo "$result" | jq .remaining)" = "0" ] && return 0
             done
@@ -145,6 +154,8 @@ jobs:
 
       - name: Advanced metrics (Understat)
         if: steps.budget.outputs.low != 'true'
+        env:
+          SOURCE_DOWN_OK: "1"
         run: |
           source "$RUNNER_TEMP/post.sh"
           post "/ingestion/understat/seasons/$START_YEAR" | jq -c '{ingested, skipped: (.skipped | length)}'
@@ -193,25 +204,24 @@ jobs:
         run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/maintenance/merge-duplicates"
 
       - name: Calendar, results and team metrics (Understat)
+        env:
+          SOURCE_DOWN_OK: "1"
         run: source "$RUNNER_TEMP/post.sh" && post "/ingestion/understat/teams/$START_YEAR"
 
       - name: Shots of the new matches (Understat)
         if: steps.budget.outputs.low != 'true'
+        env:
+          SOURCE_DOWN_OK: "1"
         run: source "$RUNNER_TEMP/post.sh" && until_done "/ingestion/understat/shots/$START_YEAR?limit=60"
 
       - name: Player lines of the new matches (Understat rosters)
         if: steps.budget.outputs.low != 'true'
+        env:
+          SOURCE_DOWN_OK: "1"
         run: source "$RUNNER_TEMP/post.sh" && until_done "/ingestion/understat/rosters/$START_YEAR?limit=40"
 
       # Pronósticos is hidden from the web: football-data.co.uk (corners, cards, odds)
       # and the forecast log no longer run, to spare Neon's monthly transfer.
-
-      # Right after a refresh every match played days ago must have its result:
-      # if not, a source changed or broke and GitHub emails the failure.
-      - name: Check that played matches have their results
-        run: |
-          curl -sS --max-time 120 "$API_BASE_URL/health/data" | tee "$RUNNER_TEMP/data.json" | jq .
-          [ "$(jq -r .status "$RUNNER_TEMP/data.json")" = "ok" ]
 
       # Transfermarkt throttles servers' IPs, so the lookups run on this runner
       # (a different IP each run) and only the results go to the API.
@@ -221,6 +231,19 @@ jobs:
       - name: Photos, birth dates and market values (Transfermarkt)
         if: steps.budget.outputs.low != 'true'
         run: uv run python scripts/enrich_remote.py --limit 400
+
+      # Right after a refresh every match played days ago must have its result:
+      # if not, a source changed or broke and GitHub emails the failure. Last, so it
+      # never stops the Transfermarkt steps; a source that was down only warns.
+      - name: Check that played matches have their results
+        run: |
+          curl -sS --max-time 120 "$API_BASE_URL/health/data" | tee "$RUNNER_TEMP/data.json" | jq .
+          [ "$(jq -r .status "$RUNNER_TEMP/data.json")" = "ok" ] && exit 0
+          if [ -f "$RUNNER_TEMP/source-down" ]; then
+            echo "::warning title=Results missing::a source was down in this run (see above)"
+            exit 0
+          fi
+          exit 1
 
       - name: Neon transfer of this run
         if: always() && env.DATABASE_URL != ''
