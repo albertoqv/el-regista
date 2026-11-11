@@ -7,6 +7,7 @@ from player_scouting.application.player_matching import ExternalPlayer
 from player_scouting.application.ports import (
     AdvancedSeasonRow,
     CompetitionStatisticsResult,
+    DataSourceUnavailableError,
     LeaguePlayersPage,
     LeagueSummary,
     MarketValueHistoryResult,
@@ -323,6 +324,25 @@ def test_ingest_understat_season_stores_advanced_metrics():
     assert response.json()["ingested"] == 1
     stats = repository.get_season_statistics(1, Season("La Liga", "2026"))
     assert stats.expected_assists == 4.08
+
+
+class _DownAdvancedSeasonProvider:
+    def get_season(self, start_year: int) -> list[AdvancedSeasonRow]:
+        raise DataSourceUnavailableError("Understat answered with no JSON")
+
+
+def test_a_source_down_answers_503_with_the_reason_instead_of_a_crash():
+    app = create_app()
+    app.dependency_overrides[get_advanced_season_provider] = lambda: (
+        _DownAdvancedSeasonProvider()
+    )
+    app.dependency_overrides[get_player_repository] = InMemoryPlayerRepository
+    client = TestClient(app, raise_server_exceptions=False)
+
+    response = client.post("/ingestion/understat/seasons/2026")
+
+    assert response.status_code == 503
+    assert "Understat" in response.json()["detail"]
 
 
 def test_enrich_pending_players_enriches_up_to_the_limit():
