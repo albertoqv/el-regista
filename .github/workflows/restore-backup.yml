@@ -1,0 +1,60 @@
+name: Restore a database backup
+
+# Puts a weekly backup (artifact "elregista-N" of backup.yml) back into the database in
+# the DATABASE_URL secret. Used in Nov 2026, when the database was replaced by an empty
+# one on Nov 5 and the refresh only brought back 2,260 players. The current rows are
+# saved first as an artifact, since the restore replaces every table.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Run of backup.yml whose artifact is restored"
+        required: true
+
+permissions:
+  actions: read
+  contents: read
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+      - name: Save the current rows
+        run: uv run python scripts/db_copy.py dump before-restore.sql.gz
+      - uses: actions/upload-artifact@v7
+        with:
+          name: before-restore-${{ github.run_number }}
+          path: before-restore.sql.gz
+          retention-days: 90
+          compression-level: 0
+      - name: Download the backup
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ inputs.run_id }}" -R "$GITHUB_REPOSITORY" -D backup
+          file=$(find backup -name 'elregista.sql.gz' | head -1)
+          gzip -t "$file"
+          ls -lh "$file"
+          mv "$file" elregista.sql.gz
+      - name: Bring the tables up to date
+        run: uv run alembic upgrade head
+      - name: Restore every row
+        run: uv run python scripts/db_copy.py restore elregista.sql.gz
+      - name: Check what arrived
+        run: |
+          uv run python - <<'PY'
+          from sqlalchemy import create_engine, text
+          from player_scouting.infrastructure.persistence.settings import get_settings
+          tables = ("players", "player_season_statistics", "player_season_advanced_stats",
+                    "player_competition_stats", "player_market_values",
+                    "player_value_estimates", "shots")
+          with create_engine(get_settings().database_url).connect() as c:
+              for table in tables:
+                  count = c.execute(text(f"select count(*) from {table}")).scalar()
+                  print(table, count)
+                  print(f"::notice title={table}::{count}")
+          PY
