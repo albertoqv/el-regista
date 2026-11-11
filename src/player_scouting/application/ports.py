@@ -218,6 +218,10 @@ class EnrichmentUnavailableError(Exception):
     """The enrichment source is blocking or down; stop instead of skipping players."""
 
 
+class DataSourceUnavailableError(Exception):
+    """A data source is down (maintenance page, outage): try again on the next run."""
+
+
 class MarketValueProvider(Protocol):
     def get_market_value_history(
         self, player_name: str, birth_year: int | None = None

@@ -1,5 +1,7 @@
 import httpx
+import pytest
 
+from player_scouting.application.ports import DataSourceUnavailableError
 from player_scouting.infrastructure.understat.client import UnderstatClient
 from player_scouting.infrastructure.understat.mapper import to_advanced_row
 from player_scouting.infrastructure.understat.provider import UnderstatSeasonProvider
@@ -90,3 +92,22 @@ def test_provider_covers_the_five_big_leagues_with_our_competition_names():
         "Ligue_1",
     ]
     assert [row.competition for row in rows] == ["La Liga"]
+
+
+# What every Understat URL answered in Nov 2026 (status 200, text/html), trimmed.
+MAINTENANCE_PAGE = (
+    "<!DOCTYPE html><html><head><title>Understat.com</title></head>"
+    "<body><p>We will come back soon</p></body></html>"
+)
+
+
+def test_a_maintenance_page_instead_of_json_means_the_source_is_down():
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200, text=MAINTENANCE_PAGE, headers={"content-type": "text/html"}
+        )
+
+    client = UnderstatClient(httpx.Client(transport=httpx.MockTransport(handler)))
+
+    with pytest.raises(DataSourceUnavailableError):
+        client.get_league_players("La_liga", 2026)
