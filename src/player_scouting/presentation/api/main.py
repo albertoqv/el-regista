@@ -1,8 +1,10 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
+from player_scouting.application.ports import DataSourceUnavailableError
 from player_scouting.presentation.api.client_errors import ClientErrorLog
 from player_scouting.presentation.api.metrics import (
     RequestMetrics,
@@ -71,7 +73,13 @@ def create_app(settings: ApiSettings | None = None) -> FastAPI:
     app.include_router(ingestion.router)
     app.include_router(admin.public_router)
     app.include_router(admin.router)
+    app.add_exception_handler(DataSourceUnavailableError, _source_down)
     return app
+
+
+async def _source_down(request: Request, error: Exception) -> JSONResponse:
+    # The refresh tells "the source is down, next run" apart from a bug of ours.
+    return JSONResponse(status_code=503, content={"detail": str(error)})
 
 
 app = create_app()
