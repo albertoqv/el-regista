@@ -101,6 +101,10 @@ class Statistics:
         _validate_non_negative_ints(self, _NON_NEGATIVE_INT_FIELDS)
         _validate_non_negative_numbers(self, _NON_NEGATIVE_FLOAT_FIELDS)
 
+    @property
+    def goals_and_assists(self) -> int:
+        return self.goals + self.assists
+
     def __add__(self, other: object) -> Statistics:
         if not isinstance(other, Statistics):
             return NotImplemented

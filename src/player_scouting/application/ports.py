@@ -18,6 +18,7 @@ PlayerSort = Literal["recent", "goals", "assists"]
 LeaderMetric = Literal[
     "goals",
     "assists",
+    "goals_and_assists",
     "expected_goals",
     "expected_assists",
     "shots",

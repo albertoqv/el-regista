@@ -76,6 +76,8 @@ _ADVANCED_JOIN = and_(
 
 def _merged_column(field_name: str) -> ColumnElement[Any]:
     """SQL equivalent of Statistics.with_advanced for one field."""
+    if field_name == "goals_and_assists":
+        return Basic.goals + Basic.assists
     if field_name in ("expected_goals", "key_passes"):
         return func.coalesce(getattr(Advanced, field_name), getattr(Basic, field_name))
     if field_name in _ADVANCED_FIELDS:
