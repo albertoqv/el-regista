@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import json
+
 import httpx
+
+from player_scouting.application.ports import DataSourceUnavailableError
 
 DEFAULT_BASE_URL = "https://understat.com"
 USER_AGENT = (
@@ -54,4 +58,11 @@ class UnderstatClient:
             timeout=60,
         )
         response.raise_for_status()
-        return response.json()
+        # During maintenance every URL answers 200 with an HTML page ("We will come
+        # back soon"): the source is down, not a format change to map.
+        try:
+            return response.json()
+        except json.JSONDecodeError as error:
+            raise DataSourceUnavailableError(
+                f"Understat answered {path} with no JSON (maintenance?)"
+            ) from error
