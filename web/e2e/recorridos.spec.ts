@@ -34,6 +34,15 @@ test("los rankings tienen datos de la temporada", async ({ page }) => {
   await noHorizontalScroll(page);
 });
 
+test("el ranking por goles más asistencias suma las dos", async ({ page }) => {
+  await page.goto("/ranking/laliga/goles-y-asistencias");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Goles + asistencias de LaLiga");
+  await expect(page.locator("ol li").first()).toBeVisible();
+  // Extra leagues (goals and assists only) have it too.
+  await page.goto("/ranking/liga-portugal/goles-y-asistencias");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Goles + asistencias");
+});
+
 test("los pronósticos siguen cargando por enlace, sin indexar", async ({ page }) => {
   await page.goto("/predicciones");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Próximos partidos");
