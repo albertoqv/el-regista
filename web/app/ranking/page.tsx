@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { listSeasonLeaders, type SeasonLeader } from "@/lib/api";
+import { keepLastGoodPage, listSeasonLeaders, type SeasonLeader } from "@/lib/api";
 import { currentSeasonStartYear, seasonDisplay } from "@/lib/format";
 import { RANKING_LEAGUES, RANKING_METRICS, rankingHref } from "@/lib/rankings";
 
@@ -23,9 +23,10 @@ export function generateMetadata(): Metadata {
 export default async function RankingIndexPage() {
   const scorers = await Promise.all(
     BIG_FIVE.map((league) =>
-      listSeasonLeaders(currentSeasonStartYear(), { metric: "goals", competition: league.competition, limit: 3 }).catch(
-        (): SeasonLeader[] => [],
-      ),
+      listSeasonLeaders(currentSeasonStartYear(), { metric: "goals", competition: league.competition, limit: 3 }).catch((error): SeasonLeader[] => {
+        keepLastGoodPage(error);
+        return [];
+      }),
     ),
   );
 

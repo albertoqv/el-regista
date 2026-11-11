@@ -99,6 +99,16 @@ async function fetchWaking(url: string, init: RequestInit): Promise<Response> {
   return fetch(url, init);
 }
 
+/**
+ * For pages kept whole in the cache (home, rankings, sitemap): a failed request while
+ * regenerating them in the background throws, so Next keeps serving the last good
+ * version instead of caching an empty one for three hours (Render, Nov 2026). During
+ * `next build` there is no good version yet: the page renders its empty state.
+ */
+export function keepLastGoodPage(error: unknown): void {
+  if (process.env.NEXT_PHASE !== "phase-production-build") throw error;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   // Data changes twice a week: the server keeps responses cached for a while, so
   // most pages are served without waking the API.

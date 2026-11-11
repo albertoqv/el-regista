@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Avatar } from "@/app/components/Avatar";
 import { JsonLd } from "@/app/components/JsonLd";
-import { listSeasonLeaders, type SeasonLeader } from "@/lib/api";
+import { keepLastGoodPage, listSeasonLeaders, type SeasonLeader } from "@/lib/api";
 import { currentSeasonStartYear, positionShort, seasonDisplay } from "@/lib/format";
 import { leaderInfo, leaderValue } from "@/lib/metrics";
 import { findRanking, LEAGUE_GROUPS, metricsFor, rankingHref, rankingPages } from "@/lib/rankings";
@@ -47,9 +47,10 @@ export default async function RankingPage(props: PageProps<"/ranking/[liga]/[met
   if (!ranking) notFound();
   const { league, metric } = ranking;
   const load = (year: number) =>
-    listSeasonLeaders(year, { metric: metric.metric, competition: league.competition, limit: LIMIT }).catch(
-      (): SeasonLeader[] => [],
-    );
+    listSeasonLeaders(year, { metric: metric.metric, competition: league.competition, limit: LIMIT }).catch((error): SeasonLeader[] => {
+      keepLastGoodPage(error);
+      return [];
+    });
   // Before the new season's first data arrives, the last finished one (named in the title).
   let season = currentSeasonStartYear();
   let leaders = await load(season);

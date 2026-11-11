@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { listPlayers, listSeasonLeaders, type LeaderMetric, type Player, type SeasonLeader } from "@/lib/api";
+import { keepLastGoodPage, listPlayers, listSeasonLeaders, type LeaderMetric, type Player, type SeasonLeader } from "@/lib/api";
 import { COMPETITIONS, currentSeasonStartYear } from "@/lib/format";
 import { rankingHref, rankingPages } from "@/lib/rankings";
 import { SITE_URL as SITE } from "@/lib/site";
@@ -32,10 +32,16 @@ async function notablePlayerIds(season: number): Promise<number[]> {
   const boards = await Promise.all([
     ...COMPETITIONS.flatMap((competition) =>
       PLAYER_METRICS.map((metric) =>
-        listSeasonLeaders(season, { metric, competition, limit: 50 }).catch((): SeasonLeader[] => []),
+        listSeasonLeaders(season, { metric, competition, limit: 50 }).catch((error): SeasonLeader[] => {
+          keepLastGoodPage(error);
+          return [];
+        }),
       ),
     ),
-    listPlayers({ sort: "goals", limit: 200 }).catch((): Player[] => []),
+    listPlayers({ sort: "goals", limit: 200 }).catch((error): Player[] => {
+      keepLastGoodPage(error);
+      return [];
+    }),
   ]);
   return [...new Set(boards.flat().map((player) => player.player_id))];
 }

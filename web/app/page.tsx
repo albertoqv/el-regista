@@ -12,6 +12,7 @@ import {
   findTwins,
   getHotPlayers,
   getOverview,
+  keepLastGoodPage,
   listSeasonLeaders,
   type HotBoard,
   type Overview,
@@ -35,7 +36,8 @@ async function loadHome(startYear: number) {
       ? await findTwins(star.player_id, { limit: 8 }).catch((): TwinReport | null => null)
       : null;
     return { scorers, teaser, overview, hot, error: false };
-  } catch {
+  } catch (error) {
+    keepLastGoodPage(error);
     return {
       scorers: [],
       teaser: null,
