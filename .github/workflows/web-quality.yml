@@ -12,7 +12,7 @@ on:
         default: ""
 
 env:
-  BASE_URL: ${{ inputs.base_url || 'https://elregista.vercel.app' }}
+  BASE_URL: ${{ inputs.base_url || 'https://elregista.onrender.com' }}
 
 jobs:
   e2e:

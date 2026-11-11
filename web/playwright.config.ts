@@ -8,7 +8,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["github"], ["list"]] : "list",
   use: {
-    baseURL: process.env.BASE_URL ?? "https://elregista.vercel.app",
+    baseURL: process.env.BASE_URL ?? "https://elregista.onrender.com",
     trace: "retain-on-failure",
   },
   projects: [

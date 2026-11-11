@@ -7,7 +7,7 @@
 
 <p align="center">
   Scouting de futbolistas con datos reales de 33 ligas.<br>
-  <a href="https://elregista.vercel.app"><b>elregista.vercel.app</b></a>
+  <a href="https://elregista.onrender.com"><b>elregista.onrender.com</b></a>
 </p>
 
 <p align="center">

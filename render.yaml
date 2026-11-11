@@ -17,3 +17,6 @@ services:
         sync: false
       - key: VISIT_SALT
         generateValue: true
+      # The admin panel counts visits from this host as internal, not as referrers.
+      - key: CORS_ORIGINS
+        value: https://elregista.onrender.com
