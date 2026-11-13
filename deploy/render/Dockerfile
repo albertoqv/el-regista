@@ -1,6 +1,6 @@
 # Render free web service: API and web in one container (512 MB, sleeps after 15 min
-# without visits). Bridge while Vercel Hobby keeps the account paused and the Oracle VM
-# has no capacity. Built from the repository root (render.yaml).
+# without visits). Bridge while Vercel Hobby keeps the account paused. Built from the
+# repository root (render.yaml).
 # Render hands every environment variable to the build as an argument: with
 # DATABASE_URL the API runs during `next build` (build.sh), so the home page and rankings are
 # prerendered with data. It only exists in this stage, never in the final image.

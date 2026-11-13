@@ -10,8 +10,7 @@ Desde noviembre de 2026 la web y la API van juntas en un servicio gratuito de Re
 (`elregista`, https://elregista.onrender.com; `render.yaml` y `deploy/render/`), porque
 Vercel Hobby pausó la cuenta (402). Render **no** despliega con cada push
 (`autoDeploy: false`): el despliegue lo lanza el usuario con **Manual Deploy → Deploy
-latest commit** en dashboard.render.com. Oracle está descartado: no
-proponerlo.
+latest commit** en dashboard.render.com.
 
 ## 1. Comprobaciones (parar al primer fallo y contarlo)
 

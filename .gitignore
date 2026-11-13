@@ -11,5 +11,3 @@ __pycache__/
 
 # Notas de Claude solo para este PC
 CLAUDE.local.md
-!deploy/oracle/.env.example
-deploy/oracle/backups/
