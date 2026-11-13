@@ -111,8 +111,9 @@ uv run python scripts/model_lab.py   # experimentos del modelo: skill model-lab
 - **Ahora (nov 2026)**: Vercel Hobby pausó la cuenta (402 en web y API). Web y API van
   juntas en un servicio gratuito de Render: https://elregista.onrender.com (`render.yaml`,
   `deploy/render/`; 512 MB, se duerme a los 15 min; la API solo escucha en 127.0.0.1 y se
-  llega por `/api/*`). Sin auto-deploy: el usuario pulsa "Manual Deploy" en Render. La VM
-  de Oracle (`deploy/oracle/`, `oracle-capacity.yml`) espera capacidad en Madrid.
+  llega por `/api/*`). Sin auto-deploy: el usuario pulsa "Manual Deploy" en Render. Oracle
+  descartado (13-nov-2026): el usuario vio un cargo de 0,93 y pidió cortarlo;
+  `oracle-capacity.yml` desactivado y sin VM. No volver a proponerlo.
   Lo de abajo sobre Vercel queda por si la cuenta vuelve.
 - API en Vercel, proyecto `el-regista-api` (https://el-regista-api.vercel.app; `index.py`
   en la raíz): desde la raíz `npx vercel deploy --prod --yes`. Con `VERCEL=1` exige clave
