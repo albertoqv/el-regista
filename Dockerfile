@@ -1,5 +1,5 @@
 # Builder: uv resolves the locked dependencies into /app/.venv.
-FROM python:3.14-slim AS builder
+FROM python:3.15-slim AS builder
 
 RUN pip install --no-cache-dir uv
 
@@ -16,7 +16,7 @@ RUN uv sync --frozen --no-dev
 
 # Runtime: only the virtualenv and the code, on a patched base, without pip and
 # without root (Trivy DS-0002 and the base image's fixable HIGH/CRITICAL CVEs).
-FROM python:3.14-slim
+FROM python:3.15-slim
 
 RUN apt-get update \
     && apt-get upgrade -y --no-install-recommends \
